@@ -1,18 +1,22 @@
 # SafePDF - Tkinter Version
 
-A Python Tkinter-based PDF manipulation tool that provides various PDF operations including compression, splitting, merging, conversion to images, rotation, and repair.
+A Python Tkinter-based PDF manipulation tool that provides various PDF operations including compression, splitting, merging, conversion to images, rotation, and repair. SafePDF offers a clean, intuitive interface built entirely with Python's standard Tkinter library, making it lightweight and cross-platform compatible.
+
+<a href="https://www.buymeacoffee.com/mcagriaksoy"><img src="https://img.shields.io/badge/-buy_me_a%C2%A0coffee-gray?logo=buy-me-a-coffee" alt="Donate"></a>
 
 ## Features
 
-- **PDF Compression**: Reduce PDF file size with adjustable quality settings
+- **PDF Compression**: Reduce PDF file size with adjustable quality settings (Low, Medium, High)
 - **PDF Split/Separate**: Split PDF into individual pages or custom page ranges
-- **PDF Merge**: Combine multiple PDF files (coming soon)
-- **PDF to JPG**: Convert PDF pages to high-quality JPG images
+- **PDF Merge**: Combine multiple PDF files into a single document
+- **PDF to JPG**: Convert PDF pages to high-quality JPG images with configurable DPI
 - **PDF Rotate**: Rotate PDF pages by 90°, 180°, or 270°
-- **PDF Repair**: Attempt to repair corrupted PDF files
+- **PDF Repair**: Attempt to repair corrupted PDF files using relaxed parsing
 - **Drag & Drop**: Easy file selection with drag-and-drop support
-- **Progress Tracking**: Real-time progress indication for operations
-- **User-friendly Interface**: Intuitive tabbed interface similar to the Qt version
+- **Progress Tracking**: Real-time progress indication for long-running operations
+- **User-friendly Interface**: Intuitive tabbed navigation with modern styling
+- **Cross-platform**: Works on Windows, macOS, and Linux
+- **Lightweight**: No external UI framework dependencies
 
 ## Installation
 
@@ -62,11 +66,14 @@ If you encounter issues with `tkinterdnd2`, the application will still work with
 # Run the main application
 python safe_pdf_app.py
 
-# Or run the test/demo script
+# Run the comprehensive test/demo script
 python test_demo.py
 
-# Test dependencies only
+# Test dependencies and installation only (no file operations)
 python test_demo.py --test-only
+
+# Run PDF compression testing utilities
+python test_compression.py
 ```
 
 ### Using the Application
@@ -110,11 +117,20 @@ python test_demo.py --test-only
 ## File Structure
 
 ```
-SafePDF/Tk/
-├── safe_pdf_app.py      # Main application file
-├── pdf_operations.py    # PDF operations backend
-├── requirements.txt     # Python dependencies
-└── README.md           # This file
+SafePDF/
+├── safe_pdf_app.py         # Main application file with GUI logic
+├── pdf_operations.py       # PDF operations backend and core functionality
+├── icon_creator.py         # Application icon generation utilities
+├── requirements.txt        # Python package dependencies
+├── test_demo.py           # Test script and demo functionality
+├── test_compression.py    # PDF compression testing utilities
+├── welcome_content.html   # HTML content for welcome tab
+├── welcome_content.txt    # Plain text content for welcome tab
+├── .gitignore            # Git ignore rules
+├── README.md             # This documentation file
+├── assets/               # Application assets and resources
+│   └── placeholder.png   # Placeholder image for UI
+└── __pycache__/          # Python bytecode cache (auto-generated)
 ```
 
 ## Navigation Controls
@@ -165,13 +181,46 @@ The application includes comprehensive error handling:
 - The application shows progress indicators for long operations
 - Operations run in separate threads to keep the UI responsive
 
+## Testing
+
+The project includes comprehensive testing utilities:
+
+### Test Scripts
+
+- **`test_demo.py`**: Comprehensive demo and testing script
+  - Tests all dependencies and imports
+  - Demonstrates all PDF operations with sample files
+  - Includes optional file operation testing
+  - Run with `--test-only` flag to test only dependencies
+
+- **`test_compression.py`**: Specialized PDF compression testing
+  - Tests different compression levels and quality settings
+  - Measures file size reduction ratios
+  - Validates output file integrity
+
+### Running Tests
+
+```bash
+# Test dependencies only (quick test)
+python test_demo.py --test-only
+
+# Full demo with file operations (requires sample PDF)
+python test_demo.py
+
+# Test PDF compression specifically
+python test_compression.py
+```
+
 ## Development
 
 ### Code Structure
 
-- `SafePDFApp`: Main application class handling UI and user interactions
-- `PDFOperations`: Backend class with all PDF manipulation logic
-- Modular design allows easy addition of new operations
+- **`SafePDFApp`**: Main application class handling UI and user interactions
+- **`PDFOperations`**: Backend class with all PDF manipulation logic  
+- **`icon_creator.py`**: Utility module for generating application icons programmatically
+- **Welcome content**: HTML and text content for the application's welcome tab
+- **Test utilities**: Comprehensive testing scripts for validation and demonstration
+- **Modular design**: Easy addition of new operations and features
 
 ### Adding New Operations
 
@@ -194,7 +243,19 @@ Feel free to contribute by:
 
 ## Version History
 
-- v1.0.0: Initial Tkinter implementation with core PDF operations
+- **v1.1**: Enhanced UI and functionality
+  - Improved button visibility and navigation
+  - Larger default window size (650x450)
+  - Custom application icon generation
+  - Custom output path selection
+  - Enhanced operation-specific settings
+  - Better DPI options for PDF to JPG conversion
+  
+- **v1.0.0**: Initial Tkinter implementation with core PDF operations
+  - PDF compression, splitting, merging, rotation, and repair
+  - PDF to JPG conversion
+  - Drag and drop support
+  - Progress tracking and error handling
 
 ## Comparison with Qt Version
 

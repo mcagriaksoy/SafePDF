@@ -55,13 +55,13 @@ class SafePDFApp:
 
         # Card-like main area
         self.card_frame = tk.Frame(self.root, bg="#ffffff", bd=0, highlightthickness=0)
-        self.card_frame.pack(fill='both', expand=True, padx=32, pady=(12, 24))
+        self.card_frame.pack(fill='both', expand=True, padx=8, pady=(4, 8))
         self.card_frame.grid_propagate(False)
         self.card_frame.update_idletasks()
 
         # Create notebook (tabbed interface) inside card
         self.notebook = ttk.Notebook(self.card_frame)
-        self.notebook.pack(fill='both', expand=True, padx=16, pady=16)
+        self.notebook.pack(fill='both', expand=True, padx=0, pady=0)
 
         # Create tabs
         self.create_tabs()
@@ -71,21 +71,18 @@ class SafePDFApp:
 
         # Bind tab change event
         self.notebook.bind("<<NotebookTabChanged>>", self.on_tab_changed)
-
-        # Setup drag and drop
-        self.setup_drag_drop()
         
     def setup_main_window(self):
         """Configure the main application window with modern design"""
         self.root.title("SafePDF - A tool for PDF Manipulation")
-        self.root.geometry("700x500")  # Modern, slightly larger
-        self.root.minsize(700, 500)
+        self.root.geometry("780x560")  # Modern, slightly larger
+        self.root.minsize(780, 560)
         self.root.configure(bg="#f4f6fb")
 
         # Apply ttk theme for modern look
         style = ttk.Style()
         try:
-            style.theme_use("clam")
+            style.theme_use("winnative")
         except Exception:
             pass
         style.configure("TNotebook", background="#f4f6fb", borderwidth=0)
@@ -96,15 +93,15 @@ class SafePDFApp:
         )
         style.configure("TFrame", background="#ffffff")
         style.configure("TLabel", background="#ffffff", font=(FONT, 10))
-        style.configure("TButton", font=(FONT, 10), padding=6, background="#0078d7", foreground="#fff")
+        style.configure("TButton", font=(FONT, 10), padding=6, background="#0078d7", foreground="#000")
         style.map("TButton",
             background=[("active", "#005fa3"), ("!active", "#0078d7")],
-            foreground=[("active", "#fff"), ("!active", "#fff")]
+            foreground=[("active", "#000"), ("!active", "#000")]
         )
-        style.configure("Accent.TButton", background="#00b386", foreground="#fff", font=(FONT, 10, "bold"), padding=8)
+        style.configure("Accent.TButton", background="#00b386", foreground="#000", font=(FONT, 10, "bold"), padding=8)
         style.map("Accent.TButton",
-            background=[("active", "#009970"), ("!active", "#00b386")],
-            foreground=[("active", "#fff"), ("!active", "#fff")]
+            background=[("active", "#09970"), ("!active", "#00b386")],
+            foreground=[("active", "#000"), ("!active", "#000")]
         )
         style.configure("Gray.TLabel", foreground="#888", background="#ffffff")
 
@@ -117,12 +114,25 @@ class SafePDFApp:
     def setup_drag_drop(self):
         """Setup drag and drop functionality"""
         try:
-            # Enable drag and drop for the drop label
-            self.drop_label.drop_target_register(DND_FILES)
-            self.drop_label.dnd_bind('<<Drop>>', self.handle_drop)
-        except:
+            # Check if drop_label exists
+            if hasattr(self, 'drop_label') and self.drop_label:
+                # Enable drag and drop for the drop label
+                self.drop_label.drop_target_register(DND_FILES)
+                self.drop_label.dnd_bind('<<Drop>>', self.handle_drop)
+                self.drop_label.dnd_bind('<<DragEnter>>', self.on_drag_enter)
+                self.drop_label.dnd_bind('<<DragLeave>>', self.on_drag_leave)
+        except Exception as e:
             # If tkinterdnd2 is not available, drag and drop won't work
             pass
+    
+    def on_drag_enter(self, event):
+        """Handle drag enter event - provide visual feedback"""
+        self.drop_label.config(bg="#e8f5e8", relief=tk.SOLID, bd=3)
+        
+    def on_drag_leave(self, event):
+        """Handle drag leave event - restore original appearance"""
+        if not self.selected_file:  # Only restore if no file is selected
+            self.drop_label.config(bg="#f8f9fa", relief=tk.RIDGE, bd=2)
     
     def create_window_icon(self):
         """Create a simple icon for the window"""
@@ -176,50 +186,105 @@ class SafePDFApp:
         
     def create_welcome_tab(self):
         """Create the welcome tab content"""
-        # Welcome text
+        # Create a frame for the HTML content
+        html_frame = tk.Frame(self.welcome_frame, bg="#ffffff")
+        html_frame.pack(fill='both', expand=True, padx=10, pady=10)
+        
+        try:
+            # Try to load HTML content using tkhtml or webview
+            from tkinter import html
+            html_widget = html.HTMLWidget(html_frame)
+            html_widget.pack(fill='both', expand=True)
+            
+            # Load the HTML file
+            welcome_html_path = os.path.join(os.path.dirname(__file__), "welcome_content.html")
+            with open(welcome_html_path, 'r', encoding='utf-8') as f:
+                html_content = f.read()
+            html_widget.set_html(html_content)
+            
+        except ImportError:
+            # Fallback to text-based content if HTML widget is not available
+            self.create_fallback_welcome_content(html_frame)
+    
+    def create_fallback_welcome_content(self, parent_frame):
+        """Create fallback text-based welcome content with formatting"""
+        # Welcome text with better formatting
         welcome_text = scrolledtext.ScrolledText(
-            self.welcome_frame, 
+            parent_frame, 
             wrap=tk.WORD, 
             width=60, 
             height=15,
             state=tk.DISABLED,
-            font=(FONT, 9)
+            font=(FONT, 10),
+            bg="#f8f9fa",
+            fg="#333",
+            borderwidth=0,
+            highlightthickness=0
         )
-        welcome_text.pack(fill='both', expand=True, padx=10, pady=10)
+        welcome_text.pack(fill='both', expand=True)
         
         # Enable text insertion
         welcome_text.config(state=tk.NORMAL)
         
-        # Insert welcome content
-        welcome_content = """Welcome
-
-Click on Next to start the process what do you want to do.
-
-Step - Description
-(1) - The start page of this application
-(2) - Selection of the source file
-(3) - Selection of the operation want to do
-(4) - Make additional settings
-(5) - See the results and save the changes
-
-
--
-
-Software Information
-v1.0.0 Check the Updates
-by mcagriaksoy - 2025
-"""
-        
+        # Load and format welcome content
+        welcome_content = self.load_welcome_content()
         welcome_text.insert('1.0', welcome_content)
         
-        # Add clickable link functionality
-        welcome_text.tag_configure("link", foreground="#27bf73", underline=True)
-        welcome_text.tag_bind("link", "<Button-1>", self.open_github)
-        welcome_text.tag_bind("link", "<Enter>", lambda e: welcome_text.config(cursor="hand2"))
-        welcome_text.tag_bind("link", "<Leave>", lambda e: welcome_text.config(cursor=""))
+        # Add text formatting
+        self.format_welcome_text(welcome_text)
         
         # Make text read-only
         welcome_text.config(state=tk.DISABLED)
+    
+    def load_welcome_content(self):
+        """Load welcome content from text file or use fallback"""
+        try:
+            # First try to load from text file
+            welcome_txt_path = os.path.join(os.path.dirname(__file__), "welcome_content.txt")
+            if os.path.exists(welcome_txt_path):
+                with open(welcome_txt_path, 'r', encoding='utf-8') as f:
+                    return f.read()
+        except Exception as e:
+            print(f"Could not load welcome content: {e}")
+        
+        # Fallback content if file doesn't exist
+        # Use from .text file import and print without formatting
+        return
+
+    def format_welcome_text(self, text_widget):
+        """Apply formatting to the welcome text"""
+        # Configure text tags for formatting
+        text_widget.tag_configure("title", foreground="#0078d7", font=(FONT, 14, "bold"), justify='center')
+        text_widget.tag_configure("step", foreground="#00b386", font=(FONT, 10, "bold"))
+        text_widget.tag_configure("link", foreground="#27bf73", underline=True, font=(FONT, 10, "bold"))
+        text_widget.tag_configure("info", foreground="#0078d7", font=(FONT, 11, "bold"))
+        text_widget.tag_configure("version", foreground="#00b386", font=(FONT, 10, "bold"))
+        
+        # Apply formatting to specific parts
+        content = text_widget.get('1.0', 'end-1c')
+        
+        # Title formatting
+        if "Welcome" in content:
+            start = content.find("Welcome")
+            if start != -1:
+                text_widget.tag_add("title", f"1.0+{start}c", f"1.0+{start + len('Welcome')}c")
+        
+        # Link formatting
+        if "Check for Updates" in content:
+            start = content.find("🔗 Check for Updates")
+            if start != -1:
+                text_widget.tag_add("link", f"1.0+{start}c", f"1.0+{start + len('🔗 Check for Updates')}c")
+                text_widget.tag_bind("link", "<Button-1>", self.open_github)
+                text_widget.tag_bind("link", "<Enter>", lambda e: text_widget.config(cursor="hand2"))
+                text_widget.tag_bind("link", "<Leave>", lambda e: text_widget.config(cursor=""))
+        
+        # Info sections
+        info_sections = ["💻 Software Information", "📋 Process Steps:"]
+        for section in info_sections:
+            if section in content:
+                start = content.find(section)
+                if start != -1:
+                    text_widget.tag_add("info", f"1.0+{start}c", f"1.0+{start + len(section)}c")
         
     def create_file_tab(self):
         """Create the file selection tab with modern design"""
@@ -242,6 +307,9 @@ by mcagriaksoy - 2025
         )
         self.drop_label.pack(fill='both', expand=True, pady=(0, 12))
         self.drop_label.bind("<Button-1>", self.browse_file)
+        
+        # Setup drag and drop after drop_label is created
+        self.setup_drag_drop()
 
         # Or label
         or_label = ttk.Label(main_frame, text="or", style="TLabel")
@@ -397,10 +465,7 @@ by mcagriaksoy - 2025
         
     def create_bottom_controls(self):
         """Create bottom navigation and control buttons"""
-        # Create separator
-        separator = ttk.Separator(self.root, orient='horizontal')
-        separator.pack(fill='x', padx=10, pady=5)
-        
+
         control_frame = ttk.Frame(self.root)
         control_frame.pack(fill='x', padx=10, pady=10)  # Increased padding
         
@@ -441,11 +506,14 @@ by mcagriaksoy - 2025
         self.update_navigation_buttons()
         
     def next_tab(self):
-        """Move to next tab or execute operation on settings tab"""
+        """Move to next tab, execute operation, or open output file"""
         # If on settings tab (tab 3, index 3), execute operation
         if self.current_tab == 3:
             if self.can_proceed_to_next():
                 self.execute_operation()
+        # If on results tab (tab 4, index 4), open output file/folder
+        elif self.current_tab == 4:
+            self.open_output_file()
         elif self.current_tab < 4:
             if self.can_proceed_to_next():
                 self.notebook.select(self.current_tab + 1)
@@ -467,12 +535,45 @@ by mcagriaksoy - 2025
                 return False
         return True
         
+    def open_output_file(self):
+        """Open the output file or folder"""
+        if hasattr(self, 'current_output') and self.current_output:
+            try:
+                import subprocess
+                import platform
+                
+                if os.path.isfile(self.current_output):
+                    # Open single file
+                    if platform.system() == 'Windows':
+                        os.startfile(self.current_output)
+                    elif platform.system() == 'Darwin':  # macOS
+                        subprocess.run(['open', self.current_output])
+                    else:  # Linux
+                        subprocess.run(['xdg-open', self.current_output])
+                elif os.path.isdir(self.current_output):
+                    # Open directory
+                    if platform.system() == 'Windows':
+                        os.startfile(self.current_output)
+                    elif platform.system() == 'Darwin':  # macOS
+                        subprocess.run(['open', self.current_output])
+                    else:  # Linux
+                        subprocess.run(['xdg-open', self.current_output])
+                else:
+                    messagebox.showwarning("File Not Found", f"Output file/folder not found: {self.current_output}")
+            except Exception as e:
+                messagebox.showerror("Error", f"Could not open output: {str(e)}")
+        else:
+            messagebox.showwarning("No Output", "No output file available to open.")
+            
     def update_navigation_buttons(self):
         """Update navigation button states and label"""
         self.back_btn.config(state='normal' if self.current_tab > 0 else 'disabled')
         # If on settings tab, change Next to Execute
         if self.current_tab == 3:
             self.next_btn.config(text="Execute", state='normal')
+        # If on results tab with successful output, change to "Open Output"
+        elif self.current_tab == 4 and hasattr(self, 'current_output') and self.current_output:
+            self.next_btn.config(text="📂 Open Output", state='normal')
         elif self.current_tab < 4:
             self.next_btn.config(text="Next →", state='normal')
         else:
@@ -481,19 +582,48 @@ by mcagriaksoy - 2025
     # File handling methods
     def handle_drop(self, event):
         """Handle file drop event"""
-        files = self.root.tk.splitlist(event.data)
-        if files:
-            file_path = files[0]
-            if file_path.lower().endswith('.pdf'):
-                self.selected_file = file_path
-                filename = os.path.basename(file_path)
-                self.file_label.config(text=f"Selected: {filename}", fg='green')
-                self.drop_label.config(text=f"Selected: {filename}", bg='#e8f5e8')
+        try:
+            files = self.root.tk.splitlist(event.data)
+            if files:
+                file_path = files[0].strip('"{}')  # Remove quotes and braces that might wrap the path
                 
-                # Show PDF info
-                self.show_pdf_info()
+                # Validate file exists and is a PDF
+                if os.path.exists(file_path) and file_path.lower().endswith('.pdf'):
+                    self.selected_file = file_path
+                    filename = os.path.basename(file_path)
+                    
+                    # Update UI
+                    self.file_label.config(text=f"Selected: {filename}", foreground='green')
+                    self.drop_label.config(
+                        text=f"✅ Selected: {filename}", 
+                        bg='#e8f5e8', 
+                        fg='#28a745',
+                        relief=tk.SOLID,
+                        bd=2
+                    )
+                    
+                    # Show PDF info
+                    self.show_pdf_info()
+                    
+                    # Automatically move to next tab after successful file selection
+                    self.root.after(1000, lambda: self.notebook.select(2))
+                    
+                elif os.path.exists(file_path):
+                    # File exists but not a PDF
+                    messagebox.showwarning("Invalid File Type", 
+                        "Please select a PDF file. Only .pdf files are supported.")
+                    self.on_drag_leave(None)  # Restore original appearance
+                else:
+                    # File doesn't exist
+                    messagebox.showerror("File Not Found", 
+                        f"The file '{file_path}' could not be found.")
+                    self.on_drag_leave(None)  # Restore original appearance
             else:
-                messagebox.showwarning("Warning", "Please select a PDF file!")
+                messagebox.showwarning("No File", "No file was dropped.")
+                self.on_drag_leave(None)  # Restore original appearance
+        except Exception as e:
+            messagebox.showerror("Drop Error", f"An error occurred while processing the dropped file: {str(e)}")
+            self.on_drag_leave(None)  # Restore original appearance
     
     def browse_file(self, event=None):
         """Browse for PDF file"""
@@ -505,8 +635,16 @@ by mcagriaksoy - 2025
         if file_path:
             self.selected_file = file_path
             filename = os.path.basename(file_path)
-            self.file_label.config(text=f"Selected: {filename}", fg='green')
-            self.drop_label.config(text=f"Selected: {filename}", bg='#e8f5e8')
+            
+            # Update UI with consistent styling
+            self.file_label.config(text=f"Selected: {filename}", foreground='green')
+            self.drop_label.config(
+                text=f"✅ Selected: {filename}", 
+                bg='#e8f5e8',
+                fg='#28a745',
+                relief=tk.SOLID,
+                bd=2
+            )
             
             # Show PDF info
             self.show_pdf_info()
@@ -848,6 +986,9 @@ by mcagriaksoy - 2025
         # Re-enable execute button
         if hasattr(self, 'execute_btn'):
             self.execute_btn.config(state='normal')
+        
+        # Update navigation buttons to show "Open Output" if successful
+        self.update_navigation_buttons()
         
         # Show completion message
         if success:

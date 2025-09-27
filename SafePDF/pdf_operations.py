@@ -84,38 +84,68 @@ class PDFOperations:
                 
             self.update_progress(10)
             
-            with open(input_path, 'rb') as input_file:
-                reader = PdfReader(input_file)
-                writer = PdfWriter()
+            # Validate input file
+            if not os.path.exists(input_path):
+                return False, "Input file does not exist"
                 
-                self.update_progress(30)
+            if not self.validate_pdf(input_path):
+                return False, "Input file is not a valid PDF"
+            
+            # Read the PDF
+            reader = PdfReader(input_path)
+            writer = PdfWriter()
+            
+            self.update_progress(30)
+            
+            # Copy pages with compression
+            total_pages = len(reader.pages)
+            for i, page in enumerate(reader.pages):
+                # Create a new page with compression
+                new_page = page
                 
-                # Copy pages
-                total_pages = len(reader.pages)
-                for i, page in enumerate(reader.pages):
-                    writer.add_page(page)
-                    self.update_progress(30 + (50 * i // total_pages))
+                # Apply compression based on quality
+                if quality == "low":
+                    new_page.compress_content_streams()
+                    # Scale down the page for more compression
+                    try:
+                        new_page.scale(sx=0.7, sy=0.7)
+                    except:
+                        # Fallback if scale method has different parameters
+                        pass
+                elif quality == "medium":
+                    new_page.compress_content_streams()
+                    # Scale down slightly
+                    try:
+                        new_page.scale(sx=0.85, sy=0.85)
+                    except:
+                        # Fallback if scale method has different parameters
+                        pass
+                else:  # high
+                    new_page.compress_content_streams()
                 
-                # Apply compression
-                for page in writer.pages:
-                    if quality == "low":
-                        page.compress_content_streams()
-                        page.scale(sx=0.7, sy=0.7)
-                    elif quality == "medium":
-                        page.compress_content_streams()
-                        page.scale(sx=0.85, sy=0.85)
-                    else:  # high
-                        page.compress_content_streams()
+                writer.add_page(new_page)
+                self.update_progress(30 + (50 * i // total_pages))
                 
-                self.update_progress(90)
+            self.update_progress(90)
+            
+            # Ensure output directory exists
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+            
+            # Write compressed PDF
+            with open(output_path, 'wb') as output_file:
+                writer.write(output_file)
                 
-                # Write compressed PDF
-                with open(output_path, 'wb') as output_file:
-                    writer.write(output_file)
-                    
-                self.update_progress(100)
+            self.update_progress(100)
+            
+            # Verify the output file is valid
+            if os.path.exists(output_path) and self.validate_pdf(output_path):
+                original_size = os.path.getsize(input_path)
+                compressed_size = os.path.getsize(output_path)
+                compression_ratio = (1 - compressed_size/original_size) * 100
                 
-            return True, f"PDF compressed successfully. Quality: {quality}"
+                return True, f"PDF compressed successfully. Quality: {quality}. Size reduced by {compression_ratio:.1f}%"
+            else:
+                return False, "Compression completed but output file is invalid"
             
         except Exception as e:
             return False, f"Compression failed: {str(e)}"
