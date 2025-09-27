@@ -2,6 +2,8 @@
 
 A Python Tkinter-based PDF manipulation tool that provides various PDF operations including compression, splitting, merging, conversion to images, rotation, and repair.
 
+<a href="https://www.buymeacoffee.com/mcagriaksoy"><img src="https://img.shields.io/badge/-buy_me_a%C2%A0coffee-gray?logo=buy-me-a-coffee" alt="Donate"></a>
+
 ## Features
 
 - **PDF Compression**: Reduce PDF file size with adjustable quality settings
@@ -13,6 +15,8 @@ A Python Tkinter-based PDF manipulation tool that provides various PDF operation
 - **Drag & Drop**: Easy file selection with drag-and-drop support
 - **Progress Tracking**: Real-time progress indication for operations
 - **User-friendly Interface**: Intuitive tabbed interface similar to the Qt version
+
+![Main Window](img/UI_v1.jpg)
 
 ## Installation
 
