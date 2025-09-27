@@ -6,33 +6,15 @@ from tkinter import PhotoImage
 import base64
 
 def create_safepdf_icon():
-    """Create a simple SafePDF icon using PhotoImage"""
-    # Simple 32x32 PDF icon as base64 encoded GIF
-    icon_data = """
-    R0lGODlhIAAgAPcAAAAAAAAAMwAAZgAAmQAAzAAA/wArAAArMwArZgArmQArzAAr/wBVAABVMwBV
-    ZgBVmQBVzABV/wCAAACAMwCAZgCAmQCAzACA/wCqAACqMwCqZgCqmQCqzACq/wDVAADVMwDVZgDV
-    mQDVzADV/wD/AAD/MwD/ZgD/mQD/zAD//zMAADMAMzMAZjMAmTMAzDMA/zMrADMrMzMrZjMrmTMr
-    zDMr/zNVADNVMzNVZjNVmTNVzDNV/zOAADOAMzOAZjOAmTOAzDOA/zOqADOqMzOqZjOqmTOqzDOq
-    /zPVADPVMzPVZjPVmTPVzDPV/zP/ADP/MzP/ZjP/mTP/zDP//2YAAGYAM2YAZmYAmWYAzGYA/2Yr
-    AGYrM2YrZmYrmWYrzGYr/2ZVAGZVM2ZVZmZVmWZVzGZV/2aAAGaAM2aAZmaAmWaAzGaA/2aqAGaq
-    M2aqZmaqmWaqzGaq/2bVAGbVM2bVZmbVmWbVzGbV/2b/AGb/M2b/Zmb/mWb/zGb//5kAAJkAM5kA
-    ZpkAmZkAzJkA/5krAJkrM5krZpkrmZkrzJkr/5lVAJlVM5lVZplVmZlVzJlV/5mAAJmAM5mAZpmA
-    mZmAzJmA/5mqAJmqM5mqZpmqmZmqzJmq/5nVAJnVM5nVZpnVmZnVzJnV/5n/AJn/M5n/Zpn/mZn/
-    zJn//8wAAMwAM8wAZswAmcwAzMwA/8wrAMwrM8wrZswrmcwrzMwr/8xVAMxVM8xVZsxVmcxVzMxV
-    /8yAAMyAM8yAZsyAmcyAzMyA/8yqAMyqM8yqZsyqmcyqzMyq/8zVAMzVM8zVZszVmczVzMzV/8z/
-    AMz/M8z/Zsz/mcz/zMz///8AAP8AM/8AZv8Amf8AzP8A//8rAP8rM/8rZv8rmf8rzP8r//9VAP9V
-    M/9VZv9Vmf9VzP9V//+AAP+AM/+AZv+Amf+AzP+A//+qAP+qM/+qZv+qmf+qzP+q///VAP/VM//V
-    Zv/Vmf/VzP/V////AP//M///Zv//mf//zP///yH5BAEAAAAALAAAAAAgACAAAAiUAAEIHEiwoMGD
-    CBMqXMiwocOHECNKnEixosWLGDNq3Mixo8ePIEOKHEmypMmTKFOqXMmypcuXMGPKnEmzps2bOHPq
-    3Mmzp8+fQIMKHUq0qNGjSJMqXcq0qdOnUKNKnUq1qtWrWLNq3cq1q9evYMOKHUu2rNmzaNOqXcu2
-    rdu3cOPKnUu3rt27ePPq3cu3r9+/gAMLDhxIAAA7
-    """
-    
+    # uSE ICON.ICO from assets
     try:
-        # Decode the base64 icon data
-        icon_gif = base64.b64decode(icon_data)
-        return PhotoImage(data=base64.b64encode(icon_gif))
-    except:
+        with open("assets/icon.ico", "rb") as icon_file:
+            icon_data = icon_file.read()
+            b64_data = base64.b64encode(icon_data).decode('utf-8')
+            icon = PhotoImage(data=b64_data)
+            return icon
+    except Exception as e:
+        print(f"Error loading icon: {e}")
         return None
 
 # Alternative simple icon creation using ASCII art approach

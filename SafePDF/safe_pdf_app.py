@@ -1,4 +1,3 @@
-
 """
 SafePDF - A Tkinter-based PDF Manipulation Tool
 v1.0.0 by mcagriaksoy - 2025
@@ -41,13 +40,13 @@ class SafePDFApp:
         self.setup_main_window()
 
         # Add modern header
-        self.header_frame = tk.Frame(self.root, bg="#0078d7", height=56)
+        self.header_frame = tk.Frame(self.root, bg="#b62020", height=56)
         self.header_frame.pack(fill='x', side='top')
         self.header_label = tk.Label(
             self.header_frame,
             text="SafePDF",
             font=(FONT, 18, "bold"),
-            bg="#0078d7",
+            bg="#b62020",
             fg="#fff",
             pady=10
         )
@@ -75,7 +74,7 @@ class SafePDFApp:
     def setup_main_window(self):
         """Configure the main application window with modern design"""
         self.root.title("SafePDF - A tool for PDF Manipulation")
-        self.root.geometry("780x560")  # Modern, slightly larger
+        self.root.geometry("900x700")  # Larger size for image buttons
         self.root.minsize(780, 560)
         self.root.configure(bg="#f4f6fb")
 
@@ -89,13 +88,13 @@ class SafePDFApp:
         style.configure("TNotebook.Tab", background="#e9ecef", padding=10, font=(FONT, 10), borderwidth=0)
         style.map("TNotebook.Tab",
             background=[("selected", "#ffffff"), ("active", "#f8f9fa")],
-            foreground=[("selected", "#0078d7"), ("active", "#0078d7")]
+            foreground=[("selected", "#b62020"), ("active", "#b62020")]
         )
         style.configure("TFrame", background="#ffffff")
         style.configure("TLabel", background="#ffffff", font=(FONT, 10))
-        style.configure("TButton", font=(FONT, 10), padding=6, background="#0078d7", foreground="#000")
+        style.configure("TButton", font=(FONT, 10), padding=6, background="#b62020", foreground="#000")
         style.map("TButton",
-            background=[("active", "#005fa3"), ("!active", "#0078d7")],
+            background=[("active", "#005fa3"), ("!active", "#b62020")],
             foreground=[("active", "#000"), ("!active", "#000")]
         )
         style.configure("Accent.TButton", background="#00b386", foreground="#000", font=(FONT, 10, "bold"), padding=8)
@@ -104,9 +103,6 @@ class SafePDFApp:
             foreground=[("active", "#000"), ("!active", "#000")]
         )
         style.configure("Gray.TLabel", foreground="#888", background="#ffffff")
-
-        # Create and set window icon
-        self.create_window_icon()
 
         # Center the window
         self.center_window()
@@ -133,20 +129,7 @@ class SafePDFApp:
         """Handle drag leave event - restore original appearance"""
         if not self.selected_file:  # Only restore if no file is selected
             self.drop_label.config(bg="#f8f9fa", relief=tk.RIDGE, bd=2)
-    
-    def create_window_icon(self):
-        """Create a simple icon for the window"""
-        try:
-            # Create a simple PDF icon using tkinter
-            icon_data = """
-            iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKkSURBVFhH7ZdLSxtRFMafJCYxMdFEE1sfrQpatFoFwYWCCxcu3Lhx5cKVG1++gODChQsXLly4cOHChQsXLly4cOHChQsXLly4cOHChQsXLly4cOHChQsXLly4cOHChQsXLly4cOHChQuPf8A7c+/MnXMn/zMzd86dc+fO/M8MoP/Jfz/gT/D/BqjVapBKpVCr1eDz+eDxeOB2u+FwOGC1WmGxWGA2m2EymWA0GmEwGKDX66HT6aDVaqHRaKBWq6FSqaBarSIej8NiscBsNsNms8Hj8cDv9yMQCCAUCiEcjiMSiSAajcJut8PhcMDlcsHr9SIQCCAUCiEcjiAajcJms8HhcMDlcsHr9SIQCCAUCiEcjsJut8PhcMDlcsHr9SIQCCAUCiEcjsJut8PhcMDlcsHr9SIQCCAUCiEcjsJut8PhcMDlcsHr9SIQCCAUCiEcjsJut8PhcMDlcsHr9SIQCCAUCiEcjsJut8PhcMDlcsHr9SIQCCAUCiEcjsJut8PhcMDlcsHr9SIQCCAUCiEcjsJut8PhcMDlcsHr9SIQCCAUCiEcjsJut8PhcMDlcsHr9SIQCCAUCiEcjsJut8PhcMDlcsHr9SIQCCAUCiEcjsJut8PhcMDlcsHr9SIQCCAUCiEcjsJut8PhcMDlcsHr9SIQCCAUCiEcjsJut8PhcMDlcsHr9SIQCCAUCiEcjsJut8PhcMDlcsHr9SIQCCAUCiEcjsJut8PhcMDlcsHr9SIQCCAUCiEcjsJut8PhcMDlcsHr9SIQCCAUCiEcjsJut8PhcMDlcsHr9SIQCCAUCiEcjsJut8PhcMDlcsHr9SIQCCAUCiEcjsJut8PhcMDlcsHr9SIQCCAUCiEcjsJut8PhcMDlcsHr9SIQCCAUCiEcjsJut8PhcMDlcsHr9SIQCCAUCiEcjsJut8PhcMDlcsHr9SIQCCAUCiEcjsJms
-            """
-            # For now, just use a text-based approach or try to load from file
-            # In a real application, you'd want to include a proper icon file
-            pass
-        except:
-            pass
-    
+
     def center_window(self):
         """Center the window on screen"""
         self.root.update_idletasks()
@@ -254,10 +237,10 @@ class SafePDFApp:
     def format_welcome_text(self, text_widget):
         """Apply formatting to the welcome text"""
         # Configure text tags for formatting
-        text_widget.tag_configure("title", foreground="#0078d7", font=(FONT, 14, "bold"), justify='center')
+        text_widget.tag_configure("title", foreground="#b62020", font=(FONT, 14, "bold"), justify='center')
         text_widget.tag_configure("step", foreground="#00b386", font=(FONT, 10, "bold"))
         text_widget.tag_configure("link", foreground="#27bf73", underline=True, font=(FONT, 10, "bold"))
-        text_widget.tag_configure("info", foreground="#0078d7", font=(FONT, 11, "bold"))
+        text_widget.tag_configure("info", foreground="#b62020", font=(FONT, 11, "bold"))
         text_widget.tag_configure("version", foreground="#00b386", font=(FONT, 10, "bold"))
         
         # Apply formatting to specific parts
@@ -301,7 +284,7 @@ class SafePDFApp:
             font=(FONT, 13, "bold"),
             height=6,
             cursor="hand2",
-            fg="#0078d7",
+            fg="#b62020",
             highlightbackground="#d1d5db",
             highlightthickness=2
         )
@@ -329,81 +312,181 @@ class SafePDFApp:
         self.file_label.pack(pady=(12, 0))
         
     def create_operation_tab(self):
-        """Create the operation selection tab with images and modern design"""
+        """Create the operation selection tab with larger clickable image buttons"""
         import tkinter as tk
         from PIL import Image, ImageTk
-        # Modern group frame with more padding and rounded border
-        group_frame = ttk.LabelFrame(self.operation_frame, text="PDF Operations", padding=24, style="Modern.TLabelframe")
-        group_frame.pack(fill='both', expand=True, padx=24, pady=24)
+        
+        # Modern group frame optimized for larger image buttons
+        group_frame = tk.Frame(self.operation_frame, bg="#f8f9fa", relief=tk.FLAT)
+        group_frame.pack(fill='both', expand=True, padx=20, pady=20)
+        
+        # Add title label
+        title_label = tk.Label(
+            group_frame, 
+            text="Choose PDF Operation", 
+            font=(FONT, 16, "bold"),
+            bg="#f8f9fa", 
+            fg="#b62020"
+        )
+        title_label.pack(pady=(10, 20))
 
-        # Operations and placeholder image paths
+        # Create container for the operation buttons
+        operations_container = tk.Frame(group_frame, bg="#f8f9fa")
+        operations_container.pack(fill='both', expand=True)
+
+        # Operations with descriptions and image paths
         operations = [
-            ("PDF Compress", self.select_compress, "assets/placeholder.png"),
-            ("PDF Separate/Split", self.select_split, "assets/placeholder.png"),
-            ("PDF Merge", self.select_merge, "assets/placeholder.png"),
-            ("PDF to JPG", self.select_to_jpg, "assets/placeholder.png"),
-            ("PDF Rotate", self.select_rotate, "assets/placeholder.png"),
-            ("PDF Repair", self.select_repair, "assets/placeholder.png")
+            ("PDF Compress", "Reduce file size", self.select_compress, "assets/compress.png"),
+            ("PDF Split", "Separate pages", self.select_split, "assets/split.png"),
+            ("PDF Merge", "Combine files", self.select_merge, "assets/merge.png"),
+            ("PDF to JPG", "Convert to images", self.select_to_jpg, "assets/pdf2jpg.png"),
+            ("PDF Rotate", "Rotate pages", self.select_rotate, "assets/rotate.png"),
+            ("PDF Repair", "Fix corrupted files", self.select_repair, "assets/repair.png"),
         ]
 
         self.operation_buttons = []
         self.operation_images = []
 
-        # Load placeholder images (resize for button)
-        for i, (text, command, img_path) in enumerate(operations):
+        # Load operation images with larger size for better visibility
+        for i, (text, description, command, img_path) in enumerate(operations):
             row = i // 3
             col = i % 3
+            tk_img = None
+            
+            # Get absolute path to ensure proper loading
+            abs_img_path = os.path.join(os.path.dirname(__file__), img_path)
+            
+            # Try to load the specified image with larger size (maintaining aspect ratio)
             try:
-                img = Image.open(img_path)
-                img = img.resize((48, 48), Image.ANTIALIAS)
-                tk_img = ImageTk.PhotoImage(img)
-            except Exception:
-                tk_img = None
+                if os.path.exists(abs_img_path):
+                    img = Image.open(abs_img_path)
+                    # Calculate new size maintaining aspect ratio
+                    original_width, original_height = img.size
+                    max_height = 100
+                    aspect_ratio = original_width / original_height
+                    new_height = min(max_height, original_height)
+                    new_width = int(new_height * aspect_ratio)
+                    
+                    img = img.resize((new_width, new_height), Image.LANCZOS)
+                    tk_img = ImageTk.PhotoImage(img)
+            except Exception as e:
+                print(f"Warning: Could not load image {img_path}: {e}")
+
             self.operation_images.append(tk_img)
 
-            op_frame = ttk.Frame(group_frame, style="Modern.TFrame")
-            op_frame.grid(row=row, column=col, padx=16, pady=16, sticky='nsew')
+            # Create clickable image button frame with shadow effect
+            shadow_frame = tk.Frame(operations_container, bg="#d0d0d0", relief=tk.FLAT)
+            shadow_frame.grid(row=row, column=col, padx=8, pady=8, sticky='nsew')
+            
+            op_frame = tk.Frame(shadow_frame, relief=tk.RAISED, bd=2, bg="#ffffff", cursor="hand2")
+            op_frame.place(x=-2, y=-2, relwidth=1, relheight=1)
+            
+            # Configure grid weights for centered content
+            operations_container.grid_columnconfigure(col, weight=1)
+            operations_container.grid_rowconfigure(row, weight=1)
 
+            # Create the clickable image button with description
             if tk_img:
-                img_label = tk.Label(op_frame, image=tk_img, bg="#f8f9fa", bd=0)
-                img_label.image = tk_img
-                img_label.pack(pady=(0, 8))
+                # Create a container for image and text
+                button_container = tk.Frame(op_frame, bg="#ffffff")
+                button_container.pack(expand=True, fill='both', padx=15, pady=15)
+                
+                # Image button (clickable)
+                img_button = tk.Button(
+                    button_container,
+                    image=tk_img,
+                    command=command,
+                    relief=tk.FLAT,
+                    bd=0,
+                    bg="#ffffff",
+                    cursor="hand2",
+                    pady=5
+                )
+                img_button.image = tk_img  # Keep a reference
+                img_button.pack()
+                
+                # Title label
+                title_label = tk.Label(
+                    button_container,
+                    text=text,
+                    font=(FONT, 12, "bold"),
+                    bg="#ffffff",
+                    fg="#333333",
+                    cursor="hand2"
+                )
+                title_label.pack(pady=(5, 2))
+                
+                # Description label
+                desc_label = tk.Label(
+                    button_container,
+                    text=description,
+                    font=(FONT, 9),
+                    bg="#ffffff",
+                    fg="#666666",
+                    cursor="hand2"
+                )
+                desc_label.pack()
+                
+                # Make all elements clickable
+                clickable_widgets = [button_container, img_button, title_label, desc_label]
+                for widget in clickable_widgets:
+                    widget.bind("<Button-1>", lambda e: command())
+                
             else:
-                img_label = tk.Label(op_frame, text="", bg="#f8f9fa", bd=0)
-                img_label.pack(pady=(0, 8))
+                # Fallback button without image
+                img_button = tk.Button(
+                    op_frame,
+                    text=f"{text}\n{description}",
+                    command=command,
+                    relief=tk.FLAT,
+                    bd=0,
+                    bg="#ffffff",
+                    fg="#333333",
+                    font=(FONT, 11, "bold"),
+                    cursor="hand2",
+                    padx=15,
+                    pady=30,
+                    width=15,
+                    height=8
+                )
+                img_button.pack(expand=True, fill='both')
+                clickable_widgets = [img_button]
+            
+            # Enhanced hover effects for the frame and all clickable elements
+            def create_hover_effect(frame, widgets, operation_text):
+                def on_enter(event):
+                    frame.config(relief=tk.RAISED, bd=3, bg="#f0f8ff")
+                    for widget in widgets:
+                        if hasattr(widget, 'config'):
+                            widget.config(bg="#f0f8ff")
+                    
+                def on_leave(event):
+                    frame.config(relief=tk.RAISED, bd=2, bg="#ffffff")
+                    for widget in widgets:
+                        if hasattr(widget, 'config'):
+                            widget.config(bg="#ffffff")
+                    
+                def on_click(event):
+                    frame.config(relief=tk.SUNKEN, bd=2, bg="#e6f3ff")
+                    # Reset after a short delay
+                    frame.after(100, lambda: frame.config(relief=tk.RAISED, bd=2, bg="#ffffff"))
+                    
+                # Bind events to frame and all clickable widgets
+                all_widgets = [frame] + widgets
+                for widget in all_widgets:
+                    widget.bind("<Enter>", on_enter)
+                    widget.bind("<Leave>", on_leave)
+                    widget.bind("<Button-1>", on_click)
+                    
+            create_hover_effect(op_frame, clickable_widgets, text)
+            # Store the main clickable element for reference
+            self.operation_buttons.append(clickable_widgets[0] if clickable_widgets else op_frame)
 
-            btn = tk.Button(
-                op_frame,
-                text=text,
-                width=18,
-                height=2,
-                command=command,
-                relief=tk.RAISED,
-                bd=2,
-                font=(FONT, 10),
-                bg="#f4f6fb",
-                fg="#222",
-                activebackground="#e0e0e0",
-                activeforeground="#0078d7",
-                highlightbackground="#00b386",
-                highlightthickness=2,
-                cursor="hand2"
-            )
-            btn.pack(fill='x', pady=(0, 4))
-            # Add hover effect
-            def on_enter(e, b=btn):
-                b.config(bg="#e9ecef")
-            def on_leave(e, b=btn):
-                b.config(bg="#f4f6fb")
-            btn.bind("<Enter>", on_enter)
-            btn.bind("<Leave>", on_leave)
-            self.operation_buttons.append(btn)
-
-        # Configure grid weights for modern layout
-        for i in range(3):
-            group_frame.grid_columnconfigure(i, weight=1)
-        for i in range(2):
-            group_frame.grid_rowconfigure(i, weight=1)
+        # Configure grid weights for 2-column layout (3 rows for 6 operations)
+        for i in range(2):  # 2 columns
+            operations_container.grid_columnconfigure(i, weight=1)
+        for i in range(3):  # 3 rows
+            operations_container.grid_rowconfigure(i, weight=1)
 
         # Apply ttk style for modern look
         style = ttk.Style()
@@ -421,7 +504,7 @@ class SafePDFApp:
             text="Select an operation first to see available settings",
             style="TLabel",
             font=(FONT, 12, "bold"),
-            foreground="#0078d7"
+            foreground="#b62020"
         )
         self.settings_label.pack(expand=True, pady=(0, 8))
 
@@ -665,31 +748,37 @@ class SafePDFApp:
         self.selected_operation = "compress"
         self.highlight_selected_operation(0)
         self.update_settings_for_operation()
-        
+        self.notebook.select(self.current_tab + 1)  # Auto-advance to next tab
+
     def select_split(self):
         self.selected_operation = "split"
         self.highlight_selected_operation(1)
         self.update_settings_for_operation()
-        
+        self.notebook.select(self.current_tab + 1)  # Auto-advance to next tab
+
     def select_merge(self):
         self.selected_operation = "merge"
         self.highlight_selected_operation(2)
         self.update_settings_for_operation()
-        
+        self.notebook.select(self.current_tab + 1)  # Auto-advance to next tab
+
     def select_to_jpg(self):
         self.selected_operation = "to_jpg"
         self.highlight_selected_operation(3)
         self.update_settings_for_operation()
-        
+        self.notebook.select(self.current_tab + 1)  # Auto-advance to next tab
+
     def select_rotate(self):
         self.selected_operation = "rotate"
         self.highlight_selected_operation(4)
         self.update_settings_for_operation()
-        
+        self.notebook.select(self.current_tab + 1)  # Auto-advance to next tab
+
     def select_repair(self):
         self.selected_operation = "repair"
         self.highlight_selected_operation(5)
         self.update_settings_for_operation()
+        self.notebook.select(self.current_tab + 1)  # Auto-advance to next tab
         
     def highlight_selected_operation(self, selected_index):
         """Highlight the selected operation button"""
@@ -733,9 +822,7 @@ class SafePDFApp:
         
         # Add output path selection
         self.create_output_path_selection(is_directory=False)
-        
 
-        
     def create_rotate_settings(self):
         """Create settings for PDF rotation"""
         ttk.Label(self.settings_container, text="Rotation Angle:").pack(anchor='w', pady=5)
