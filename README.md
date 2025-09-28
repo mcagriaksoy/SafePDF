@@ -1,8 +1,10 @@
-# SafePDF - Tkinter Version
+# SafePDF - Privacy-First PDF Toolkit
 
-A Python Tkinter-based PDF manipulation tool that provides various PDF operations including compression, splitting, merging, conversion to images, rotation, and repair.
+SafePDF is a powerful, privacy-focused PDF manipulation tool designed to handle your documents entirely offline. Whether you're compressing large files, splitting pages, merging multiple PDFs, converting to images, rotating pages, or repairing corrupted documents—SafePDF does it all locally, ensuring your sensitive data never leaves your device.
 
-<a href="https://www.buymeacoffee.com/mcagriaksoy"><img src="https://img.shields.io/badge/-buy_me_a%C2%A0coffee-gray?logo=buy-me-a-coffee" alt="Donate"></a>
+## Why SafePDF?
+
+Unlike cloud-based tools, SafePDF performs all operations directly on your device, eliminating the risk of data exposure. It's ideal for professionals, legal teams, healthcare providers, and anyone who values document confidentiality.
 
 ## Features
 
@@ -17,6 +19,12 @@ A Python Tkinter-based PDF manipulation tool that provides various PDF operation
 - **User-friendly Interface**: Intuitive tabbed interface similar to the Qt version
 
 ![Main Window](img/UI_v1.jpg)
+![Operations Window](img/UI_v1_p2.jpg)
+
+
+## Donation
+
+<a href="https://www.buymeacoffee.com/mcagriaksoy"><img src="https://img.shields.io/badge/-buy_me_a%C2%A0coffee-gray?logo=buy-me-a-coffee" alt="Donate"></a>
 
 ## Installation
 

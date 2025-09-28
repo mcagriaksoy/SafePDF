@@ -4,11 +4,11 @@ Click on Next to start the process and choose what you want to do.
 
 📋 Process Steps:
 
-(1) • The start page of this application
-(2) • Selection of the source file  
-(3) • Selection of the operation you want to do
-(4) • Make additional settings
-(5) • See the results and save the changes
+(1) The start page of this application
+(2) Selection of the source file  
+(3) Selection of the operation you want to do
+(4) Make additional settings
+(5) See the results and save the changes
 
 ────────────────────────────────
 

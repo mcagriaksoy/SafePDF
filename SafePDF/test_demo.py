@@ -40,13 +40,7 @@ def test_imports():
     except ImportError as e:
         print(f"✗ pdf_operations import failed: {e}")
         return False
-    
-    try:
-        from icon_creator import create_simple_icon
-        print("✓ icon_creator imported successfully")
-    except ImportError as e:
-        print(f"⚠ icon_creator import failed: {e} (no custom icon)")
-    
+
     return True
 
 def test_pdf_dependencies():
