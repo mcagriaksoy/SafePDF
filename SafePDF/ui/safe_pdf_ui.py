@@ -69,6 +69,7 @@ class SafePDFUI:
         
         # Window state management
         self.is_minimized = False
+        self.is_fullscreen = False
         self.restore_geometry = None
         
         # Set up callbacks
@@ -84,8 +85,8 @@ class SafePDFUI:
     def setup_main_window(self):
         """Configure the main application window with modern design and custom title bar"""
         self.root.title("SafePDF - A tool for PDF Manipulation")
-        self.root.geometry("780x560")
-        self.root.minsize(780, 560)
+        self.root.geometry("780x570")
+        self.root.minsize(780, 570)
         self.root.configure(bg="#f4f6fb")
         
         # Remove the default title bar and window decorations
@@ -194,6 +195,23 @@ class SafePDFUI:
         )
         self.minimize_btn.pack(side='left', fill='y')
         
+        # Fullscreen/Maximize button
+        self.maximize_btn = tk.Button(
+            self.controls_frame,
+            text="□",
+            font=(FONT, 14, "bold"),
+            bg=RED_COLOR,
+            fg="#fff",
+            bd=0,
+            width=3,
+            height=1,
+            cursor="hand2",
+            activebackground="#a01818",
+            activeforeground="#fff",
+            command=self.toggle_fullscreen
+        )
+        self.maximize_btn.pack(side='left', fill='y')
+        
         # Close button
         self.close_btn = tk.Button(
             self.controls_frame,
@@ -213,7 +231,7 @@ class SafePDFUI:
         
         # Add hover effects for window control buttons
         self.setup_button_hover_effects()
-    
+
     def bind_drag_events(self, widget):
         """Bind drag events to a widget for window dragging"""
         widget.bind("<Button-1>", self.start_drag)
@@ -248,6 +266,12 @@ class SafePDFUI:
         def on_minimize_leave(event):
             self.minimize_btn.config(bg=RED_COLOR)
         
+        def on_maximize_enter(event):
+            self.maximize_btn.config(bg="#a01818")
+        
+        def on_maximize_leave(event):
+            self.maximize_btn.config(bg=RED_COLOR)
+        
         def on_close_enter(event):
             self.close_btn.config(bg="#d32f2f")
         
@@ -256,6 +280,8 @@ class SafePDFUI:
         
         self.minimize_btn.bind("<Enter>", on_minimize_enter)
         self.minimize_btn.bind("<Leave>", on_minimize_leave)
+        self.maximize_btn.bind("<Enter>", on_maximize_enter)
+        self.maximize_btn.bind("<Leave>", on_maximize_leave)
         self.close_btn.bind("<Enter>", on_close_enter)
         self.close_btn.bind("<Leave>", on_close_leave)
     
@@ -753,22 +779,52 @@ class SafePDFUI:
         settings_btn = ttk.Button(left_frame, text="Settings", command=self.show_settings, width=10)
         settings_btn.pack(side='left', padx=5)
         
+        # Add donation button
+        donate_btn = tk.Button(
+            left_frame,
+            text="☕ Buy Me a Coffee",
+            command=self.open_donation_link,
+            bg='#FF9691',
+            fg="#000",
+            font=(FONT, 9, "bold"),
+            bd=0,
+            padx=10,
+            pady=5,
+            cursor="hand2",
+            relief=tk.RAISED
+        )
+        donate_btn.pack(side='left', padx=5)
+        
+        # Add hover effect for donation button
+        def on_donate_enter(event):
+            donate_btn.config(bg="#FF9691")
+        
+        def on_donate_leave(event):
+            donate_btn.config(bg="#FF9500")
+        
+        donate_btn.bind("<Enter>", on_donate_enter)
+        donate_btn.bind("<Leave>", on_donate_leave)
+        
         # Center spacer
         center_frame = ttk.Frame(control_frame)
         center_frame.pack(side='left', expand=True, fill='x')
         
-        # Right side buttons
+        # Right side buttons - Navigation and Cancel
         right_frame = ttk.Frame(control_frame)
         right_frame.pack(side='right')
         
-        self.back_btn = ttk.Button(right_frame, text="← Back", command=self.previous_tab, width=10)
-        self.back_btn.pack(side='left', padx=5)
+        # Navigation buttons frame
+        nav_frame = ttk.Frame(right_frame)
+        nav_frame.pack(side='left')
         
-        self.next_btn = ttk.Button(right_frame, text="Next →", command=self.next_tab, width=10)
-        self.next_btn.pack(side='left', padx=5)
+        self.back_btn = ttk.Button(nav_frame, text="← Back", command=self.previous_tab, width=10, state='disabled')
+        self.back_btn.pack(side='left', padx=(0, 2))
+        
+        self.next_btn = ttk.Button(nav_frame, text="Next →", command=self.next_tab, width=10)
+        self.next_btn.pack(side='left', padx=2)
         
         self.cancel_btn = ttk.Button(right_frame, text="Cancel", command=self.cancel_operation, width=10)
-        self.cancel_btn.pack(side='left', padx=(5, 0))
+        self.cancel_btn.pack(side='left', padx=(10, 0))
         
         # Update button states
         self.update_navigation_buttons()
@@ -937,19 +993,107 @@ class SafePDFUI:
         operation_name = self.controller.selected_operation.replace('_', ' ').title()
         self.settings_label.config(text=f"Settings for {operation_name}")
     
-    # Settings creation methods (continuation in next part due to length)
     def create_compress_settings(self):
         """Create settings for PDF compression"""
         ttk.Label(self.settings_container, text="Compression Quality:").pack(anchor='w', pady=5)
-        quality_frame = ttk.Frame(self.settings_container)
-        quality_frame.pack(anchor='w', pady=5)
         
-        ttk.Radiobutton(quality_frame, text="Low (Smaller file)", variable=self.quality_var, value="low").pack(anchor='w')
-        ttk.Radiobutton(quality_frame, text="Medium (Balanced)", variable=self.quality_var, value="medium").pack(anchor='w')
-        ttk.Radiobutton(quality_frame, text="High (Better quality)", variable=self.quality_var, value="high").pack(anchor='w')
+        # Create quality frame with visual feedback
+        quality_frame = ttk.Frame(self.settings_container)
+        quality_frame.pack(anchor='w', pady=5, fill='x')
+        
+        # Left side - radio buttons
+        radio_frame = ttk.Frame(quality_frame)
+        radio_frame.pack(side='left', fill='y')
+        
+        ttk.Radiobutton(radio_frame, text="Low (Smaller file)", variable=self.quality_var, value="low", command=self.update_compression_visual).pack(anchor='w')
+        ttk.Radiobutton(radio_frame, text="Medium (Balanced)", variable=self.quality_var, value="medium", command=self.update_compression_visual).pack(anchor='w')
+        ttk.Radiobutton(radio_frame, text="High (Better quality)", variable=self.quality_var, value="high", command=self.update_compression_visual).pack(anchor='w')
+        
+        # Right side - visual indicator
+        self.compression_visual_frame = tk.Frame(quality_frame, bg="#ffffff", relief=tk.RIDGE, bd=1)
+        self.compression_visual_frame.pack(side='right', padx=(20, 0), fill='both', expand=True)
+        
+        # Create visual indicator label
+        self.compression_indicator = tk.Label(
+            self.compression_visual_frame,
+            text="📊 Compression Preview",
+            font=(FONT, 10, "bold"),
+            bg="#ffffff",
+            fg=RED_COLOR,
+            pady=10
+        )
+        self.compression_indicator.pack(fill='both', expand=True)
+        
+        # Initialize visual feedback
+        self.update_compression_visual()
         
         # Add output path selection
         self.create_output_path_selection(is_directory=False)
+
+    def update_compression_visual(self):
+        """Update visual feedback for compression quality"""
+        quality = self.quality_var.get()
+        
+        if quality == "low":
+            # Show maximum compression effect
+            self.compression_indicator.config(
+                text="🎯 Maximum Compression\n📉 Smallest file size\n⚠️ Lower quality",
+                fg="#ff6b35",
+                bg="#fff3f0"
+            )
+            self.compression_visual_frame.config(bg="#fff3f0")
+            
+            # Create animated compression effect
+            self.animate_compression("low")
+            
+        elif quality == "medium":
+            self.compression_indicator.config(
+                text="⚖️ Balanced Compression\n📊 Good size/quality ratio\n✅ Recommended",
+                fg="#00b386",
+                bg="#f0fff4"
+            )
+            self.compression_visual_frame.config(bg="#f0fff4")
+            self.animate_compression("medium")
+            
+        elif quality == "high":
+            self.compression_indicator.config(
+                text="🎯 Minimal Compression\n📈 Best quality\n📋 Larger file size",
+                fg="#0066cc",
+                bg="#f0f8ff"
+            )
+            self.compression_visual_frame.config(bg="#f0f8ff")
+            self.animate_compression("high")
+
+    def animate_compression(self, quality):
+        """Animate compression visual feedback"""
+        if not hasattr(self, 'compression_indicator'):
+            return
+            
+        # Create simple animation effect
+        if quality == "low":
+            # Simulate heavy compression with pulsing effect
+            colors = ["#ff6b35", "#ff8c5a", "#ff6b35"]
+            self.pulse_compression_indicator(colors, 0)
+        elif quality == "medium":
+            # Stable color for balanced
+            pass  # No animation for medium
+        elif quality == "high":
+            # Subtle effect for high quality
+            colors = ["#0066cc", "#3385d6", "#0066cc"]
+            self.pulse_compression_indicator(colors, 0)
+
+    def pulse_compression_indicator(self, colors, index):
+        """Create pulsing effect for compression indicator"""
+        if hasattr(self, 'compression_indicator') and self.compression_indicator.winfo_exists():
+            try:
+                current_color = colors[index % len(colors)]
+                self.compression_indicator.config(fg=current_color)
+                
+                # Schedule next color change
+                self.root.after(500, lambda: self.pulse_compression_indicator(colors, index + 1))
+            except tk.TclError:
+                # Widget was destroyed, stop animation
+                pass
 
     def create_rotate_settings(self):
         """Create settings for PDF rotation"""
@@ -1172,11 +1316,14 @@ class SafePDFUI:
         """Update navigation button states and label"""
         current_tab = self.controller.current_tab
         
+        # Hide/show back button based on current tab
         if current_tab == 0:
             self.back_btn.pack_forget()
         else:
+            # Show back button if it's not already visible
             if not self.back_btn.winfo_ismapped():
-                self.back_btn.pack(side='left', padx=5)
+                self.back_btn.pack(side='left', padx=(0, 2), before=self.next_btn)
+            self.back_btn.config(state='normal')
         
         # If on settings tab, change Next to Execute
         if current_tab == 3:
@@ -1188,7 +1335,7 @@ class SafePDFUI:
             self.next_btn.config(text="Next →", state='normal')
         else:
             self.next_btn.config(state='disabled')
-    
+
     def execute_operation(self):
         """Execute the selected PDF operation"""
         if not self.controller.selected_file or not self.controller.selected_operation:
@@ -1341,3 +1488,32 @@ For more information, visit our GitHub repository."""
                     messagebox.showinfo("Saved", f"Results saved to {dest_dir}")
         else:
             messagebox.showwarning("Warning", "No results to save!")
+    
+    def toggle_fullscreen(self):
+        """Toggle fullscreen mode"""
+        if not self.is_fullscreen:
+            # Store current geometry and enter fullscreen
+            self.restore_geometry = self.root.geometry()
+            
+            # Get screen dimensions
+            screen_width = self.root.winfo_screenwidth()
+            screen_height = self.root.winfo_screenheight()
+            
+            # Set fullscreen geometry
+            self.root.geometry(f"{screen_width}x{screen_height}+0+0")
+            self.maximize_btn.config(text="❐")  # Change to restore icon
+            self.is_fullscreen = True
+        else:
+            # Restore original size
+            if self.restore_geometry:
+                self.root.geometry(self.restore_geometry)
+            else:
+                self.root.geometry("780x560")
+                self.center_window()
+            
+            self.maximize_btn.config(text="□")  # Change back to maximize icon
+            self.is_fullscreen = False
+
+    def open_donation_link(self):
+        """Open the Buy Me a Coffee donation link"""
+        open_url("https://www.buymeacoffee.com/mcagriaksoy")

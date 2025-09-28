@@ -10,6 +10,12 @@ from typing import List, Optional, Tuple
 import tempfile
 
 try:
+    from tkinter import messagebox, Toplevel, Label, Button
+    import tkinter as tk
+except ImportError:
+    messagebox = Toplevel = Label = Button = tk = None
+
+try:
     from PyPDF2 import PdfReader, PdfWriter
     from PyPDF2.errors import PdfReadError
 except ImportError:
@@ -143,9 +149,15 @@ class PDFOperations:
                 compressed_size = os.path.getsize(output_path)
                 compression_ratio = (1 - compressed_size/original_size) * 100
                 
-                return True, f"PDF compressed successfully. Quality: {quality}. Size reduced by {compression_ratio:.1f}%"
-            else:
-                return False, "Compression completed but output file is invalid"
+                # Check if compression actually reduced size
+                if compression_ratio > 0:
+                    return True, f"PDF compressed successfully. Quality: {quality}. Size reduced by {compression_ratio:.1f}%"
+                else:
+                    # Show custom popup with compression error gif
+                    self._show_compression_error_popup()
+                    return False, "No size reduction achieved. Please check following instructions."
+            
+            return False, "Compression completed but output file is invalid"
             
         except Exception as e:
             return False, f"Compression failed: {str(e)}"
@@ -454,3 +466,87 @@ class PDFOperations:
                 
         except Exception as e:
             return {"error": str(e)}
+        
+    def _show_compression_error_popup(self):
+        """
+        Show a custom popup with compression error gif when no compression is achieved
+        """
+        try:
+            if not tk or not Toplevel or not Image:
+                return
+            
+            # Create popup window
+            popup = Toplevel()
+            popup.title("Compression Info")
+            popup.geometry("550x400")
+            popup.resizable(False, False)
+            # Disable menu bar
+            popup.overrideredirect(False)
+            
+            # Center the window
+            popup.transient()
+            popup.grab_set()
+            
+            # Load and display the gif
+            gif_path = os.path.join("assets", "compression_err.gif")
+            if os.path.exists(gif_path):
+                try:
+                    # Load the GIF and handle animation
+                    gif_image = Image.open(gif_path)
+                    frames = []
+                    
+                    try:
+                        # Extract all frames from the GIF
+                        while True:
+                            frames.append(ImageTk.PhotoImage(gif_image.copy()))
+                            gif_image.seek(gif_image.tell() + 1)
+                    except EOFError:
+                        pass  # End of frames
+                    
+                    # Display animated GIF
+                    img_label = Label(popup)
+                    img_label.pack(pady=10)
+                    
+                    def animate_gif(frame_index=0):
+                        if frames:
+                            img_label.config(image=frames[frame_index])
+                            popup.after(100, animate_gif, (frame_index + 1) % len(frames))
+                    
+                    animate_gif()
+                    
+                except Exception:
+                    # If gif loading fails, show text instead
+                    Label(popup, text="🔧 Compression Info", font=("Arial", 16, "bold")).pack(pady=10)
+            else:
+                # If gif file doesn't exist, show icon
+                Label(popup, text="🔧 Compression Info", font=("Arial", 16, "bold")).pack(pady=10)
+            
+            # Info message with better formatting
+            info_text = (
+                "Compression completed but no size reduction detected.\n"
+                "This file has already been optimized or contains\n"
+                "elements that cannot be compressed further.\n"
+                "If you need further compression, consider using the\n"
+                "'Microsoft Print to PDF' option from the print dialog."
+            )
+            
+            Label(popup, text=info_text, justify="center", wraplength=400, 
+                  font=("Arial", 10), padx=20, pady=10).pack(pady=10)
+            
+            # OK button
+            Button(popup, text="OK", command=popup.destroy, width=10, 
+                   font=("Arial", 10)).pack(pady=15)
+            
+            # Center the popup on screen
+            popup.update_idletasks()
+            x = (popup.winfo_screenwidth() // 2) - (popup.winfo_width() // 2)
+            y = (popup.winfo_screenheight() // 2) - (popup.winfo_height() // 2)
+            popup.geometry(f"+{x}+{y}")
+            
+        except Exception as e:
+            # Fallback to simple messagebox if custom popup fails
+            if messagebox:
+                messagebox.showinfo("Compression Info", 
+                    "Compression completed but no size reduction detected.\n"
+                    "This file has already been optimized or contains elements that cannot be compressed further.\n"
+                    "If you need further compression, consider using the 'Microsoft Print to PDF' option from the print dialog.")
