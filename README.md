@@ -1,4 +1,10 @@
-# SafePDF - Privacy-First PDF Toolkit
+## Privacy-First PDF Toolkit
+[![mcagriaksoy - SafePDF](https://img.shields.io/static/v1?label=mcagriaksoy&message=SafePDF&color=red&logo=github)](https://github.com/mcagriaksoy/SafePDF "Go to GitHub repo")
+[![stars - SafePDF](https://img.shields.io/github/stars/mcagriaksoy/SafePDF?style=social)](https://github.com/mcagriaksoy/SafePDF)
+[![forks - SafePDF](https://img.shields.io/github/forks/mcagriaksoy/SafePDF?style=social)](https://github.com/mcagriaksoy/SafePDF)
+[![GitHub release](https://img.shields.io/github/release/mcagriaksoy/SafePDF?include_prereleases=&sort=semver&color=red)](https://github.com/mcagriaksoy/SafePDF/releases/)
+[![License](https://img.shields.io/badge/License-GPL--3.0--1-red)](#license)
+[![issues - SafePDF](https://img.shields.io/github/issues/mcagriaksoy/SafePDF)](https://github.com/mcagriaksoy/SafePDF/issues)
 
 SafePDF is a powerful, privacy-focused PDF manipulation tool designed to handle your documents entirely offline. Whether you're compressing large files, splitting pages, merging multiple PDFs, converting to images, rotating pages, or repairing corrupted documents—SafePDF does it all locally, ensuring your sensitive data never leaves your device.
 
@@ -21,6 +27,19 @@ Unlike cloud-based tools, SafePDF performs all operations directly on your devic
 ![Main Window](img/UI_v1.jpg)
 ![Operations Window](img/UI_v1_p2.jpg)
 
+## Download URL
+<a href="https://github.com/mcagriaksoy/SafePDF/generate](https://github.com/mcagriaksoy/SafePDF/releases/" download>
+  <img src="https://img.shields.io/badge/Download-SafePDF_win64_x86.zip-blue?style=for-the-badge" alt="Download SafePDF_win64_x86.zip">
+</a>
+
+## Documentation
+
+[![View site - GH Pages](https://img.shields.io/badge/View_site-GH_Pages-2ea44f?style=for-the-badge)](https://mcagriaksoy.github.io/SafePDF/)
+[![view - Documentation](https://img.shields.io/badge/view-Documentation-blue?style=for-the-badge)](/docs/ "Go to project documentation")
+
+## License
+
+Released under [GPL-3.0-1](/LICENSE) by [@mcagriaksoy](https://github.com/mcagriaksoy).
 
 ## Donation
 
@@ -173,10 +192,6 @@ The application includes comprehensive error handling:
 2. Create settings UI in `SafePDFApp.update_settings_for_operation()`
 3. Add operation button in `create_operation_tab()`
 4. Handle operation execution in `_run_operation_thread()`
-
-## License
-
-This project is part of the SafePDF suite by mcagriaksoy - 2025
 
 ## Contributing
 
