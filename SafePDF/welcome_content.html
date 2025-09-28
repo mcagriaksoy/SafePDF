@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafePDF Welcome</title>
+    <style>
+        body {
+            font-family: 'Calibri', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #b62020;
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+            border-bottom: 2px solid #b62020;
+            padding-bottom: 10px;
+        }
+        .intro {
+            font-size: 16px;
+            margin-bottom: 25px;
+            color: #555;
+            text-align: center;
+            font-weight: 500;
+        }
+        .steps-section {
+            margin-bottom: 30px;
+        }
+        .steps-title {
+            color: #b62020;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .step-item {
+            display: flex;
+            margin-bottom: 12px;
+            padding: 10px;
+            background: #f4f6fb;
+            border-radius: 5px;
+            border-left: 4px solid #00b386;
+        }
+        .step-number {
+            color: #b62020;
+            font-weight: bold;
+            margin-right: 15px;
+            min-width: 25px;
+        }
+        .step-description {
+            color: #333;
+            flex: 1;
+        }
+        .divider {
+            border-top: 1px solid #ddd;
+            margin: 30px 0;
+        }
+        .software-info {
+            background: #e8f5e8;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #00b386;
+        }
+        .software-title {
+            color: #b62020;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .version {
+            color: #00b386;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .update-link {
+            color: #27bf73;
+            text-decoration: underline;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .update-link:hover {
+            color: #1a8a56;
+        }
+        .author {
+            color: #666;
+            font-style: italic;
+            margin-top: 10px;
+        }
+        .highlight {
+            background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome</h1>
+        
+        <p class="intro">
+            Click on <span class="highlight">Next</span> to start the process and choose what you want to do.
+        </p>
+        
+        <div class="steps-section">
+            <div class="steps-title">Process Steps</div>
+            
+            <div class="step-item">
+                <div class="step-number">(1)</div>
+                <div class="step-description">The start page of this application</div>
+            </div>
+            
+            <div class="step-item">
+                <div class="step-number">(2)</div>
+                <div class="step-description">Selection of the source file</div>
+            </div>
+            
+            <div class="step-item">
+                <div class="step-number">(3)</div>
+                <div class="step-description">Selection of the operation you want to do</div>
+            </div>
+            
+            <div class="step-item">
+                <div class="step-number">(4)</div>
+                <div class="step-description">Make additional settings</div>
+            </div>
+            
+            <div class="step-item">
+                <div class="step-number">(5)</div>
+                <div class="step-description">See the results and save the changes</div>
+            </div>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <div class="software-info">
+            <div class="software-title">Software Information</div>
+            <div class="version">v1.0.0</div>
+            <div><span class="update-link" onclick="checkUpdates()">Check for Updates</span></div>
+            <div class="author">by mcagriaksoy - 2025</div>
+        </div>
+    </div>
+    
+    <script>
+        function checkUpdates() {
+            // This would normally open the GitHub repository or check for updates
+            window.open('https://github.com/mcagriaksoy/SafePDF', '_blank');
+        }
+    </script>
+</body>
+</html>
