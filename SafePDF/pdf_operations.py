@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 from typing import List, Optional, Tuple
 import tempfile
+import io
 
 try:
     from tkinter import messagebox, Toplevel, Label, Button
@@ -87,8 +88,8 @@ class PDFOperations:
         try:
             if not PdfReader or not PdfWriter:
                 return False, "PyPDF2/pypdf not available"
-                
-            self.update_progress(10)
+            
+            self.update_progress(5)
             
             # Validate input file
             if not os.path.exists(input_path):
@@ -97,67 +98,155 @@ class PDFOperations:
             if not self.validate_pdf(input_path):
                 return False, "Input file is not a valid PDF"
             
-            # Read the PDF
+            # Prefer PyMuPDF approach for effective compression (image re-encoding)
+            if fitz:
+                # Map quality to dpi and jpeg quality
+                if quality == "low":
+                    dpi = 100
+                    jpeg_q = 40
+                elif quality == "high":
+                    dpi = 220
+                    jpeg_q = 85
+                else:  # medium
+                    dpi = 150
+                    jpeg_q = 60
+                
+                doc = fitz.open(input_path)
+                total_pages = len(doc)
+                if total_pages == 0:
+                    return False, "Input PDF has no pages"
+                
+                self.update_progress(15)
+                
+                new_doc = fitz.open()  # empty document to populate with images
+                for i in range(total_pages):
+                    page = doc.load_page(i)
+                    # render page at chosen dpi
+                    mat = fitz.Matrix(dpi / 72.0, dpi / 72.0)
+                    pix = page.get_pixmap(matrix=mat, alpha=False)
+                    
+                    # Try to produce JPEG bytes for good compression
+                    img_bytes = None
+                    if Image is not None:
+                        try:
+                            mode = "RGB" if pix.n < 4 else "RGBA"
+                            img = Image.frombytes(mode, (pix.width, pix.height), pix.samples)
+                            buf = io.BytesIO()
+                            img.save(buf, format="JPEG", quality=jpeg_q, optimize=True)
+                            img_bytes = buf.getvalue()
+                        except Exception:
+                            img_bytes = None
+                    # Fallback to Pixmap's PNG bytes if PIL not available or failed
+                    if img_bytes is None:
+                        try:
+                            # PyMuPDF provides getPNGData() for pixmap
+                            img_bytes = pix.getPNGData()
+                        except Exception:
+                            # As last resort, use raw pixmap bytes (may be large)
+                            try:
+                                img_bytes = pix.tobytes()
+                            except Exception:
+                                img_bytes = None
+                    
+                    # compute page size in points (1 point = 1/72 inch)
+                    width_pts = (pix.width * 72.0) / dpi
+                    height_pts = (pix.height * 72.0) / dpi
+                    
+                    page_rect = fitz.Rect(0, 0, width_pts, height_pts)
+                    new_page = new_doc.new_page(width=width_pts, height=height_pts)
+                    
+                    if img_bytes:
+                        try:
+                            new_page.insert_image(page_rect, stream=img_bytes, keep_proportion=True)
+                        except Exception:
+                            # if inserting stream fails, try writing a temp image file and insert by filename
+                            try:
+                                tmpf = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
+                                tmpf.write(img_bytes)
+                                tmpf.close()
+                                new_page.insert_image(page_rect, filename=tmpf.name, keep_proportion=True)
+                                os.unlink(tmpf.name)
+                            except Exception:
+                                # if even that fails, skip page (should be rare)
+                                pass
+                    
+                    self.update_progress(15 + (75 * i // total_pages))
+                
+                # Ensure output directory exists
+                os.makedirs(os.path.dirname(output_path), exist_ok=True)
+                
+                # Save new PDF (deflate/garbage options to reduce size)
+                try:
+                    new_doc.save(output_path, deflate=True, garbage=4)
+                except TypeError:
+                    # Older PyMuPDF may not accept those kwargs
+                    new_doc.save(output_path)
+                finally:
+                    new_doc.close()
+                    doc.close()
+                
+                self.update_progress(100)
+                
+                # verify and compare sizes
+                if os.path.exists(output_path) and self.validate_pdf(output_path):
+                    original_size = os.path.getsize(input_path)
+                    compressed_size = os.path.getsize(output_path)
+                    
+                    # Guard against zero-size original file
+                    if original_size == 0:
+                        return False, "Original file size is zero. Cannot calculate compression."
+                    
+                    if compressed_size < original_size:
+                        compression_ratio = (1 - (compressed_size / original_size)) * 100
+                        return True, f"PDF compressed successfully. Quality: {quality}. Size reduced by {abs(compression_ratio):.1f}%"
+                    elif compressed_size == original_size:
+                        self._show_compression_error_popup()
+                        return False, "No size reduction achieved. Please try a different quality or method."
+                    else:
+                        increase_pct = ((compressed_size / original_size) - 1) * 100
+                        self._show_compression_error_popup()
+                        return False, f"Compression increased file size by {increase_pct:.1f}%. Try a different quality."
+                
+                return False, "Compression completed but output file is invalid"
+            
+            # Fallback: attempt in-place stream compression using PdfWriter (may not always reduce size)
+            # The existing writer-based approach is retained as fallback to avoid removing functionality.
+            # Minimal fallback implementation:
+            self.update_progress(10)
             reader = PdfReader(input_path)
             writer = PdfWriter()
-            
-            self.update_progress(30)
-            
-            # Copy pages with compression
             total_pages = len(reader.pages)
             for i, page in enumerate(reader.pages):
-                # Create a new page with compression
-                new_page = page
-                
-                # Apply compression based on quality
-                if quality == "low":
-                    new_page.compress_content_streams()
-                    # Scale down the page for more compression
-                    try:
-                        new_page.scale(sx=0.7, sy=0.7)
-                    except:
-                        # Fallback if scale method has different parameters
-                        pass
-                elif quality == "medium":
-                    new_page.compress_content_streams()
-                    # Scale down slightly
-                    try:
-                        new_page.scale(sx=0.85, sy=0.85)
-                    except:
-                        # Fallback if scale method has different parameters
-                        pass
-                else:  # high
-                    new_page.compress_content_streams()
-                
-                writer.add_page(new_page)
-                self.update_progress(30 + (50 * i // total_pages))
-                
-            self.update_progress(90)
+                try:
+                    page.compress_content_streams()
+                except Exception:
+                    pass
+                writer.add_page(page)
+                self.update_progress(10 + (80 * i // max(1, total_pages)))
             
-            # Ensure output directory exists
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
-            
-            # Write compressed PDF
             with open(output_path, 'wb') as output_file:
                 writer.write(output_file)
-                
             self.update_progress(100)
             
-            # Verify the output file is valid
+            # Compare sizes and warn if increased
             if os.path.exists(output_path) and self.validate_pdf(output_path):
                 original_size = os.path.getsize(input_path)
                 compressed_size = os.path.getsize(output_path)
-                compression_ratio = (1 - compressed_size/original_size) * 100
-                
-                # Check if compression actually reduced size
-                if compression_ratio > 0:
-                    return True, f"PDF compressed successfully. Quality: {quality}. Size reduced by {compression_ratio:.1f}%"
-                else:
-                    # Show custom popup with compression error gif
+                if original_size == 0:
+                    return False, "Original file size is zero. Cannot calculate compression."
+                if compressed_size < original_size:
+                    compression_ratio = (1 - (compressed_size / original_size)) * 100
+                    return True, f"PDF compressed successfully (fallback). Quality: {quality}. Size reduced by {abs(compression_ratio):.1f}%"
+                elif compressed_size == original_size:
                     self._show_compression_error_popup()
-                    return False, "No size reduction achieved. Please check following instructions."
+                    return False, "No size reduction achieved using fallback method."
+                else:
+                    increase_pct = ((compressed_size / original_size) - 1) * 100
+                    self._show_compression_error_popup()
+                    return False, f"Fallback compression increased file size by {increase_pct:.1f}%. Try different settings."
             
-            return False, "Compression completed but output file is invalid"
+            return False, "Fallback compression completed but output file is invalid"
             
         except Exception as e:
             return False, f"Compression failed: {str(e)}"
