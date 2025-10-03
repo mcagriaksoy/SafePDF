@@ -1,41 +1,52 @@
 """
-SafePDF UI - User Interface Components
-v1.0.0 by mcagriaksoy - 2025
-
-This module handles all UI-related functionality including window setup,
-tab creation, widget management, and event handling.
+SafePDF UI - Optimized User Interface Components
 """
 
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox, scrolledtext
-from tkinterdnd2 import DND_FILES, TkinterDnD
+from tkinter import ttk, filedialog, messagebox
 import os
-import sys
 from webbrowser import open as open_url
-from PIL import Image, ImageTk
 from subprocess import run as subprocess_run
 from platform import system as platform_system
+
+# Lazy imports for optional components
+def _get_tkinterdnd():
+    """Lazy load tkinterdnd2 only when needed"""
+    try:
+        from tkinterdnd2 import DND_FILES
+        return DND_FILES
+    except ImportError:
+        return None
+
+def _get_pil():
+    """Lazy load PIL only when needed"""
+    try:
+        from PIL import Image, ImageTk
+        return Image, ImageTk
+    except ImportError:
+        return None, None
 
 FONT = "Calibri"
 RED_COLOR = "#b62020"
 
 
 class SafePDFUI:
-    """UI class that manages all user interface components and styling"""
+    """Optimized UI class with minimal memory footprint"""
     
     def __init__(self, root, controller):
         self.root = root
         self.controller = controller
         
-        # UI components
+        # Lazy loaded components
+        self._pil_loaded = False
+        self._dnd_loaded = False
+        
+        # Essential UI components only
         self.notebook = None
         self.progress = None
         self.results_text = None
         self.file_label = None
         self.drop_label = None
-        self.save_btn = None
-        self.settings_label = None
-        self.settings_container = None
         
         # Tab frames
         self.welcome_frame = None
@@ -63,6 +74,9 @@ class SafePDFUI:
         self.merge_var = tk.BooleanVar(value=True)
         self.use_default_output = tk.BooleanVar(value=True)
         self.output_path_var = tk.StringVar()
+        # Application-level settings
+        self.language_var = tk.StringVar(value="English")
+        self.theme_var = tk.StringVar(value="system")  # options: system, light, dark
         
         # Window dragging variables
         self.drag_data = {"x": 0, "y": 0}
@@ -85,8 +99,8 @@ class SafePDFUI:
     def setup_main_window(self):
         """Configure the main application window with modern design and custom title bar"""
         self.root.title("SafePDF - A tool for PDF Manipulation")
-        self.root.geometry("780x570")
-        self.root.minsize(780, 570)
+        self.root.geometry("780x600")
+        self.root.minsize(780, 600)
         self.root.configure(bg="#f4f6fb")
         
         # Remove the default title bar and window decorations
@@ -162,7 +176,7 @@ class SafePDFUI:
         
         self.header_label = tk.Label(
             self.title_frame,
-            text="SafePDF",
+            text="SafePDF™",
             font=(FONT, 18, "bold"),
             bg=RED_COLOR,
             fg="#fff",
@@ -332,9 +346,8 @@ class SafePDFUI:
     
     def close_window(self):
         """Close the window with confirmation"""
-        if messagebox.askyesno("Exit SafePDF", "Are you sure you want to exit?"):
-            self.controller.cancel_operation()
-            self.root.quit()
+        self.controller.cancel_operation()
+        self.root.quit()
     
     def create_main_card(self):
         """Create the main card-like container"""
@@ -519,21 +532,46 @@ class SafePDFUI:
         self.file_label.pack(pady=(12, 0))
     
     def setup_drag_drop(self):
-        """Setup drag and drop functionality"""
-        try:
-            # Check if drop_label exists
-            if hasattr(self, 'drop_label') and self.drop_label:
-                # Enable drag and drop for the drop label
+        """Setup drag and drop with lazy loading"""
+        if self._dnd_loaded:
+            return
+            
+        DND_FILES = _get_tkinterdnd()
+        if DND_FILES and hasattr(self, 'drop_label') and self.drop_label:
+            try:
                 self.drop_label.drop_target_register(DND_FILES)
                 self.drop_label.dnd_bind('<<Drop>>', self.handle_drop)
                 self.drop_label.dnd_bind('<<DragEnter>>', self.on_drag_enter)
                 self.drop_label.dnd_bind('<<DragLeave>>', self.on_drag_leave)
-        except Exception as e:
-            # If tkinterdnd2 is not available, drag and drop won't work
+                self._dnd_loaded = True
+            except Exception:
+                pass
+    
+    def _load_operation_image(self, img_path: str):
+        """Load operation images with lazy PIL loading"""
+        if not self._pil_loaded:
+            Image, ImageTk = _get_pil()
+            if not Image or not ImageTk:
+                return None
+            self._pil_loaded = True
+        else:
+            Image, ImageTk = _get_pil()
+        
+        abs_img_path = os.path.join(os.path.dirname(__file__), "..", img_path)
+        try:
+            if os.path.exists(abs_img_path):
+                # Optimize image loading
+                img = Image.open(abs_img_path)
+                # Reduce size for memory efficiency
+                max_size = 80  # Reduced from 100
+                img.thumbnail((max_size, max_size), Image.LANCZOS)
+                return ImageTk.PhotoImage(img)
+        except Exception:
             pass
+        return None
     
     def create_operation_tab(self):
-        """Create the operation selection tab with larger clickable image buttons"""        
+        """Optimized operation tab with smaller images"""        
         # Modern group frame optimized for larger image buttons
         group_frame = tk.Frame(self.operation_frame, bg="#f9f9fa", relief=tk.FLAT)
         group_frame.pack(fill='both', expand=True, padx=0, pady=0)
@@ -552,44 +590,26 @@ class SafePDFUI:
         operations_container = tk.Frame(group_frame, bg="#f9f9fa")
         operations_container.pack(fill='both', expand=True)
 
-        # Operations with descriptions and image paths
+        # Operations with smaller, optimized images
         operations = [
             ("PDF Compress", "Reduce file size", self.select_compress, "assets/compress.png"),
-            ("PDF Split", "Separate pages", self.select_split, "assets/split.png"),
+            ("PDF Split", "Separate pages", self.select_split, "assets/split.png"), 
             ("PDF Merge", "Combine files", self.select_merge, "assets/merge.png"),
             ("PDF to JPG", "Convert to images", self.select_to_jpg, "assets/pdf2jpg.png"),
             ("PDF Rotate", "Rotate pages", self.select_rotate, "assets/rotate.png"),
             ("PDF Repair", "Fix corrupted files", self.select_repair, "assets/repair.png"),
         ]
-
+        
         self.operation_buttons = []
         self.operation_images = []
-
-        # Load operation images with larger size for better visibility
+        
         for i, (text, description, command, img_path) in enumerate(operations):
             row = i // 3
             col = i % 3
             tk_img = None
             
-            # Get absolute path to ensure proper loading
-            abs_img_path = os.path.join(os.path.dirname(__file__), "..", img_path)
-            
-            # Try to load the specified image with larger size (maintaining aspect ratio)
-            try:
-                if os.path.exists(abs_img_path):
-                    img = Image.open(abs_img_path)
-                    # Calculate new size maintaining aspect ratio
-                    original_width, original_height = img.size
-                    max_height = 100
-                    aspect_ratio = original_width / original_height
-                    new_height = min(max_height, original_height)
-                    new_width = int(new_height * aspect_ratio)
-                    
-                    img = img.resize((new_width, new_height), Image.LANCZOS)
-                    tk_img = ImageTk.PhotoImage(img)
-            except Exception as e:
-                print(f"Warning: Could not load image {img_path}: {e}")
-
+            # Load image with optimization
+            tk_img = self._load_operation_image(img_path)
             self.operation_images.append(tk_img)
 
             # Create clickable image button frame with shadow effect
@@ -746,23 +766,13 @@ class SafePDFUI:
             borderwidth=1,
             relief=tk.FLAT
         )
+        self.results_text.config(state=tk.DISABLED)
 
-        # Progress bar
-        self.progress = ttk.Progressbar(main_frame, mode='indeterminate', style="TProgressbar")
+        # Progress bar - initialize to 0
+        self.progress = ttk.Progressbar(main_frame, mode='determinate', style="TProgressbar", value=0)
 
         self.progress.pack(fill='x', pady=(0, 10))
         self.results_text.pack(fill='both', expand=True, pady=(0, 10))
-
-        # Save button
-        save_btn = ttk.Button(
-            main_frame,
-            text="Save Results",
-            command=self.save_results,
-            state=tk.DISABLED,
-            style="Accent.TButton"
-        )
-        save_btn.pack(pady=8)
-        self.save_btn = save_btn
     
     def create_bottom_controls(self):
         """Create bottom navigation and control buttons"""
@@ -1349,9 +1359,12 @@ class SafePDFUI:
         # Move to results tab
         self.notebook.select(4)  # Results tab
         
-        # Clear previous results
+        # Clear previous results and reset progress
+        self.progress.config(mode='determinate', value=0)
+        self.results_text.config(state=tk.NORMAL)
         self.results_text.delete('1.0', tk.END)
         self.results_text.insert('1.0', "Starting operation...\n")
+        self.results_text.config(state=tk.DISABLED)
         
         # Start progress animation
         self.progress.config(mode='indeterminate')
@@ -1398,6 +1411,8 @@ class SafePDFUI:
     def update_progress(self, value):
         """Update progress bar (callback from controller)"""
         if hasattr(self, 'progress'):
+            # Stop indeterminate mode and set to determinate with value
+            self.progress.stop()
             self.progress.config(mode='determinate', value=value)
             self.root.update_idletasks()
     
@@ -1408,15 +1423,12 @@ class SafePDFUI:
         self.progress.config(mode='determinate', value=100 if success else 0)
         
         # Update results text
+        self.results_text.config(state=tk.NORMAL)
         self.results_text.insert(tk.END, f"\nOperation completed!\n")
         self.results_text.insert(tk.END, f"Status: {'Success' if success else 'Failed'}\n")
         self.results_text.insert(tk.END, f"Details: {message}\n")
-        
-        if success and output_location:
-            self.results_text.insert(tk.END, f"Output: {output_location}\n")
-            self.save_btn.config(state='normal')
-        else:
-            self.save_btn.config(state='disabled')
+
+        self.results_text.config(state=tk.DISABLED)
         
         # Update navigation buttons to show "Open Output" if successful
         self.update_navigation_buttons()
@@ -1439,7 +1451,7 @@ class SafePDFUI:
         
     def show_help(self):
         """Show help dialog"""
-        help_text = """SafePDF Help
+        help_text = """SafePDF™ Help
 
 This application allows you to perform various PDF operations:
 
@@ -1451,16 +1463,71 @@ This application allows you to perform various PDF operations:
 For more information, visit our GitHub repository."""
         
         messagebox.showinfo("Help", help_text)
-        
+
     def show_settings(self):
-        """Show settings dialog"""
-        messagebox.showinfo("Settings", "Settings dialog will be implemented in future versions.")
-        
+        """Show application settings (language, theme) in a modal dialog."""
+        try:
+            dlg = tk.Toplevel(self.root)
+            dlg.title("Application Settings")
+            dlg.transient(self.root)
+            dlg.grab_set()
+            dlg.resizable(False, False)
+            dlg.geometry("360x240")
+            # Center the dialog
+            x = self.root.winfo_x() + (self.root.winfo_width() // 2) - (360 // 2)
+            y = self.root.winfo_y() + (self.root.winfo_height() // 2) - (240 // 2)
+            dlg.geometry(f"+{x}+{y}")
+            dlg.configure(bg="#f8f9fa")
+            # Hide the menu bar if any
+            dlg.overrideredirect(False)
+
+            # Language selection
+            ttk.Label(dlg, text="Language:", font=(FONT, 10, "bold")).pack(anchor='w', padx=12, pady=(12, 4))
+            lang_options = ["English"]
+            lang_menu = ttk.OptionMenu(dlg, self.language_var, self.language_var.get(), *lang_options)
+            lang_menu.pack(fill='x', padx=12)
+
+            # Theme selection
+            ttk.Label(dlg, text="Theme:", font=(FONT, 10, "bold")).pack(anchor='w', padx=12, pady=(12, 4))
+            theme_frame = ttk.Frame(dlg)
+            theme_frame.pack(anchor='w', padx=12)
+            ttk.Radiobutton(theme_frame, text="System", variable=self.theme_var, value="system").pack(side='left', padx=6)
+            ttk.Radiobutton(theme_frame, text="Light", variable=self.theme_var, value="light").pack(side='left', padx=6)
+            ttk.Radiobutton(theme_frame, text="Dark", variable=self.theme_var, value="dark").pack(side='left', padx=6)
+
+            # Buttons
+            btn_frame = ttk.Frame(dlg)
+            btn_frame.pack(fill='x', pady=18, padx=12)
+
+            def apply_settings():
+                settings = {"language": self.language_var.get(), "theme": self.theme_var.get()}
+                try:
+                    if hasattr(self.controller, "apply_settings"):
+                        self.controller.apply_settings(settings)
+                    elif hasattr(self.controller, "set_app_settings"):
+                        self.controller.set_app_settings(settings)
+                except Exception:
+                    pass
+
+            def on_ok():
+                apply_settings()
+                dlg.destroy()
+
+            def on_cancel():
+                dlg.destroy()
+
+            ttk.Button(btn_frame, text="OK", command=on_ok, style="Accent.TButton").pack(side='right', padx=6)
+            ttk.Button(btn_frame, text="Apply", command=apply_settings).pack(side='right', padx=6)
+            ttk.Button(btn_frame, text="Cancel", command=on_cancel).pack(side='right', padx=6)
+
+            dlg.wait_window()
+        except Exception as e:
+            messagebox.showerror("Settings Error", f"Could not open settings: {e}")
+    
     def cancel_operation(self):
         """Cancel current operation"""
-        if messagebox.askyesno("Cancel", "Are you sure you want to cancel?"):
-            self.controller.cancel_operation()
-            self.close_window()
+        self.controller.cancel_operation()
+        #self.close_window()
     
     def save_results(self):
         """Save operation results"""
@@ -1517,3 +1584,30 @@ For more information, visit our GitHub repository."""
     def open_donation_link(self):
         """Open the Buy Me a Coffee donation link"""
         open_url("https://www.buymeacoffee.com/mcagriaksoy")
+    
+    def apply_theme(self, theme: str):
+        """Optimized theme application"""
+        try:
+            style = ttk.Style()
+            
+            # Apply theme directly if available
+            if theme in self.available_themes:
+                style.theme_use(theme)
+                
+                # Apply minimal customizations only
+                try:
+                    # Keep essential custom styles
+                    style.configure("Accent.TButton", 
+                                  background="#00b386", 
+                                  foreground="#000000", 
+                                  font=(FONT, 10, "bold"))
+                    
+                    # Keep brand colors for tabs
+                    style.map("TNotebook.Tab",
+                            foreground=[("selected", RED_COLOR), ("active", RED_COLOR)])
+                except Exception:
+                    pass
+        except Exception:
+            pass
+    
+    # ...existing code... (remove heavy theme customization methods)

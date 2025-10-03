@@ -1,6 +1,6 @@
-# SafePDF - Tkinter Version
+# SafePDF™
 
-A Python Tkinter-based PDF manipulation tool that provides various PDF operations including compression, splitting, merging, conversion to images, rotation, and repair. SafePDF offers a clean, intuitive interface built entirely with Python's standard Tkinter library, making it lightweight and cross-platform compatible.
+A Python Tkinter-based PDF manipulation tool that provides various PDF operations including compression, splitting, merging, conversion to images, rotation, and repair. SafePDF™ offers a clean, intuitive interface built entirely with Python's standard Tkinter library, making it lightweight and cross-platform compatible.
 
 <a href="https://www.buymeacoffee.com/mcagriaksoy"><img src="https://img.shields.io/badge/-buy_me_a%C2%A0coffee-gray?logo=buy-me-a-coffee" alt="Donate"></a>
 
