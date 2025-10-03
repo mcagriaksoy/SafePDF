@@ -82,32 +82,23 @@ class SafePDFController:
         return True, ""
     
     def prepare_output_paths(self, custom_output_path=None, use_default=True):
-        """Prepare output paths based on operation and user preferences"""
-        output_path = None
-        output_dir = None
-        
+        """Optimized output path preparation"""
         if not use_default and custom_output_path:
             if self.selected_operation in ["split", "to_jpg"]:
-                output_dir = custom_output_path
+                return None, custom_output_path
             else:
-                output_path = custom_output_path
+                return custom_output_path, None
+        
+        # Default paths with minimal processing
+        if self.selected_operation in ["compress", "rotate", "repair"]:
+            base_name = os.path.splitext(self.selected_file)[0]
+            return f"{base_name}_{self.selected_operation}.pdf", None
         else:
-            # Use default paths
-            if self.selected_operation in ["compress", "rotate", "repair"]:
-                base_name = path.splitext(self.selected_file)[0]
-                suffix = f"_{self.selected_operation}"
-                output_path = f"{base_name}{suffix}.pdf"
-            else:
-                # Operations that create multiple files
-                base_dir = path.dirname(self.selected_file)
-                base_name = path.splitext(path.basename(self.selected_file))[0]
-                output_dir = path.join(base_dir, f"{base_name}_{self.selected_operation}")
-        
-        # Create output directory if needed
-        if output_dir and not path.exists(output_dir):
+            base_dir = os.path.dirname(self.selected_file)
+            base_name = os.path.splitext(os.path.basename(self.selected_file))[0]
+            output_dir = os.path.join(base_dir, f"{base_name}_{self.selected_operation}")
             os.makedirs(output_dir, exist_ok=True)
-        
-        return output_path, output_dir
+            return None, output_dir
     
     def execute_operation_async(self, output_path=None, output_dir=None):
         """Execute the selected operation asynchronously"""
@@ -180,15 +171,26 @@ class SafePDFController:
         self.operation_running = False
     
     def reset_state(self):
-        """Reset the application state"""
+        """Reset the application state completely"""
+        # Cancel any running operation first
+        self.cancel_operation()
+        
+        # Reset all state variables
         self.selected_file = None
         self.selected_operation = None
         self.operation_settings = {}
         self.operation_running = False
-        self.output_path = None
-        self.output_dir = None
         self.current_output = None
         self.current_tab = 0
+        
+        # Clear operation settings dictionary completely
+        self.operation_settings.clear()
+        
+        # Reset PDF operations handler (clears any cached data)
+        if hasattr(self.pdf_ops, '_fitz'):
+            self.pdf_ops._fitz = None
+        if hasattr(self.pdf_ops, '_imagetk'):
+            self.pdf_ops._imagetk = None
     
     def get_state_summary(self):
         """Get a summary of the current application state"""

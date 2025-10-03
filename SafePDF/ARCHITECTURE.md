@@ -1,8 +1,8 @@
-# SafePDF - Refactored Architecture
+# SafePDF™ - Refactored Architecture
 
 ## Project Structure
 
-The SafePDF application has been refactored to separate concerns between UI and business logic:
+The SafePDF™ application has been refactored to separate concerns between UI and business logic:
 
 ### Files and Directories:
 

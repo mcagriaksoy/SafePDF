@@ -1,41 +1,52 @@
 """
-SafePDF UI - User Interface Components
-v1.0.0 by mcagriaksoy - 2025
-
-This module handles all UI-related functionality including window setup,
-tab creation, widget management, and event handling.
+SafePDF UI - Optimized User Interface Components
 """
 
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox, scrolledtext
-from tkinterdnd2 import DND_FILES, TkinterDnD
+from tkinter import ttk, filedialog, messagebox
 import os
-import sys
 from webbrowser import open as open_url
-from PIL import Image, ImageTk
 from subprocess import run as subprocess_run
 from platform import system as platform_system
+
+# Lazy imports for optional components
+def _get_tkinterdnd():
+    """Lazy load tkinterdnd2 only when needed"""
+    try:
+        from tkinterdnd2 import DND_FILES
+        return DND_FILES
+    except ImportError:
+        return None
+
+def _get_pil():
+    """Lazy load PIL only when needed"""
+    try:
+        from PIL import Image, ImageTk
+        return Image, ImageTk
+    except ImportError:
+        return None, None
 
 FONT = "Calibri"
 RED_COLOR = "#b62020"
 
 
 class SafePDFUI:
-    """UI class that manages all user interface components and styling"""
+    """Optimized UI class with minimal memory footprint"""
     
     def __init__(self, root, controller):
         self.root = root
         self.controller = controller
         
-        # UI components
+        # Lazy loaded components
+        self._pil_loaded = False
+        self._dnd_loaded = False
+        
+        # Essential UI components only
         self.notebook = None
         self.progress = None
         self.results_text = None
         self.file_label = None
         self.drop_label = None
-        self.save_btn = None
-        self.settings_label = None
-        self.settings_container = None
         
         # Tab frames
         self.welcome_frame = None
@@ -63,6 +74,9 @@ class SafePDFUI:
         self.merge_var = tk.BooleanVar(value=True)
         self.use_default_output = tk.BooleanVar(value=True)
         self.output_path_var = tk.StringVar()
+        # Application-level settings
+        self.language_var = tk.StringVar(value="English")
+        self.theme_var = tk.StringVar(value="system")  # options: system, light, dark
         
         # Window dragging variables
         self.drag_data = {"x": 0, "y": 0}
@@ -71,6 +85,10 @@ class SafePDFUI:
         self.is_minimized = False
         self.is_fullscreen = False
         self.restore_geometry = None
+        
+        # Store icon for taskbar window
+        self.icon_path = None
+        self._find_icon()
         
         # Set up callbacks
         self.controller.set_ui_callbacks(
@@ -82,15 +100,58 @@ class SafePDFUI:
         self.setup_main_window()
         self.create_ui_components()
         
+        # Schedule taskbar fix after UI is fully loaded
+        self.root.after(100, self._ensure_taskbar_visibility)
+        
     def setup_main_window(self):
         """Configure the main application window with modern design and custom title bar"""
         self.root.title("SafePDF - A tool for PDF Manipulation")
-        self.root.geometry("780x570")
-        self.root.minsize(780, 570)
+        self.root.geometry("780x600")
+        self.root.minsize(780, 600)
         self.root.configure(bg="#f4f6fb")
         
-        # Remove the default title bar and window decorations
+        # IMPORTANT: First update the window to ensure it's created properly
+        self.root.update_idletasks()
+        
+        # NOW remove the default title bar FIRST
         self.root.overrideredirect(True)
+        
+        # Force window update
+        self.root.update_idletasks()
+        
+        # Ensure window appears in taskbar AFTER overrideredirect
+        try:
+            # Force taskbar visibility on Windows
+            if platform_system() == 'Windows':
+                # Use GWL_EXSTYLE to add WS_EX_APPWINDOW flag
+                import ctypes
+                GWL_EXSTYLE = -20
+                WS_EX_APPWINDOW = 0x00040000
+                WS_EX_TOOLWINDOW = 0x00000080
+                
+                # Get the actual window handle
+                hwnd = ctypes.windll.user32.GetParent(self.root.winfo_id())
+                if hwnd == 0:
+                    hwnd = self.root.winfo_id()
+                
+                # Get current style
+                style = ctypes.windll.user32.GetWindowLongW(hwnd, GWL_EXSTYLE)
+                # Add APPWINDOW, remove TOOLWINDOW
+                style = (style | WS_EX_APPWINDOW) & ~WS_EX_TOOLWINDOW
+                ctypes.windll.user32.SetWindowLongW(hwnd, GWL_EXSTYLE, style)
+                
+                # Force window to show in taskbar
+                SWP_FRAMECHANGED = 0x0020
+                SWP_NOMOVE = 0x0002
+                SWP_NOSIZE = 0x0001
+                SWP_NOZORDER = 0x0004
+                ctypes.windll.user32.SetWindowPos(hwnd, 0, 0, 0, 0, 0,
+                    SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER)
+        except Exception as e:
+            print(f"Could not set taskbar visibility: {e}")
+        
+        # Final update to apply changes
+        self.root.update_idletasks()
 
         # Apply ttk theme for modern look
         style = ttk.Style()
@@ -120,6 +181,66 @@ class SafePDFUI:
 
         # Center the window
         self.center_window()
+    
+    def _find_icon(self):
+        """Find and store the application icon path"""
+        try:
+            from pathlib import Path
+            base = Path(__file__).parent.parent
+            candidates = [
+                base / "assets" / "icon.ico",
+                base / "assets" / "icon.png",
+            ]
+            for c in candidates:
+                if c and c.exists():
+                    self.icon_path = str(c)
+                    break
+        except Exception:
+            pass
+    
+    def _ensure_taskbar_visibility(self):
+        """Force taskbar icon to appear after window is fully initialized"""
+        try:
+            if platform_system() == 'Windows':
+                import ctypes
+                
+                # Get window handle
+                hwnd = ctypes.windll.user32.GetParent(self.root.winfo_id())
+                if hwnd == 0:
+                    hwnd = self.root.winfo_id()
+                
+                # Windows API constants
+                GWL_EXSTYLE = -20
+                WS_EX_APPWINDOW = 0x00040000
+                WS_EX_TOOLWINDOW = 0x00000080
+                SW_HIDE = 0
+                SW_SHOW = 5
+                
+                # Get current style
+                style = ctypes.windll.user32.GetWindowLongW(hwnd, GWL_EXSTYLE)
+                
+                # Add APPWINDOW, remove TOOLWINDOW
+                new_style = (style | WS_EX_APPWINDOW) & ~WS_EX_TOOLWINDOW
+                ctypes.windll.user32.SetWindowLongW(hwnd, GWL_EXSTYLE, new_style)
+                
+                # Hide and show window to refresh taskbar
+                ctypes.windll.user32.ShowWindow(hwnd, SW_HIDE)
+                self.root.update_idletasks()
+                ctypes.windll.user32.ShowWindow(hwnd, SW_SHOW)
+                
+                # Force window position update to refresh taskbar
+                SWP_FRAMECHANGED = 0x0020
+                SWP_NOMOVE = 0x0002
+                SWP_NOSIZE = 0x0001
+                SWP_NOZORDER = 0x0004
+                SWP_SHOWWINDOW = 0x0040
+                ctypes.windll.user32.SetWindowPos(hwnd, 0, 0, 0, 0, 0,
+                    SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW)
+                
+                # Final update
+                self.root.update()
+        except Exception as e:
+            print(f"Could not ensure taskbar visibility: {e}")
     
     def center_window(self):
         """Center the window on screen"""
@@ -162,7 +283,7 @@ class SafePDFUI:
         
         self.header_label = tk.Label(
             self.title_frame,
-            text="SafePDF",
+            text="SafePDF™",
             font=(FONT, 18, "bold"),
             bg=RED_COLOR,
             fg="#fff",
@@ -288,36 +409,89 @@ class SafePDFUI:
     def minimize_window(self):
         """Minimize the window by hiding it and creating a taskbar entry"""
         if not self.is_minimized:
-            # Store current geometry
-            self.restore_geometry = self.root.geometry()
-            
-            # Hide the window
-            self.root.withdraw()
-            self.is_minimized = True
-            
-            # Create a small hidden window to maintain taskbar presence
-            self.create_taskbar_window()
+            try:
+                # Store current geometry
+                self.restore_geometry = self.root.geometry()
+                
+                # Mark as minimized first
+                self.is_minimized = True
+                
+                # Create taskbar window BEFORE hiding main window
+                self.create_taskbar_window()
+                
+                # Now hide the main window
+                self.root.withdraw()
+                
+            except Exception as e:
+                print(f"Error minimizing window: {e}")
+                self.is_minimized = False
     
     def create_taskbar_window(self):
         """Create a minimal window to maintain taskbar presence"""
-        self.taskbar_window = tk.Toplevel(self.root)
-        self.taskbar_window.title("SafePDF")
-        self.taskbar_window.geometry("1x1+0+0")  # Minimal size
-        self.taskbar_window.attributes('-topmost', False)
-        
-        # Make it appear minimized in taskbar
-        self.taskbar_window.iconify()
-        
-        # Bind restore event
-        self.taskbar_window.bind('<Map>', self.restore_window)
-        self.taskbar_window.protocol("WM_DELETE_WINDOW", self.close_window)
+        try:
+            self.taskbar_window = tk.Toplevel(self.root)
+            self.taskbar_window.title("SafePDF")
+            
+            # Apply icon to taskbar window BEFORE iconifying
+            if self.icon_path:
+                try:
+                    from pathlib import Path
+                    icon_path = Path(self.icon_path)
+                    if icon_path.suffix.lower() == '.ico':
+                        self.taskbar_window.iconbitmap(str(icon_path))
+                    else:
+                        img = tk.PhotoImage(file=str(icon_path))
+                        self.taskbar_window.iconphoto(False, img)
+                        # Keep reference to prevent garbage collection
+                        self.taskbar_window._icon_img = img
+                except Exception as e:
+                    print(f"Could not set taskbar window icon: {e}")
+            
+            # Set window size and position offscreen
+            self.taskbar_window.geometry("200x50+-32000+-32000")
+            
+            # Bind close event
+            self.taskbar_window.protocol("WM_DELETE_WINDOW", self.close_window)
+            
+            # Update to ensure window is ready
+            self.taskbar_window.update_idletasks()
+            
+            # Make it appear minimized in taskbar
+            self.taskbar_window.iconify()
+            
+            # NOW bind the restore event AFTER iconifying to avoid immediate trigger
+            # Use after() to delay binding slightly
+            self.taskbar_window.after(100, lambda: self.taskbar_window.bind('<Map>', self.on_taskbar_restore))
+            
+        except Exception as e:
+            print(f"Error creating taskbar window: {e}")
+            import traceback
+            traceback.print_exc()
+            self.is_minimized = False
+    
+    def on_taskbar_restore(self, event):
+        """Handle when user clicks on minimized taskbar icon"""
+        # Check if the window is being deiconified (restored from minimized state)
+        if self.is_minimized and hasattr(self, 'taskbar_window'):
+            try:
+                state = self.taskbar_window.state()
+                if state == 'normal':  # Window is being restored
+                    self.restore_window()
+            except Exception:
+                pass
     
     def restore_window(self, event=None):
         """Restore the minimized window"""
         if self.is_minimized:
-            # Destroy taskbar window
-            if hasattr(self, 'taskbar_window'):
-                self.taskbar_window.destroy()
+            # Prevent multiple triggers
+            self.is_minimized = False
+            
+            # Destroy taskbar window first
+            if hasattr(self, 'taskbar_window') and self.taskbar_window.winfo_exists():
+                try:
+                    self.taskbar_window.destroy()
+                except Exception:
+                    pass
             
             # Restore main window
             self.root.deiconify()
@@ -327,14 +501,12 @@ class SafePDFUI:
             # Bring to front
             self.root.lift()
             self.root.focus_force()
-            
-            self.is_minimized = False
+            self.root.update_idletasks()
     
     def close_window(self):
         """Close the window with confirmation"""
-        if messagebox.askyesno("Exit SafePDF", "Are you sure you want to exit?"):
-            self.controller.cancel_operation()
-            self.root.quit()
+        self.controller.cancel_operation()
+        self.root.quit()
     
     def create_main_card(self):
         """Create the main card-like container"""
@@ -519,21 +691,46 @@ class SafePDFUI:
         self.file_label.pack(pady=(12, 0))
     
     def setup_drag_drop(self):
-        """Setup drag and drop functionality"""
-        try:
-            # Check if drop_label exists
-            if hasattr(self, 'drop_label') and self.drop_label:
-                # Enable drag and drop for the drop label
+        """Setup drag and drop with lazy loading"""
+        if self._dnd_loaded:
+            return
+            
+        DND_FILES = _get_tkinterdnd()
+        if DND_FILES and hasattr(self, 'drop_label') and self.drop_label:
+            try:
                 self.drop_label.drop_target_register(DND_FILES)
                 self.drop_label.dnd_bind('<<Drop>>', self.handle_drop)
                 self.drop_label.dnd_bind('<<DragEnter>>', self.on_drag_enter)
                 self.drop_label.dnd_bind('<<DragLeave>>', self.on_drag_leave)
-        except Exception as e:
-            # If tkinterdnd2 is not available, drag and drop won't work
+                self._dnd_loaded = True
+            except Exception:
+                pass
+    
+    def _load_operation_image(self, img_path: str):
+        """Load operation images with lazy PIL loading"""
+        if not self._pil_loaded:
+            Image, ImageTk = _get_pil()
+            if not Image or not ImageTk:
+                return None
+            self._pil_loaded = True
+        else:
+            Image, ImageTk = _get_pil()
+        
+        abs_img_path = os.path.join(os.path.dirname(__file__), "..", img_path)
+        try:
+            if os.path.exists(abs_img_path):
+                # Optimize image loading
+                img = Image.open(abs_img_path)
+                # Reduce size for memory efficiency
+                max_size = 80  # Reduced from 100
+                img.thumbnail((max_size, max_size), Image.LANCZOS)
+                return ImageTk.PhotoImage(img)
+        except Exception:
             pass
+        return None
     
     def create_operation_tab(self):
-        """Create the operation selection tab with larger clickable image buttons"""        
+        """Optimized operation tab with smaller images"""        
         # Modern group frame optimized for larger image buttons
         group_frame = tk.Frame(self.operation_frame, bg="#f9f9fa", relief=tk.FLAT)
         group_frame.pack(fill='both', expand=True, padx=0, pady=0)
@@ -552,44 +749,26 @@ class SafePDFUI:
         operations_container = tk.Frame(group_frame, bg="#f9f9fa")
         operations_container.pack(fill='both', expand=True)
 
-        # Operations with descriptions and image paths
+        # Operations with smaller, optimized images
         operations = [
             ("PDF Compress", "Reduce file size", self.select_compress, "assets/compress.png"),
-            ("PDF Split", "Separate pages", self.select_split, "assets/split.png"),
+            ("PDF Split", "Separate pages", self.select_split, "assets/split.png"), 
             ("PDF Merge", "Combine files", self.select_merge, "assets/merge.png"),
             ("PDF to JPG", "Convert to images", self.select_to_jpg, "assets/pdf2jpg.png"),
             ("PDF Rotate", "Rotate pages", self.select_rotate, "assets/rotate.png"),
             ("PDF Repair", "Fix corrupted files", self.select_repair, "assets/repair.png"),
         ]
-
+        
         self.operation_buttons = []
         self.operation_images = []
-
-        # Load operation images with larger size for better visibility
+        
         for i, (text, description, command, img_path) in enumerate(operations):
             row = i // 3
             col = i % 3
             tk_img = None
             
-            # Get absolute path to ensure proper loading
-            abs_img_path = os.path.join(os.path.dirname(__file__), "..", img_path)
-            
-            # Try to load the specified image with larger size (maintaining aspect ratio)
-            try:
-                if os.path.exists(abs_img_path):
-                    img = Image.open(abs_img_path)
-                    # Calculate new size maintaining aspect ratio
-                    original_width, original_height = img.size
-                    max_height = 100
-                    aspect_ratio = original_width / original_height
-                    new_height = min(max_height, original_height)
-                    new_width = int(new_height * aspect_ratio)
-                    
-                    img = img.resize((new_width, new_height), Image.LANCZOS)
-                    tk_img = ImageTk.PhotoImage(img)
-            except Exception as e:
-                print(f"Warning: Could not load image {img_path}: {e}")
-
+            # Load image with optimization
+            tk_img = self._load_operation_image(img_path)
             self.operation_images.append(tk_img)
 
             # Create clickable image button frame with shadow effect
@@ -746,23 +925,13 @@ class SafePDFUI:
             borderwidth=1,
             relief=tk.FLAT
         )
+        self.results_text.config(state=tk.DISABLED)
 
-        # Progress bar
-        self.progress = ttk.Progressbar(main_frame, mode='indeterminate', style="TProgressbar")
+        # Progress bar - initialize to 0
+        self.progress = ttk.Progressbar(main_frame, mode='determinate', style="TProgressbar", value=0)
 
         self.progress.pack(fill='x', pady=(0, 10))
         self.results_text.pack(fill='both', expand=True, pady=(0, 10))
-
-        # Save button
-        save_btn = ttk.Button(
-            main_frame,
-            text="Save Results",
-            command=self.save_results,
-            state=tk.DISABLED,
-            style="Accent.TButton"
-        )
-        save_btn.pack(pady=8)
-        self.save_btn = save_btn
     
     def create_bottom_controls(self):
         """Create bottom navigation and control buttons"""
@@ -1261,7 +1430,7 @@ class SafePDFUI:
             if self.can_proceed_to_next():
                 self.execute_operation()
         # If on results tab (tab 4, index 4), open output file/folder
-        elif current_tab == 4:
+        elif current_tab == 4 and self.controller.current_output:
             self.open_output_file()
         elif current_tab < 4:
             if self.can_proceed_to_next():
@@ -1349,9 +1518,12 @@ class SafePDFUI:
         # Move to results tab
         self.notebook.select(4)  # Results tab
         
-        # Clear previous results
+        # Clear previous results and reset progress
+        self.progress.config(mode='determinate', value=0)
+        self.results_text.config(state=tk.NORMAL)
         self.results_text.delete('1.0', tk.END)
         self.results_text.insert('1.0', "Starting operation...\n")
+        self.results_text.config(state=tk.DISABLED)
         
         # Start progress animation
         self.progress.config(mode='indeterminate')
@@ -1398,6 +1570,8 @@ class SafePDFUI:
     def update_progress(self, value):
         """Update progress bar (callback from controller)"""
         if hasattr(self, 'progress'):
+            # Stop indeterminate mode and set to determinate with value
+            self.progress.stop()
             self.progress.config(mode='determinate', value=value)
             self.root.update_idletasks()
     
@@ -1408,15 +1582,12 @@ class SafePDFUI:
         self.progress.config(mode='determinate', value=100 if success else 0)
         
         # Update results text
+        self.results_text.config(state=tk.NORMAL)
         self.results_text.insert(tk.END, f"\nOperation completed!\n")
         self.results_text.insert(tk.END, f"Status: {'Success' if success else 'Failed'}\n")
         self.results_text.insert(tk.END, f"Details: {message}\n")
-        
-        if success and output_location:
-            self.results_text.insert(tk.END, f"Output: {output_location}\n")
-            self.save_btn.config(state='normal')
-        else:
-            self.save_btn.config(state='disabled')
+
+        self.results_text.config(state=tk.DISABLED)
         
         # Update navigation buttons to show "Open Output" if successful
         self.update_navigation_buttons()
@@ -1439,7 +1610,7 @@ class SafePDFUI:
         
     def show_help(self):
         """Show help dialog"""
-        help_text = """SafePDF Help
+        help_text = """SafePDF™ Help
 
 This application allows you to perform various PDF operations:
 
@@ -1451,16 +1622,71 @@ This application allows you to perform various PDF operations:
 For more information, visit our GitHub repository."""
         
         messagebox.showinfo("Help", help_text)
-        
+
     def show_settings(self):
-        """Show settings dialog"""
-        messagebox.showinfo("Settings", "Settings dialog will be implemented in future versions.")
-        
+        """Show application settings (language, theme) in a modal dialog."""
+        try:
+            dlg = tk.Toplevel(self.root)
+            dlg.title("Application Settings")
+            dlg.transient(self.root)
+            dlg.grab_set()
+            dlg.resizable(False, False)
+            dlg.geometry("360x240")
+            # Center the dialog
+            x = self.root.winfo_x() + (self.root.winfo_width() // 2) - (360 // 2)
+            y = self.root.winfo_y() + (self.root.winfo_height() // 2) - (240 // 2)
+            dlg.geometry(f"+{x}+{y}")
+            dlg.configure(bg="#f8f9fa")
+            # Hide the menu bar if any
+            dlg.overrideredirect(False)
+
+            # Language selection
+            ttk.Label(dlg, text="Language:", font=(FONT, 10, "bold")).pack(anchor='w', padx=12, pady=(12, 4))
+            lang_options = ["English"]
+            lang_menu = ttk.OptionMenu(dlg, self.language_var, self.language_var.get(), *lang_options)
+            lang_menu.pack(fill='x', padx=12)
+
+            # Theme selection
+            ttk.Label(dlg, text="Theme:", font=(FONT, 10, "bold")).pack(anchor='w', padx=12, pady=(12, 4))
+            theme_frame = ttk.Frame(dlg)
+            theme_frame.pack(anchor='w', padx=12)
+            ttk.Radiobutton(theme_frame, text="System", variable=self.theme_var, value="system").pack(side='left', padx=6)
+            ttk.Radiobutton(theme_frame, text="Light", variable=self.theme_var, value="light").pack(side='left', padx=6)
+            ttk.Radiobutton(theme_frame, text="Dark", variable=self.theme_var, value="dark").pack(side='left', padx=6)
+
+            # Buttons
+            btn_frame = ttk.Frame(dlg)
+            btn_frame.pack(fill='x', pady=18, padx=12)
+
+            def apply_settings():
+                settings = {"language": self.language_var.get(), "theme": self.theme_var.get()}
+                try:
+                    if hasattr(self.controller, "apply_settings"):
+                        self.controller.apply_settings(settings)
+                    elif hasattr(self.controller, "set_app_settings"):
+                        self.controller.set_app_settings(settings)
+                except Exception:
+                    pass
+
+            def on_ok():
+                apply_settings()
+                dlg.destroy()
+
+            def on_cancel():
+                dlg.destroy()
+
+            ttk.Button(btn_frame, text="OK", command=on_ok, style="Accent.TButton").pack(side='right', padx=6)
+            ttk.Button(btn_frame, text="Apply", command=apply_settings).pack(side='right', padx=6)
+            ttk.Button(btn_frame, text="Cancel", command=on_cancel).pack(side='right', padx=6)
+
+            dlg.wait_window()
+        except Exception as e:
+            messagebox.showerror("Settings Error", f"Could not open settings: {e}")
+    
     def cancel_operation(self):
         """Cancel current operation"""
-        if messagebox.askyesno("Cancel", "Are you sure you want to cancel?"):
-            self.controller.cancel_operation()
-            self.close_window()
+        self.controller.cancel_operation()
+        #self.close_window()
     
     def save_results(self):
         """Save operation results"""
@@ -1490,25 +1716,53 @@ For more information, visit our GitHub repository."""
             messagebox.showwarning("Warning", "No results to save!")
     
     def toggle_fullscreen(self):
-        """Toggle fullscreen mode"""
+        """Toggle maximize mode (keeps taskbar visible like normal Windows apps)"""
         if not self.is_fullscreen:
-            # Store current geometry and enter fullscreen
+            # Store current geometry
             self.restore_geometry = self.root.geometry()
             
-            # Get screen dimensions
+            # Get screen dimensions (excluding taskbar)
             screen_width = self.root.winfo_screenwidth()
             screen_height = self.root.winfo_screenheight()
             
-            # Set fullscreen geometry
-            self.root.geometry(f"{screen_width}x{screen_height}+0+0")
+            # On Windows, adjust for taskbar (typically 40-48 pixels at bottom)
+            if platform_system() == 'Windows':
+                try:
+                    import ctypes
+                    # Get work area (screen minus taskbar)
+                    class RECT(ctypes.Structure):
+                        _fields_ = [("left", ctypes.c_long),
+                                    ("top", ctypes.c_long),
+                                    ("right", ctypes.c_long),
+                                    ("bottom", ctypes.c_long)]
+                    
+                    rect = RECT()
+                    SPI_GETWORKAREA = 0x0030
+                    if ctypes.windll.user32.SystemParametersInfoW(SPI_GETWORKAREA, 0, ctypes.byref(rect), 0):
+                        screen_width = rect.right - rect.left
+                        screen_height = rect.bottom - rect.top
+                        x_pos = rect.left
+                        y_pos = rect.top
+                    else:
+                        x_pos = 0
+                        y_pos = 0
+                except Exception:
+                    x_pos = 0
+                    y_pos = 0
+            else:
+                x_pos = 0
+                y_pos = 0
+            
+            # Maximize window to fill work area (excludes taskbar)
+            self.root.geometry(f"{screen_width}x{screen_height}+{x_pos}+{y_pos}")
             self.maximize_btn.config(text="❐")  # Change to restore icon
             self.is_fullscreen = True
         else:
-            # Restore original size
+            # Restore to previous geometry
             if self.restore_geometry:
                 self.root.geometry(self.restore_geometry)
             else:
-                self.root.geometry("780x560")
+                self.root.geometry("780x600")
                 self.center_window()
             
             self.maximize_btn.config(text="□")  # Change back to maximize icon
@@ -1517,3 +1771,29 @@ For more information, visit our GitHub repository."""
     def open_donation_link(self):
         """Open the Buy Me a Coffee donation link"""
         open_url("https://www.buymeacoffee.com/mcagriaksoy")
+    
+    def apply_theme(self, theme: str):
+        """Optimized theme application"""
+        try:
+            style = ttk.Style()
+            
+            # Apply theme directly if available
+            if theme in self.available_themes:
+                style.theme_use(theme)
+                
+                # Apply minimal customizations only
+                try:
+                    # Keep essential custom styles
+                    style.configure("Accent.TButton", 
+                                  background="#00b386", 
+                                  foreground="#000000", 
+                                  font=(FONT, 10, "bold"))
+                    
+                    # Keep brand colors for tabs
+                    style.map("TNotebook.Tab", foreground=[("selected", RED_COLOR), ("active", RED_COLOR)])
+                except Exception:
+                    pass
+        except Exception:
+            pass
+        style.map("TNotebook.Tab", foreground=[("selected", RED_COLOR), ("active", RED_COLOR)])
+
