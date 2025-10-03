@@ -86,6 +86,10 @@ class SafePDFUI:
         self.is_fullscreen = False
         self.restore_geometry = None
         
+        # Store icon for taskbar window
+        self.icon_path = None
+        self._find_icon()
+        
         # Set up callbacks
         self.controller.set_ui_callbacks(
             update_ui_callback=self.update_ui,
@@ -96,6 +100,9 @@ class SafePDFUI:
         self.setup_main_window()
         self.create_ui_components()
         
+        # Schedule taskbar fix after UI is fully loaded
+        self.root.after(100, self._ensure_taskbar_visibility)
+        
     def setup_main_window(self):
         """Configure the main application window with modern design and custom title bar"""
         self.root.title("SafePDF - A tool for PDF Manipulation")
@@ -103,8 +110,48 @@ class SafePDFUI:
         self.root.minsize(780, 600)
         self.root.configure(bg="#f4f6fb")
         
-        # Remove the default title bar and window decorations
+        # IMPORTANT: First update the window to ensure it's created properly
+        self.root.update_idletasks()
+        
+        # NOW remove the default title bar FIRST
         self.root.overrideredirect(True)
+        
+        # Force window update
+        self.root.update_idletasks()
+        
+        # Ensure window appears in taskbar AFTER overrideredirect
+        try:
+            # Force taskbar visibility on Windows
+            if platform_system() == 'Windows':
+                # Use GWL_EXSTYLE to add WS_EX_APPWINDOW flag
+                import ctypes
+                GWL_EXSTYLE = -20
+                WS_EX_APPWINDOW = 0x00040000
+                WS_EX_TOOLWINDOW = 0x00000080
+                
+                # Get the actual window handle
+                hwnd = ctypes.windll.user32.GetParent(self.root.winfo_id())
+                if hwnd == 0:
+                    hwnd = self.root.winfo_id()
+                
+                # Get current style
+                style = ctypes.windll.user32.GetWindowLongW(hwnd, GWL_EXSTYLE)
+                # Add APPWINDOW, remove TOOLWINDOW
+                style = (style | WS_EX_APPWINDOW) & ~WS_EX_TOOLWINDOW
+                ctypes.windll.user32.SetWindowLongW(hwnd, GWL_EXSTYLE, style)
+                
+                # Force window to show in taskbar
+                SWP_FRAMECHANGED = 0x0020
+                SWP_NOMOVE = 0x0002
+                SWP_NOSIZE = 0x0001
+                SWP_NOZORDER = 0x0004
+                ctypes.windll.user32.SetWindowPos(hwnd, 0, 0, 0, 0, 0,
+                    SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER)
+        except Exception as e:
+            print(f"Could not set taskbar visibility: {e}")
+        
+        # Final update to apply changes
+        self.root.update_idletasks()
 
         # Apply ttk theme for modern look
         style = ttk.Style()
@@ -134,6 +181,66 @@ class SafePDFUI:
 
         # Center the window
         self.center_window()
+    
+    def _find_icon(self):
+        """Find and store the application icon path"""
+        try:
+            from pathlib import Path
+            base = Path(__file__).parent.parent
+            candidates = [
+                base / "assets" / "icon.ico",
+                base / "assets" / "icon.png",
+            ]
+            for c in candidates:
+                if c and c.exists():
+                    self.icon_path = str(c)
+                    break
+        except Exception:
+            pass
+    
+    def _ensure_taskbar_visibility(self):
+        """Force taskbar icon to appear after window is fully initialized"""
+        try:
+            if platform_system() == 'Windows':
+                import ctypes
+                
+                # Get window handle
+                hwnd = ctypes.windll.user32.GetParent(self.root.winfo_id())
+                if hwnd == 0:
+                    hwnd = self.root.winfo_id()
+                
+                # Windows API constants
+                GWL_EXSTYLE = -20
+                WS_EX_APPWINDOW = 0x00040000
+                WS_EX_TOOLWINDOW = 0x00000080
+                SW_HIDE = 0
+                SW_SHOW = 5
+                
+                # Get current style
+                style = ctypes.windll.user32.GetWindowLongW(hwnd, GWL_EXSTYLE)
+                
+                # Add APPWINDOW, remove TOOLWINDOW
+                new_style = (style | WS_EX_APPWINDOW) & ~WS_EX_TOOLWINDOW
+                ctypes.windll.user32.SetWindowLongW(hwnd, GWL_EXSTYLE, new_style)
+                
+                # Hide and show window to refresh taskbar
+                ctypes.windll.user32.ShowWindow(hwnd, SW_HIDE)
+                self.root.update_idletasks()
+                ctypes.windll.user32.ShowWindow(hwnd, SW_SHOW)
+                
+                # Force window position update to refresh taskbar
+                SWP_FRAMECHANGED = 0x0020
+                SWP_NOMOVE = 0x0002
+                SWP_NOSIZE = 0x0001
+                SWP_NOZORDER = 0x0004
+                SWP_SHOWWINDOW = 0x0040
+                ctypes.windll.user32.SetWindowPos(hwnd, 0, 0, 0, 0, 0,
+                    SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW)
+                
+                # Final update
+                self.root.update()
+        except Exception as e:
+            print(f"Could not ensure taskbar visibility: {e}")
     
     def center_window(self):
         """Center the window on screen"""
@@ -302,36 +409,89 @@ class SafePDFUI:
     def minimize_window(self):
         """Minimize the window by hiding it and creating a taskbar entry"""
         if not self.is_minimized:
-            # Store current geometry
-            self.restore_geometry = self.root.geometry()
-            
-            # Hide the window
-            self.root.withdraw()
-            self.is_minimized = True
-            
-            # Create a small hidden window to maintain taskbar presence
-            self.create_taskbar_window()
+            try:
+                # Store current geometry
+                self.restore_geometry = self.root.geometry()
+                
+                # Mark as minimized first
+                self.is_minimized = True
+                
+                # Create taskbar window BEFORE hiding main window
+                self.create_taskbar_window()
+                
+                # Now hide the main window
+                self.root.withdraw()
+                
+            except Exception as e:
+                print(f"Error minimizing window: {e}")
+                self.is_minimized = False
     
     def create_taskbar_window(self):
         """Create a minimal window to maintain taskbar presence"""
-        self.taskbar_window = tk.Toplevel(self.root)
-        self.taskbar_window.title("SafePDF")
-        self.taskbar_window.geometry("1x1+0+0")  # Minimal size
-        self.taskbar_window.attributes('-topmost', False)
-        
-        # Make it appear minimized in taskbar
-        self.taskbar_window.iconify()
-        
-        # Bind restore event
-        self.taskbar_window.bind('<Map>', self.restore_window)
-        self.taskbar_window.protocol("WM_DELETE_WINDOW", self.close_window)
+        try:
+            self.taskbar_window = tk.Toplevel(self.root)
+            self.taskbar_window.title("SafePDF")
+            
+            # Apply icon to taskbar window BEFORE iconifying
+            if self.icon_path:
+                try:
+                    from pathlib import Path
+                    icon_path = Path(self.icon_path)
+                    if icon_path.suffix.lower() == '.ico':
+                        self.taskbar_window.iconbitmap(str(icon_path))
+                    else:
+                        img = tk.PhotoImage(file=str(icon_path))
+                        self.taskbar_window.iconphoto(False, img)
+                        # Keep reference to prevent garbage collection
+                        self.taskbar_window._icon_img = img
+                except Exception as e:
+                    print(f"Could not set taskbar window icon: {e}")
+            
+            # Set window size and position offscreen
+            self.taskbar_window.geometry("200x50+-32000+-32000")
+            
+            # Bind close event
+            self.taskbar_window.protocol("WM_DELETE_WINDOW", self.close_window)
+            
+            # Update to ensure window is ready
+            self.taskbar_window.update_idletasks()
+            
+            # Make it appear minimized in taskbar
+            self.taskbar_window.iconify()
+            
+            # NOW bind the restore event AFTER iconifying to avoid immediate trigger
+            # Use after() to delay binding slightly
+            self.taskbar_window.after(100, lambda: self.taskbar_window.bind('<Map>', self.on_taskbar_restore))
+            
+        except Exception as e:
+            print(f"Error creating taskbar window: {e}")
+            import traceback
+            traceback.print_exc()
+            self.is_minimized = False
+    
+    def on_taskbar_restore(self, event):
+        """Handle when user clicks on minimized taskbar icon"""
+        # Check if the window is being deiconified (restored from minimized state)
+        if self.is_minimized and hasattr(self, 'taskbar_window'):
+            try:
+                state = self.taskbar_window.state()
+                if state == 'normal':  # Window is being restored
+                    self.restore_window()
+            except Exception:
+                pass
     
     def restore_window(self, event=None):
         """Restore the minimized window"""
         if self.is_minimized:
-            # Destroy taskbar window
-            if hasattr(self, 'taskbar_window'):
-                self.taskbar_window.destroy()
+            # Prevent multiple triggers
+            self.is_minimized = False
+            
+            # Destroy taskbar window first
+            if hasattr(self, 'taskbar_window') and self.taskbar_window.winfo_exists():
+                try:
+                    self.taskbar_window.destroy()
+                except Exception:
+                    pass
             
             # Restore main window
             self.root.deiconify()
@@ -341,8 +501,7 @@ class SafePDFUI:
             # Bring to front
             self.root.lift()
             self.root.focus_force()
-            
-            self.is_minimized = False
+            self.root.update_idletasks()
     
     def close_window(self):
         """Close the window with confirmation"""
@@ -1271,7 +1430,7 @@ class SafePDFUI:
             if self.can_proceed_to_next():
                 self.execute_operation()
         # If on results tab (tab 4, index 4), open output file/folder
-        elif current_tab == 4:
+        elif current_tab == 4 and self.controller.current_output:
             self.open_output_file()
         elif current_tab < 4:
             if self.can_proceed_to_next():
@@ -1557,25 +1716,53 @@ For more information, visit our GitHub repository."""
             messagebox.showwarning("Warning", "No results to save!")
     
     def toggle_fullscreen(self):
-        """Toggle fullscreen mode"""
+        """Toggle maximize mode (keeps taskbar visible like normal Windows apps)"""
         if not self.is_fullscreen:
-            # Store current geometry and enter fullscreen
+            # Store current geometry
             self.restore_geometry = self.root.geometry()
             
-            # Get screen dimensions
+            # Get screen dimensions (excluding taskbar)
             screen_width = self.root.winfo_screenwidth()
             screen_height = self.root.winfo_screenheight()
             
-            # Set fullscreen geometry
-            self.root.geometry(f"{screen_width}x{screen_height}+0+0")
+            # On Windows, adjust for taskbar (typically 40-48 pixels at bottom)
+            if platform_system() == 'Windows':
+                try:
+                    import ctypes
+                    # Get work area (screen minus taskbar)
+                    class RECT(ctypes.Structure):
+                        _fields_ = [("left", ctypes.c_long),
+                                    ("top", ctypes.c_long),
+                                    ("right", ctypes.c_long),
+                                    ("bottom", ctypes.c_long)]
+                    
+                    rect = RECT()
+                    SPI_GETWORKAREA = 0x0030
+                    if ctypes.windll.user32.SystemParametersInfoW(SPI_GETWORKAREA, 0, ctypes.byref(rect), 0):
+                        screen_width = rect.right - rect.left
+                        screen_height = rect.bottom - rect.top
+                        x_pos = rect.left
+                        y_pos = rect.top
+                    else:
+                        x_pos = 0
+                        y_pos = 0
+                except Exception:
+                    x_pos = 0
+                    y_pos = 0
+            else:
+                x_pos = 0
+                y_pos = 0
+            
+            # Maximize window to fill work area (excludes taskbar)
+            self.root.geometry(f"{screen_width}x{screen_height}+{x_pos}+{y_pos}")
             self.maximize_btn.config(text="❐")  # Change to restore icon
             self.is_fullscreen = True
         else:
-            # Restore original size
+            # Restore to previous geometry
             if self.restore_geometry:
                 self.root.geometry(self.restore_geometry)
             else:
-                self.root.geometry("780x560")
+                self.root.geometry("780x600")
                 self.center_window()
             
             self.maximize_btn.config(text="□")  # Change back to maximize icon
@@ -1603,11 +1790,10 @@ For more information, visit our GitHub repository."""
                                   font=(FONT, 10, "bold"))
                     
                     # Keep brand colors for tabs
-                    style.map("TNotebook.Tab",
-                            foreground=[("selected", RED_COLOR), ("active", RED_COLOR)])
+                    style.map("TNotebook.Tab", foreground=[("selected", RED_COLOR), ("active", RED_COLOR)])
                 except Exception:
                     pass
         except Exception:
             pass
-    
-    # ...existing code... (remove heavy theme customization methods)
+        style.map("TNotebook.Tab", foreground=[("selected", RED_COLOR), ("active", RED_COLOR)])
+

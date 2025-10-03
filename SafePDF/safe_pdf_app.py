@@ -93,16 +93,12 @@ def main():
     # Set icon and AppUserModelID/taskbar behavior
     _set_app_icon_and_taskbar(root)
     
-    # Force the window to appear on the taskbar and bring it to the foreground
+    # DO NOT use root.withdraw() - keep the window visible for taskbar
+    # Force normal window state without hiding
     try:
-        root.withdraw()  # Temporarily hide the window
-        root.update_idletasks()  # Update the window manager
-        root.deiconify()  # Show the window again
-        root.state("normal")  # Ensure the window is in the normal state
-
-        root.attributes('-topmost', True)  # Temporarily set as topmost
-        root.attributes('-topmost', False)  # Reset topmost property
-        root.focus_force()  # Force focus on the window
+        root.state("normal")
+        root.lift()
+        root.focus_force()
     except Exception:
         pass
 
