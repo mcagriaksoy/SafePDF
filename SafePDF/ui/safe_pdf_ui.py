@@ -5,6 +5,9 @@ SafePDF UI - Optimized User Interface Components
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import os
+import json
+import re
+import urllib.request
 from webbrowser import open as open_url
 from subprocess import run as subprocess_run
 from platform import system as platform_system
@@ -636,7 +639,8 @@ class SafePDFUI:
             start = content.find("🔗 Check for Updates")
             if start != -1:
                 text_widget.tag_add("link", f"1.0+{start}c", f"1.0+{start + len('🔗 Check for Updates')}c")
-                text_widget.tag_bind("link", "<Button-1>", self.open_github)
+                # Bind to check_for_updates which queries GitHub releases
+                text_widget.tag_bind("link", "<Button-1>", self.check_for_updates)
                 text_widget.tag_bind("link", "<Enter>", lambda e: text_widget.config(cursor="hand2"))
                 text_widget.tag_bind("link", "<Leave>", lambda e: text_widget.config(cursor=""))
         
@@ -1608,20 +1612,163 @@ class SafePDFUI:
         """Open GitHub repository"""
         open_url("https://github.com/mcagriaksoy/SafePDF")
         
-    def show_help(self):
-        """Show help dialog"""
-        help_text = """SafePDF™ Help
+    def _read_current_version(self) -> str:
+        """Read current packaged version from welcome_content.txt or version.txt"""
+        # Try welcome_content.txt first (it contains 'Version: vX.Y.Z')
+        try:
+            welcome_path = os.path.join(os.path.dirname(__file__), "..", "welcome_content.txt")
+            if os.path.exists(welcome_path):
+                with open(welcome_path, 'r', encoding='utf-8') as f:
+                    for line in f:
+                        if line.strip().lower().startswith('version:'):
+                            v = line.split(':', 1)[1].strip()
+                            return v
+        except Exception:
+            pass
 
-This application allows you to perform various PDF operations:
+        # Fallback to version.txt for pyinstaller info
+        try:
+            version_txt = os.path.join(os.path.dirname(__file__), "..", "version.txt")
+            if os.path.exists(version_txt):
+                with open(version_txt, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                    m = re.search(r"FileVersion',\s*'([0-9_.]+)'", content)
+                    if m:
+                        return 'v' + m.group(1).replace('_', '.')
+        except Exception:
+            pass
 
-1. Select a PDF file using drag-and-drop or file browser
-2. Choose the operation you want to perform
-3. Adjust settings if needed
-4. View and save results
+        return 'v0.0.0'
 
-For more information, visit our GitHub repository."""
+    def _normalize_tag(self, tag: str) -> str:
+        """Normalize GitHub tag to dotted version string, e.g. v1_0_2 -> v1.0.2"""
+        if not tag:
+            return 'v0.0.0'
+        tag = tag.strip()
+        # Accept tags like v1.0.2 or v1_0_2 or 1.0.2
+        if tag[0].lower() == 'v':
+            core = tag[1:]
+            prefix = 'v'
+        else:
+            core = tag
+            prefix = ''
+        core = core.replace('_', '.')
+        return prefix + core
+
+    def _compare_versions(self, current: str, latest: str) -> int:
+        """Compare two version strings like v1.0.2. Return -1 if latest>current, 0 if equal, 1 if current>latest"""
+        def to_tuple(v: str):
+            v = v.lstrip('vV')
+            parts = [int(p) if p.isdigit() else 0 for p in v.split('.')]
+            # pad to 3 components
+            while len(parts) < 3:
+                parts.append(0)
+            return tuple(parts[:3])
+
+        try:
+            c = to_tuple(current)
+            l = to_tuple(latest)
+            if l > c:
+                return -1
+            if l == c:
+                return 0
+            return 1
+        except Exception:
+            return 0
+
+    def check_for_updates(self, event=None):
+        """Check GitHub releases for updates and notify the user if newer release exists."""
+        # Non-blocking: do a simple request but keep UI responsive by using after
+        self.root.after(10, self._do_check_for_updates)
+
+    def _do_check_for_updates(self):
+        current = self._read_current_version()
+        current_norm = self._normalize_tag(current)
+
+        api_url = 'https://api.github.com/repos/mcagriaksoy/SafePDF/releases/latest'
+        try:
+            req = urllib.request.Request(api_url, headers={'User-Agent': 'SafePDF-Update-Checker'})
+            with urllib.request.urlopen(req, timeout=6) as resp:
+                data = json.load(resp)
+                tag = data.get('tag_name') or data.get('name') or ''
+                latest_norm = self._normalize_tag(tag)
+                cmp = self._compare_versions(current_norm, latest_norm)
+                if cmp == -1:
+                    # Newer release available
+                    release_url = data.get('html_url') or f'https://github.com/mcagriaksoy/SafePDF/releases/tag/{tag}'
+                    if messagebox.askyesno('Update Available', f'A new version {latest_norm} is available (current {current_norm}).\n\nOpen release page?'):
+                        open_url(release_url)
+                elif cmp == 0:
+                    messagebox.showinfo('No Update', f'You are running the latest version ({current_norm}).')
+                else:
+                    messagebox.showinfo('Version', f'You are running a newer version ({current_norm}) than latest release ({latest_norm}).')
+        except Exception as e:
+            # Fall back to opening the releases page if API fails
+            if messagebox.askyesno('Update Check Failed', f'Could not check for updates: {e}\n\nOpen releases page in browser?'):
+                open_url('https://github.com/mcagriaksoy/SafePDF/releases')
         
-        messagebox.showinfo("Help", help_text)
+    def show_help(self):
+        """Show help dialog by loading external help file (localization-ready)."""
+        # Determine default language code
+        lang = self.language_var.get() if hasattr(self, 'language_var') else 'en'
+
+        # Look for localized help file first, then fallback to default help_content.txt
+        base_dir = os.path.join(os.path.dirname(__file__), "..")
+        candidates = [
+            os.path.join(base_dir, f"help_content_{lang}.txt"),
+            os.path.join(base_dir, "help_content.txt")
+        ]
+
+        help_text = None
+        for p in candidates:
+            try:
+                if os.path.exists(p):
+                    with open(p, 'r', encoding='utf-8') as f:
+                        help_text = f.read()
+                        break
+            except Exception:
+                help_text = None
+
+        # Fallback inline help if no file found
+        if not help_text:
+            help_text = (
+                "SafePDF™ Help\n\n"
+                "This application allows you to perform various PDF operations:\n\n"
+                "1. Select a PDF file using drag-and-drop or file browser\n"
+                "2. Choose the operation you want to perform\n"
+                "3. Adjust settings if needed\n"
+                "4. View and save results\n\n"
+                "For more information, visit our GitHub repository."
+            )
+
+        # Create a modal dialog with scrollable text for help
+        try:
+            dlg = tk.Toplevel(self.root)
+            dlg.title("SafePDF Help")
+            dlg.transient(self.root)
+            dlg.grab_set()
+            dlg.geometry("640x480")
+
+            # Center the dialog
+            x = self.root.winfo_x() + (self.root.winfo_width() // 2) - (360 // 2)
+            y = self.root.winfo_y() + (self.root.winfo_height() // 2) - (240 // 2)
+            dlg.geometry(f"+{x}+{y}")
+
+            # Text widget with scrollbar
+            txt = tk.Text(dlg, wrap=tk.WORD, font=(FONT, 10), bg="#f8f9fa")
+            txt.insert('1.0', help_text)
+            txt.config(state=tk.DISABLED)
+
+            sb = ttk.Scrollbar(dlg, orient='vertical', command=txt.yview)
+            txt['yscrollcommand'] = sb.set
+
+            txt.pack(side='left', fill='both', expand=True, padx=(8,0), pady=8)
+            sb.pack(side='right', fill='y', pady=8)
+
+
+            dlg.wait_window()
+        except Exception as e:
+            messagebox.showinfo("Help", help_text)
 
     def show_settings(self):
         """Show application settings (language, theme) in a modal dialog."""
@@ -1684,9 +1831,33 @@ For more information, visit our GitHub repository."""
             messagebox.showerror("Settings Error", f"Could not open settings: {e}")
     
     def cancel_operation(self):
-        """Cancel current operation"""
+        """Cancel current operation with confirmation"""
+        if not self.controller.operation_running:
+            messagebox.showinfo("Info", "No operation is currently running.")
+            return
+
+        # Ask the user to confirm cancellation
+        resp = messagebox.askyesno("Cancel Operation", "Are you sure you want to cancel the current operation?")
+        if not resp:
+            return
+
+        # Ask one more time to avoid accidental cancellation
+        resp2 = messagebox.askyesno("Confirm Cancel", "This will stop the operation. Do you really want to cancel?")
+        if not resp2:
+            return
+
+        # Request controller to cancel
         self.controller.cancel_operation()
-        #self.close_window()
+
+        # Update UI to reflect cancellation
+        try:
+            self.progress.stop()
+            self.progress.config(mode='determinate', value=0)
+            self.results_text.config(state=tk.NORMAL)
+            self.results_text.insert(tk.END, "\nOperation cancelled by user.\n")
+            self.results_text.config(state=tk.DISABLED)
+        except Exception:
+            pass
     
     def save_results(self):
         """Save operation results"""

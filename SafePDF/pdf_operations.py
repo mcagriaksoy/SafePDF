@@ -45,11 +45,17 @@ class PDFOperations:
             progress_callback: Function to call for progress updates (0-100)
         """
         self.progress_callback = progress_callback
+        # Cancellation flag that can be set by controller/UI
+        self._cancel_requested = False
         
     def update_progress(self, value):
         """Update progress if callback is available"""
         if self.progress_callback:
             self.progress_callback(value)
+
+    def request_cancel(self):
+        """Request cancellation of a running operation."""
+        self._cancel_requested = True
             
     def validate_pdf(self, file_path: str) -> bool:
         """
@@ -120,6 +126,14 @@ class PDFOperations:
                 
                 new_doc = fitz.open()  # empty document to populate with images
                 for i in range(total_pages):
+                    # Check for cancellation request
+                    if self._cancel_requested:
+                        try:
+                            new_doc.close()
+                            doc.close()
+                        except Exception:
+                            pass
+                        return False, "Operation cancelled by user"
                     page = doc.load_page(i)
                     # render page at chosen dpi
                     mat = fitz.Matrix(dpi / 72.0, dpi / 72.0)
@@ -217,6 +231,8 @@ class PDFOperations:
             writer = PdfWriter()
             total_pages = len(reader.pages)
             for i, page in enumerate(reader.pages):
+                if self._cancel_requested:
+                    return False, "Operation cancelled by user"
                 try:
                     page.compress_content_streams()
                 except Exception:
@@ -279,6 +295,8 @@ class PDFOperations:
                 if method == "pages":
                     # Split each page into separate file
                     for i, page in enumerate(reader.pages):
+                        if self._cancel_requested:
+                            return False, "Operation cancelled by user"
                         writer = PdfWriter()
                         writer.add_page(page)
                         
@@ -298,6 +316,8 @@ class PDFOperations:
                     ranges = self._parse_page_range(page_range, total_pages)
                     
                     for i, (start, end) in enumerate(ranges):
+                        if self._cancel_requested:
+                            return False, "Operation cancelled by user"
                         writer = PdfWriter()
                         for page_num in range(start-1, end):
                             if 0 <= page_num < total_pages:
@@ -340,6 +360,8 @@ class PDFOperations:
             total_files = len(input_paths)
             
             for i, input_path in enumerate(input_paths):
+                if self._cancel_requested:
+                    return False, "Operation cancelled by user"
                 with open(input_path, 'rb') as input_file:
                     reader = PdfReader(input_file)
                     for page in reader.pages:
@@ -381,6 +403,8 @@ class PDFOperations:
             self.update_progress(20)
             
             for page_num in range(total_pages):
+                if self._cancel_requested:
+                    return False, "Operation cancelled by user"
                 page = pdf_document.load_page(page_num)
                 
                 # Create transformation matrix for desired DPI
@@ -428,6 +452,8 @@ class PDFOperations:
                 self.update_progress(30)
                 
                 for i, page in enumerate(reader.pages):
+                    if self._cancel_requested:
+                        return False, "Operation cancelled by user"
                     rotated_page = page.rotate(angle)
                     writer.add_page(rotated_page)
                     self.update_progress(30 + (60 * i // total_pages))
@@ -469,6 +495,8 @@ class PDFOperations:
                 
                 try:
                     for i, page in enumerate(reader.pages):
+                        if self._cancel_requested:
+                            return False, "Operation cancelled by user"
                         try:
                             writer.add_page(page)
                             pages_recovered += 1
