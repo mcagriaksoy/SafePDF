@@ -1,0 +1,46 @@
+SafePDF Help (English)
+
+LICENSE: GPL-3.0
+
+Overview:
+SafePDF is a lightweight desktop application to perform common PDF operations locally on your computer, without sending files to any server.
+
+Supported operations:
+- Compress: Reduce PDF file size by re-encoding images and optimizing content streams.
+- Split: Split a PDF into single-page PDFs or specified page ranges.
+- Merge: Combine multiple PDF files into one (multi-file merge support planned).
+- PDF to JPG: Convert each PDF page to a JPEG image.
+- Rotate: Rotate pages by 90, 180, or 270 degrees.
+- Repair: Attempt to recover readable pages from a corrupted PDF.
+
+How to use:
+1) Select a PDF file: Use Drag & Drop onto the main area or click "Load File from Disk".
+2) Choose operation: Select the operation from the Operations screen.
+3) Adjust settings: Fine-tune options such as compression quality, output location, DPI for images, or page ranges.
+4) Execute: Click Execute on the Settings screen and monitor progress.
+5) Save results: Use Save to store the output file or folder to another location.
+
+Tips & best practices:
+- For best compression results, use the "High" quality only when you need good image fidelity; "Medium" is recommended.
+- Very small PDFs or already-optimized files may not compress further.
+- Use the "Microsoft Print to PDF" option for alternative re-encoding on Windows if compression fails.
+
+Canceling operations:
+- Click the Cancel button during an operation to request cancellation. A double confirmation is required to avoid accidental stops.
+
+Troubleshooting:
+- If an operation does not start, verify that PyPDF2/pypdf and PyMuPDF/Pillow are installed.
+- For PDF->Image conversion, PyMuPDF (PyMuPDF/Fitz) provides better quality and speed. If not installed, conversion will try to use Pillow where possible.
+- If the UI freezes, try closing the app and running again. Report reproducible issues including sample files if possible.
+
+Localization:
+- This help content is stored in `help_content.txt` and is ready to be replaced with other languages. Place localized files like `help_content_tr.txt` next to this file and the app can be adapted to load them based on user language.
+
+Support & feedback:
+- Report issues and request features at the GitHub repository: https://github.com/mcagriaksoy/SafePDF
+
+Privacy & offline usage:
+- SafePDF performs all operations locally and does not send your files to external servers by default.
+
+Changelog:
+- v1.0.3: UI improvements, new update checker, cancellation support.

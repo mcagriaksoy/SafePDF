@@ -6,6 +6,7 @@ This module handles the core application logic, state management,
 and coordination of PDF operations.
 """
 
+import os
 from os import path
 from threading import Thread
 from pdf_operations import PDFOperations
@@ -166,8 +167,22 @@ class SafePDFController:
     
     def cancel_operation(self):
         """Cancel the current operation (if possible)"""
-        # Note: This is a placeholder. Actual cancellation depends on 
-        # the PDF operations implementation
+        # Cooperative cancellation: ask pdf_ops to cancel and clear flags
+        try:
+            if hasattr(self.pdf_ops, 'request_cancel'):
+                self.pdf_ops.request_cancel()
+        except Exception:
+            pass
+
+        # Wait briefly for operation to observe cancel request
+        # Do not block indefinitely; poll a few times
+        for _ in range(20):
+            if not self.operation_running:
+                break
+            import time
+            time.sleep(0.05)
+
+        # Force-clear running flag as last resort
         self.operation_running = False
     
     def reset_state(self):
