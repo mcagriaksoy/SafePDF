@@ -28,7 +28,7 @@ Unlike cloud-based tools, SafePDF performs all operations directly on your devic
 ![Operations Window](img/UI_v1_p2.jpg)
 
 ## Download URL
-<a href="https://github.com/mcagriaksoy/SafePDF/generate](https://github.com/mcagriaksoy/SafePDF/releases/" download>
+<a href="https://github.com/mcagriaksoy/SafePDF/releases/" download>
   <img src="https://img.shields.io/badge/Download-SafePDF_win64_x86.zip-blue?style=for-the-badge" alt="Download SafePDF_win64_x86.zip">
 </a>
 
