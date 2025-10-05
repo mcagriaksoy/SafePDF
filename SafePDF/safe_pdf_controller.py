@@ -147,9 +147,37 @@ class SafePDFController:
                 success, message = self.pdf_ops.pdf_to_jpg(self.selected_file, output_dir, dpi)
                 
             elif self.selected_operation == "merge":
-                # Note: Merge operation needs to be implemented with multiple file support
-                success = False
-                message = "Merge operation requires multiple files. This will be implemented in a future version."
+                # Merge operation: expect primary selected_file and a second file provided in settings
+                second_file = self.operation_settings.get('second_file')
+                merge_order = self.operation_settings.get('merge_order', 'end')
+
+                if not second_file:
+                    success = False
+                    message = "Merge requires a second PDF file to be selected."
+                elif not path.exists(second_file):
+                    success = False
+                    message = f"Second file not found: {second_file}"
+                else:
+                    # Determine input order
+                    if merge_order == 'beginning':
+                        input_paths = [second_file, self.selected_file]
+                    else:
+                        input_paths = [self.selected_file, second_file]
+
+                    # Prepare output file path (single file)
+                    output_path, _ = self.prepare_output_paths(custom_output_path=None, use_default=True)
+                    # If prepare_output_paths returned None for output_path (for split-like ops), construct default
+                    if not output_path:
+                        base_name = os.path.splitext(self.selected_file)[0]
+                        output_path = f"{base_name}_merged.pdf"
+
+                    try:
+                        success, message = self.pdf_ops.merge_pdfs(input_paths, output_path)
+                        if success:
+                            self.current_output = output_path
+                    except Exception as e:
+                        success = False
+                        message = f"Merge failed: {e}"
             
             # Store current output location
             self.current_output = output_path or output_dir if success else None
