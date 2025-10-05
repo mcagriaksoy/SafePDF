@@ -75,8 +75,15 @@ class SafePDFUI:
         self.page_range_var = tk.StringVar()
         self.repair_var = tk.BooleanVar(value=True)
         self.merge_var = tk.BooleanVar(value=True)
+        # Merge-specific UI state: second file path and order (end/beginning)
+        self.merge_second_file_var = tk.StringVar(value="")
+        self.merge_order_var = tk.StringVar(value="end")  # 'end' or 'beginning'
         self.use_default_output = tk.BooleanVar(value=True)
         self.output_path_var = tk.StringVar()
+        # Single shared output selection UI guard
+        self.output_selection_created = False
+        self.output_selection_is_directory = False
+        self.output_frame = None
         # Application-level settings
         self.language_var = tk.StringVar(value="English")
         self.theme_var = tk.StringVar(value="system")  # options: system, light, dark
@@ -955,28 +962,54 @@ class SafePDFUI:
         # Add donation button
         donate_btn = tk.Button(
             left_frame,
-            text="☕ Buy Me a Coffee",
+            text="🍵 Buy Me a Coffee",
             command=self.open_donation_link,
             bg='#FF9691',
+            activebackground='#FF7F7A',
             fg="#000",
             font=(FONT, 9, "bold"),
             bd=0,
             padx=10,
             pady=5,
             cursor="hand2",
-            relief=tk.RAISED
+            relief=tk.FLAT,
+            highlightthickness=0
         )
         donate_btn.pack(side='left', padx=5)
-        
-        # Add hover effect for donation button
-        def on_donate_enter(event):
-            donate_btn.config(bg="#FF9691")
-        
-        def on_donate_leave(event):
-            donate_btn.config(bg="#FF9500")
-        
-        donate_btn.bind("<Enter>", on_donate_enter)
-        donate_btn.bind("<Leave>", on_donate_leave)
+
+        # Add paypal donation button
+        paypal_btn = tk.Button(
+            left_frame,
+            text="💖 Donate via PayPal",
+            command=self.open_paypal_link,
+            bg='#FFD43B',              # PayPal-style yellow
+            activebackground='#FFC107',
+            fg="#000",
+            font=(FONT, 9, "bold"),
+            bd=0,
+            padx=10,
+            pady=6,
+            cursor="hand2",
+            relief=tk.FLAT,
+            highlightthickness=0
+        )
+        paypal_btn.pack(side='left', padx=5)
+
+        # Hover effect for PayPal button (subtle darken)
+        def on_paypal_enter(event):
+            try:
+                paypal_btn.config(bg='#FFC107')
+            except Exception:
+                pass
+
+        def on_paypal_leave(event):
+            try:
+                paypal_btn.config(bg='#FFD43B')
+            except Exception:
+                pass
+
+        paypal_btn.bind("<Enter>", on_paypal_enter)
+        paypal_btn.bind("<Leave>", on_paypal_leave)
         
         # Center spacer
         center_frame = ttk.Frame(control_frame)
@@ -1087,6 +1120,24 @@ class SafePDFUI:
                 self.show_pdf_info()
             else:
                 messagebox.showerror("Error", message)
+
+    def browse_merge_second_file(self):
+        """Browse for the second PDF to merge"""
+        file_path = filedialog.askopenfilename(
+            title="Select Second PDF File to Merge",
+            filetypes=[("PDF files", "*.pdf"), ("All files", "*.*")],
+            defaultextension=".pdf",
+        )
+
+        if file_path:
+            # Basic validation: ensure it's a PDF
+            if not file_path.lower().endswith('.pdf'):
+                messagebox.showwarning("Invalid File", "Please select a .pdf file for merging.")
+                return
+
+            # Update UI and internal variable
+            self.merge_second_file_var.set(file_path)
+            self.merge_second_label.config(text=os.path.basename(file_path), foreground='green')
     
     def show_pdf_info(self):
         """Show information about the selected PDF"""
@@ -1165,6 +1216,20 @@ class SafePDFUI:
         
         operation_name = self.controller.selected_operation.replace('_', ' ').title()
         self.settings_label.config(text=f"Settings for {operation_name}")
+        # Update Execute/Next button state based on current operation settings
+        self._update_execute_button_state()
+
+        # If merge operation, ensure we react to second-file selection changes
+        try:
+            # Remove any existing trace to avoid duplicate traces
+            try:
+                self.merge_second_file_var.trace_vdelete('w', getattr(self, '_merge_trace_id', None))
+            except Exception:
+                pass
+            # Add trace to update the execute button when second file is chosen
+            self._merge_trace_id = self.merge_second_file_var.trace('w', lambda *args: self._update_execute_button_state())
+        except Exception:
+            pass
     
     def create_compress_settings(self):
         """Create settings for PDF compression"""
@@ -1311,7 +1376,26 @@ class SafePDFUI:
         merge_frame.pack(anchor='w', pady=5)
         
         ttk.Checkbutton(merge_frame, text="Add page numbers to merged PDF", variable=self.merge_var).pack(anchor='w')
-        
+
+        # Second file selection
+        second_frame = ttk.Frame(self.settings_container)
+        second_frame.pack(fill='x', pady=(8, 6))
+        ttk.Label(second_frame, text="Second PDF to merge:").pack(anchor='w')
+        select_frame = ttk.Frame(second_frame)
+        select_frame.pack(fill='x', pady=2)
+
+        self.merge_second_label = ttk.Label(select_frame, text="No second file selected", foreground="#888")
+        self.merge_second_label.pack(side='left', fill='x', expand=True)
+
+        ttk.Button(select_frame, text="Browse...", width=12, command=self.browse_merge_second_file).pack(side='right')
+
+        # Order selection: at the end or at the beginning
+        order_frame = ttk.Frame(self.settings_container)
+        order_frame.pack(anchor='w', pady=5)
+        ttk.Label(order_frame, text="Add second file:").pack(side='left', padx=(0, 8))
+        ttk.Radiobutton(order_frame, text="At the end", variable=self.merge_order_var, value="end").pack(side='left')
+        ttk.Radiobutton(order_frame, text="At the beginning", variable=self.merge_order_var, value="beginning").pack(side='left')
+
         # Add output path selection
         self.create_output_path_selection(is_directory=False)
 
@@ -1337,9 +1421,16 @@ class SafePDFUI:
             
     def create_output_path_selection(self, is_directory=False):
         """Create output path selection UI"""
+        # If an earlier output_frame exists (from previous settings render), destroy it
+        try:
+            if getattr(self, 'output_frame', None) and self.output_frame.winfo_exists():
+                self.output_frame.destroy()
+        except Exception:
+            pass
+
         output_frame = ttk.LabelFrame(self.settings_container, text="Output Location", padding="10")
         output_frame.pack(fill='x', pady=(10, 5))
-        
+
         # Default option
         default_cb = ttk.Checkbutton(
             output_frame,
@@ -1348,48 +1439,67 @@ class SafePDFUI:
             command=self.toggle_output_selection
         )
         default_cb.pack(anchor='w', pady=2)
-        
+
         # Custom path selection
         self.custom_output_frame = ttk.Frame(output_frame)
         self.custom_output_frame.pack(fill='x', pady=5)
-        
+
         ttk.Label(self.custom_output_frame, text="Custom path:").pack(anchor='w')
         
         path_frame = ttk.Frame(self.custom_output_frame)
         path_frame.pack(fill='x', pady=2)
-        
+
         self.output_entry = ttk.Entry(path_frame, textvariable=self.output_path_var, state='disabled')
         self.output_entry.pack(side='left', fill='x', expand=True, padx=(0, 5))
-        
-        if is_directory:
-            browse_btn = ttk.Button(
-                path_frame,
-                text="Browse Folder",
-                command=self.browse_output_directory,
-                state='disabled',
-                width=15
-            )
-        else:
-            browse_btn = ttk.Button(
-                path_frame,
-                text="Browse File",
-                command=self.browse_output_file,
-                state='disabled',
-                width=15
-            )
-        
+
+        # Unified browse button; text/behavior can be adjusted based on operation
+        btn_text = "Browse Folder" if is_directory else "Browse File"
+        browse_btn = ttk.Button(
+            path_frame,
+            text=btn_text,
+            command=self._on_browse_output,
+            state='disabled',
+            width=15
+        )
+
         browse_btn.pack(side='right')
         self.browse_output_btn = browse_btn
+        self.output_selection_created = True
+        self.output_selection_is_directory = is_directory
+        self.output_frame = output_frame
+
+    def _on_browse_output(self):
+        """Unified browse handler that picks file or directory depending on operation."""
+        try:
+            # If split or PDF->JPG operations, prefer directory
+            op = getattr(self.controller, 'selected_operation', None)
+            if op in ("split", "to_jpg") or getattr(self, 'output_selection_is_directory', False):
+                self.browse_output_directory()
+            else:
+                self.browse_output_file()
+        except Exception:
+            # Fallback to file browser
+            self.browse_output_file()
         
     def toggle_output_selection(self):
         """Toggle between default and custom output selection"""
         if self.use_default_output.get():
-            self.output_entry.config(state='disabled')
-            self.browse_output_btn.config(state='disabled')
+            try:
+                if getattr(self, 'output_entry', None):
+                    self.output_entry.config(state='disabled')
+                if getattr(self, 'browse_output_btn', None):
+                    self.browse_output_btn.config(state='disabled')
+            except Exception:
+                pass
             self.output_path_var.set("")
         else:
-            self.output_entry.config(state='normal')
-            self.browse_output_btn.config(state='normal')
+            try:
+                if getattr(self, 'output_entry', None):
+                    self.output_entry.config(state='normal')
+                if getattr(self, 'browse_output_btn', None):
+                    self.browse_output_btn.config(state='normal')
+            except Exception:
+                pass
     
     def browse_output_file(self):
         """Browse for output file location"""
@@ -1408,6 +1518,13 @@ class SafePDFUI:
         )
         if file_path:
             self.output_path_var.set(file_path)
+            # Ensure UI shows enabled state for the entry if it exists
+            try:
+                if getattr(self, 'output_entry', None):
+                    self.output_entry.config(state='normal')
+                    self.output_entry.update_idletasks()
+            except Exception:
+                pass
     
     def browse_output_directory(self):
         """Browse for output directory location"""
@@ -1423,6 +1540,12 @@ class SafePDFUI:
         
         if dir_path:
             self.output_path_var.set(dir_path)
+            try:
+                if getattr(self, 'output_entry', None):
+                    self.output_entry.config(state='normal')
+                    self.output_entry.update_idletasks()
+            except Exception:
+                pass
     
     # Navigation methods
     def next_tab(self):
@@ -1568,6 +1691,10 @@ class SafePDFUI:
             settings['recover_structure'] = self.repair_var.get()
         elif self.controller.selected_operation == "merge":
             settings['add_page_numbers'] = self.merge_var.get()
+            # Include second file and order for merge operation
+            second = self.merge_second_file_var.get().strip()
+            settings['second_file'] = second if second else None
+            settings['merge_order'] = self.merge_order_var.get()  # 'end' or 'beginning'
         
         self.controller.set_operation_settings(settings)
     
@@ -1606,6 +1733,27 @@ class SafePDFUI:
         """Generic UI update callback"""
         # This can be used for any general UI updates
         self.root.update_idletasks()
+
+    def _update_execute_button_state(self):
+        """Enable or disable the Execute/Next button based on current operation and required inputs."""
+        try:
+            # Default: enable
+            enabled = True
+            if self.controller.selected_operation == 'merge':
+                # Require a second file to be selected
+                second = self.merge_second_file_var.get().strip() if getattr(self, 'merge_second_file_var', None) else ''
+                if not second:
+                    enabled = False
+
+            # If results tab and output exists, Next becomes Open - leave it enabled
+            if self.controller.current_tab == 4 and self.controller.current_output:
+                enabled = True
+
+            # Update button state
+            if getattr(self, 'next_btn', None):
+                self.next_btn.config(state='normal' if enabled else 'disabled')
+        except Exception:
+            pass
     
     # Utility methods
     def open_github(self, event):
@@ -1749,9 +1897,13 @@ class SafePDFUI:
             dlg.grab_set()
             dlg.geometry("640x480")
 
+            dlg.overrideredirect(False)  # Ensure menu bar is hidden
+            dlg.resizable(False, False)
+            dlg.readonly = True
+
             # Center the dialog
-            x = self.root.winfo_x() + (self.root.winfo_width() // 2) - (360 // 2)
-            y = self.root.winfo_y() + (self.root.winfo_height() // 2) - (240 // 2)
+            x = self.root.winfo_x() + (self.root.winfo_width() // 2) - (640 // 2)
+            y = self.root.winfo_y() + (self.root.winfo_height() // 2) - (480 // 2)
             dlg.geometry(f"+{x}+{y}")
 
             # Text widget with scrollbar
@@ -1833,7 +1985,9 @@ class SafePDFUI:
     def cancel_operation(self):
         """Cancel current operation with confirmation"""
         if not self.controller.operation_running:
-            messagebox.showinfo("Info", "No operation is currently running.")
+            resp = messagebox.askyesno("Info", "No operation is currently running. \r\nDo you want to close the application?")
+            if resp:
+                self.root.quit()
             return
 
         # Ask the user to confirm cancellation
@@ -1942,6 +2096,10 @@ class SafePDFUI:
     def open_donation_link(self):
         """Open the Buy Me a Coffee donation link"""
         open_url("https://www.buymeacoffee.com/mcagriaksoy")
+    
+    def open_paypal_link(self):
+        """Open the PayPal donation link"""
+        open_url("https://www.paypal.com/donate/?hosted_button_id=QD5J7HPVUXW5G")
     
     def apply_theme(self, theme: str):
         """Optimized theme application"""

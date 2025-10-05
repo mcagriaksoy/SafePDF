@@ -1,6 +1,6 @@
 SafePDF Help (English)
 
-LICENSE: GPL-3.0
+LICENSE: GPL-v3.0
 
 Overview:
 SafePDF is a lightweight desktop application to perform common PDF operations locally on your computer, without sending files to any server.
@@ -41,6 +41,3 @@ Support & feedback:
 
 Privacy & offline usage:
 - SafePDF performs all operations locally and does not send your files to external servers by default.
-
-Changelog:
-- v1.0.3: UI improvements, new update checker, cancellation support.
