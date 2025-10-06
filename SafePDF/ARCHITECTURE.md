@@ -15,8 +15,9 @@ SafePDF/
 │   ├── __init__.py         # UI package initialization
 │   └── safe_pdf_ui.py      # All UI components and styling
 ├── assets/                 # Image assets for operation buttons
-├── welcome_content.html    # Welcome tab HTML content
-├── welcome_content.txt     # Welcome tab text fallback
+├── text/
+│   ├── welcome_content.html    # Welcome tab HTML content
+│   ├── welcome_content.txt     # Welcome tab text fallback
 └── requirements.txt        # Python dependencies
 ```
 

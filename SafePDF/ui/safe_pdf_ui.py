@@ -569,8 +569,8 @@ class SafePDFUI:
             html_widget = html.HTMLWidget(html_frame)
             html_widget.pack(fill='both', expand=True)
             
-            # Load the HTML file
-            welcome_html_path = os.path.join(os.path.dirname(__file__), "..", "welcome_content.html")
+            # Load the HTML file from the moved `text/` folder
+            welcome_html_path = os.path.join(os.path.dirname(__file__), "..", "text", "welcome_content.html")
             with open(welcome_html_path, 'r', encoding='utf-8') as f:
                 html_content = f.read()
             html_widget.set_html(html_content)
@@ -612,8 +612,8 @@ class SafePDFUI:
     def load_welcome_content(self):
         """Load welcome content from text file or use fallback"""
         try:
-            # First try to load from text file
-            welcome_txt_path = os.path.join(os.path.dirname(__file__), "..", "welcome_content.txt")
+            # First try to load from moved text folder
+            welcome_txt_path = os.path.join(os.path.dirname(__file__), "..", "text", "welcome_content.txt")
             if os.path.exists(welcome_txt_path):
                 with open(welcome_txt_path, 'r', encoding='utf-8') as f:
                     return f.read()
@@ -1764,7 +1764,8 @@ class SafePDFUI:
         """Read current packaged version from welcome_content.txt or version.txt"""
         # Try welcome_content.txt first (it contains 'Version: vX.Y.Z')
         try:
-            welcome_path = os.path.join(os.path.dirname(__file__), "..", "welcome_content.txt")
+            # welcome_content.txt moved into the text/ folder
+            welcome_path = os.path.join(os.path.dirname(__file__), "..", "text", "welcome_content.txt")
             if os.path.exists(welcome_path):
                 with open(welcome_path, 'r', encoding='utf-8') as f:
                     for line in f:
@@ -1862,7 +1863,10 @@ class SafePDFUI:
 
         # Look for localized help file first, then fallback to default help_content.txt
         base_dir = os.path.join(os.path.dirname(__file__), "..")
+        # Help files were moved into text/ folder; check there first
         candidates = [
+            os.path.join(base_dir, "text", f"help_content_{lang}.txt"),
+            os.path.join(base_dir, "text", "help_content.txt"),
             os.path.join(base_dir, f"help_content_{lang}.txt"),
             os.path.join(base_dir, "help_content.txt")
         ]

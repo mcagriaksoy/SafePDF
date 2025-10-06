@@ -5,12 +5,10 @@ v1.0.0 by mcagriaksoy - 2025
 This module handles the core application logic, state management,
 and coordination of PDF operations.
 """
-
-import os
-from os import path
+from os import path as os_path
+from os import makedirs
 from threading import Thread
 from pdf_operations import PDFOperations
-
 
 class SafePDFController:
     """Controller class that manages application state and business logic"""
@@ -41,14 +39,14 @@ class SafePDFController:
     
     def select_file(self, file_path):
         """Select and validate a PDF file"""
-        if not path.exists(file_path):
+        if not os_path.exists(file_path):
             return False, "File does not exist"
         
         if not file_path.lower().endswith('.pdf'):
             return False, "Please select a PDF file. Only .pdf files are supported."
         
         self.selected_file = file_path
-        return True, f"Selected: {path.basename(file_path)}"
+        return True, f"Selected: {os_path.basename(file_path)}"
     
     def get_pdf_info(self):
         """Get information about the selected PDF file"""
@@ -92,13 +90,13 @@ class SafePDFController:
         
         # Default paths with minimal processing
         if self.selected_operation in ["compress", "rotate", "repair"]:
-            base_name = os.path.splitext(self.selected_file)[0]
+            base_name = os_path.splitext(self.selected_file)[0]
             return f"{base_name}_{self.selected_operation}.pdf", None
         else:
-            base_dir = os.path.dirname(self.selected_file)
-            base_name = os.path.splitext(os.path.basename(self.selected_file))[0]
-            output_dir = os.path.join(base_dir, f"{base_name}_{self.selected_operation}")
-            os.makedirs(output_dir, exist_ok=True)
+            base_dir = os_path.dirname(self.selected_file)
+            base_name = os_path.splitext(os_path.basename(self.selected_file))[0]
+            output_dir = os_path.join(base_dir, f"{base_name}_{self.selected_operation}")
+            makedirs(output_dir, exist_ok=True)
             return None, output_dir
     
     def execute_operation_async(self, output_path=None, output_dir=None):
@@ -154,7 +152,7 @@ class SafePDFController:
                 if not second_file:
                     success = False
                     message = "Merge requires a second PDF file to be selected."
-                elif not path.exists(second_file):
+                elif not os_path.exists(second_file):
                     success = False
                     message = f"Second file not found: {second_file}"
                 else:
@@ -168,7 +166,7 @@ class SafePDFController:
                     output_path, _ = self.prepare_output_paths(custom_output_path=None, use_default=True)
                     # If prepare_output_paths returned None for output_path (for split-like ops), construct default
                     if not output_path:
-                        base_name = os.path.splitext(self.selected_file)[0]
+                        base_name = os_path.splitext(self.selected_file)[0]
                         output_path = f"{base_name}_merged.pdf"
 
                     try:
