@@ -1,8 +1,10 @@
 @echo off
 echo Batch file started.
 
-REM Set project root (adjust if needed)
-set "ROOT=C:\Users\mcagr\Desktop\SafePDF\SafePDF"
+REM Set project root to the directory where this batch file is located
+set "ROOT=%~dp0"
+REM Remove trailing backslash if present
+if "%ROOT:~-1%"=="\" set "ROOT=%ROOT:~0,-1%"
 echo ROOT is set to: %ROOT%
 
 REM Check for pyinstaller (but don't exit if not found)
