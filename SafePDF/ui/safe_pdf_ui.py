@@ -569,8 +569,8 @@ class SafePDFUI:
             html_widget = html.HTMLWidget(html_frame)
             html_widget.pack(fill='both', expand=True)
             
-            # Load the HTML file
-            welcome_html_path = os.path.join(os.path.dirname(__file__), "..", "welcome_content.html")
+            # Load the HTML file from the moved `text/` folder
+            welcome_html_path = os.path.join(os.path.dirname(__file__), "..", "text", "welcome_content.html")
             with open(welcome_html_path, 'r', encoding='utf-8') as f:
                 html_content = f.read()
             html_widget.set_html(html_content)
@@ -612,8 +612,8 @@ class SafePDFUI:
     def load_welcome_content(self):
         """Load welcome content from text file or use fallback"""
         try:
-            # First try to load from text file
-            welcome_txt_path = os.path.join(os.path.dirname(__file__), "..", "welcome_content.txt")
+            # First try to load from moved text folder
+            welcome_txt_path = os.path.join(os.path.dirname(__file__), "..", "text", "welcome_content.txt")
             if os.path.exists(welcome_txt_path):
                 with open(welcome_txt_path, 'r', encoding='utf-8') as f:
                     return f.read()
@@ -768,6 +768,9 @@ class SafePDFUI:
             ("PDF to JPG", "Convert to images", self.select_to_jpg, "assets/pdf2jpg.png"),
             ("PDF Rotate", "Rotate pages", self.select_rotate, "assets/rotate.png"),
             ("PDF Repair", "Fix corrupted files", self.select_repair, "assets/repair.png"),
+            ("PDF to Word", "Convert to document", self.select_to_word, "assets/pdf2word.png"),
+            ("PDF to TXT", "Extract text", self.select_to_txt, "assets/pdf2txt.png"),
+            ("Extract Info", "Hidden PDF data", self.select_extract_info, "assets/extract.png"),
         ]
         
         self.operation_buttons = []
@@ -890,8 +893,8 @@ class SafePDFUI:
             # Store the main clickable element for reference
             self.operation_buttons.append(clickable_widgets[0] if clickable_widgets else op_frame)
 
-        # Configure grid weights for 2-column layout (3 rows for 6 operations)
-        for i in range(2):  # 2 columns
+        # Configure grid weights for 3-column layout (3 rows for 9 operations)
+        for i in range(3):  # 3 columns
             operations_container.grid_columnconfigure(i, weight=1)
         for i in range(3):  # 3 rows
             operations_container.grid_rowconfigure(i, weight=1)
@@ -937,6 +940,12 @@ class SafePDFUI:
             relief=tk.FLAT
         )
         self.results_text.config(state=tk.DISABLED)
+
+        # Insert informational message
+        self.results_text.config(state=tk.NORMAL)
+        self.results_text.insert('1.0', "When selected operation finishes, the results will be displayed here.\nPlease go back and select the operation.")
+        self.results_text.config(state=tk.DISABLED)
+
 
         # Progress bar - initialize to 0
         self.progress = ttk.Progressbar(main_frame, mode='determinate', style="TProgressbar", value=0)
@@ -1764,7 +1773,8 @@ class SafePDFUI:
         """Read current packaged version from welcome_content.txt or version.txt"""
         # Try welcome_content.txt first (it contains 'Version: vX.Y.Z')
         try:
-            welcome_path = os.path.join(os.path.dirname(__file__), "..", "welcome_content.txt")
+            # welcome_content.txt moved into the text/ folder
+            welcome_path = os.path.join(os.path.dirname(__file__), "..", "text", "welcome_content.txt")
             if os.path.exists(welcome_path):
                 with open(welcome_path, 'r', encoding='utf-8') as f:
                     for line in f:
@@ -1862,7 +1872,10 @@ class SafePDFUI:
 
         # Look for localized help file first, then fallback to default help_content.txt
         base_dir = os.path.join(os.path.dirname(__file__), "..")
+        # Help files were moved into text/ folder; check there first
         candidates = [
+            os.path.join(base_dir, "text", f"help_content_{lang}.txt"),
+            os.path.join(base_dir, "text", "help_content.txt"),
             os.path.join(base_dir, f"help_content_{lang}.txt"),
             os.path.join(base_dir, "help_content.txt")
         ]
@@ -2126,3 +2139,21 @@ class SafePDFUI:
             pass
         style.map("TNotebook.Tab", foreground=[("selected", RED_COLOR), ("active", RED_COLOR)])
 
+
+    def select_to_word(self):
+        self.controller.select_operation("to_word")
+        self.highlight_selected_operation(6)
+        self.update_settings_for_operation()
+        self.notebook.select(3)
+    
+    def select_to_txt(self):
+        self.controller.select_operation("to_txt")
+        self.highlight_selected_operation(7)
+        self.update_settings_for_operation()
+        self.notebook.select(3)
+    
+    def select_extract_info(self):
+        self.controller.select_operation("extract_info")
+        self.highlight_selected_operation(8)
+        self.update_settings_for_operation()
+        self.notebook.select(3)

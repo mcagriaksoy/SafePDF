@@ -1,21 +1,21 @@
 # SafePDF Tkinter Application Requirements
 
 # Core PDF manipulation
+# Image processing and PDF to image conversion
+# Drag and drop support (optional)
+# Standard libraries (included with Python)
 PyPDF2>=3.0.0
-# or alternatively: pypdf>=3.0.0
-
 # Image processing and PDF to image conversion
 Pillow>=9.0.0
 PyMuPDF>=1.20.0
 
-# Drag and drop support (optional)
+# Optional - provides drag & drop support in the UI
 tkinterdnd2>=0.3.0
 
-# Standard libraries (included with Python)
-# tkinter
-# threading
-# pathlib
-# os
-# sys
-# tempfile
-# webbrowser
+# For PDF to Word conversion
+python-docx>=0.8.11
+
+# Notes:
+# - `tkinter` is part of the Python standard library (ensure your Python build includes Tk)
+# - The codebase attempts to import `PyPDF2` first then `pypdf` as a fallback; include either one in your environment.
+# - Install with: pip install -r requirements.txt

@@ -3,12 +3,11 @@ PDF Operations Backend for SafePDF
 Implements various PDF manipulation operations using PyPDF2/pypdf and Pillow
 """
 
-import os
-import sys
-from pathlib import Path
-from typing import List, Optional, Tuple
-import tempfile
-import io
+from os import path as os_path
+from os import makedirs, unlink
+from typing import List, Tuple
+from tempfile import NamedTemporaryFile
+from io import BytesIO
 
 try:
     from tkinter import messagebox, Toplevel, Label, Button
@@ -98,7 +97,7 @@ class PDFOperations:
             self.update_progress(5)
             
             # Validate input file
-            if not os.path.exists(input_path):
+            if not os_path.exists(input_path):
                 return False, "Input file does not exist"
                 
             if not self.validate_pdf(input_path):
@@ -145,7 +144,7 @@ class PDFOperations:
                         try:
                             mode = "RGB" if pix.n < 4 else "RGBA"
                             img = Image.frombytes(mode, (pix.width, pix.height), pix.samples)
-                            buf = io.BytesIO()
+                            buf = BytesIO()
                             img.save(buf, format="JPEG", quality=jpeg_q, optimize=True)
                             img_bytes = buf.getvalue()
                         except Exception:
@@ -175,11 +174,11 @@ class PDFOperations:
                         except Exception:
                             # if inserting stream fails, try writing a temp image file and insert by filename
                             try:
-                                tmpf = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
+                                tmpf = NamedTemporaryFile(delete=False, suffix=".jpg")
                                 tmpf.write(img_bytes)
                                 tmpf.close()
                                 new_page.insert_image(page_rect, filename=tmpf.name, keep_proportion=True)
-                                os.unlink(tmpf.name)
+                                unlink(tmpf.name)
                             except Exception:
                                 # if even that fails, skip page (should be rare)
                                 pass
@@ -187,7 +186,7 @@ class PDFOperations:
                     self.update_progress(15 + (75 * i // total_pages))
                 
                 # Ensure output directory exists
-                os.makedirs(os.path.dirname(output_path), exist_ok=True)
+                makedirs(os_path.dirname(output_path), exist_ok=True)
                 
                 # Save new PDF (deflate/garbage options to reduce size)
                 try:
@@ -202,9 +201,9 @@ class PDFOperations:
                 self.update_progress(100)
                 
                 # verify and compare sizes
-                if os.path.exists(output_path) and self.validate_pdf(output_path):
-                    original_size = os.path.getsize(input_path)
-                    compressed_size = os.path.getsize(output_path)
+                if os_path.exists(output_path) and self.validate_pdf(output_path):
+                    original_size = os_path.getsize(input_path)
+                    compressed_size = os_path.getsize(output_path)
                     
                     # Guard against zero-size original file
                     if original_size == 0:
@@ -240,15 +239,15 @@ class PDFOperations:
                 writer.add_page(page)
                 self.update_progress(10 + (80 * i // max(1, total_pages)))
             
-            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+            makedirs(os_path.dirname(output_path), exist_ok=True)
             with open(output_path, 'wb') as output_file:
                 writer.write(output_file)
             self.update_progress(100)
             
             # Compare sizes and warn if increased
-            if os.path.exists(output_path) and self.validate_pdf(output_path):
-                original_size = os.path.getsize(input_path)
-                compressed_size = os.path.getsize(output_path)
+            if os_path.exists(output_path) and self.validate_pdf(output_path):
+                original_size = os_path.getsize(input_path)
+                compressed_size = os_path.getsize(output_path)
                 if original_size == 0:
                     return False, "Original file size is zero. Cannot calculate compression."
                 if compressed_size < original_size:
@@ -301,7 +300,7 @@ class PDFOperations:
                         writer.add_page(page)
                         
                         output_filename = f"page_{i+1}.pdf"
-                        output_path = os.path.join(output_dir, output_filename)
+                        output_path = os_path.join(output_dir, output_filename)
                         
                         with open(output_path, 'wb') as output_file:
                             writer.write(output_file)
@@ -324,7 +323,7 @@ class PDFOperations:
                                 writer.add_page(reader.pages[page_num])
                         
                         output_filename = f"pages_{start}-{end}.pdf"
-                        output_path = os.path.join(output_dir, output_filename)
+                        output_path = os_path.join(output_dir, output_filename)
                         
                         with open(output_path, 'wb') as output_file:
                             writer.write(output_file)
@@ -413,7 +412,7 @@ class PDFOperations:
                 
                 # Save as JPG
                 output_filename = f"page_{page_num + 1}.jpg"
-                output_path = os.path.join(output_dir, output_filename)
+                output_path = os_path.join(output_dir, output_filename)
                 pix.save(output_path)
                 
                 self.update_progress(20 + (70 * page_num // total_pages))
@@ -567,8 +566,8 @@ class PDFOperations:
                 
                 info = {
                     "pages": len(reader.pages),
-                    "file_size": os.path.getsize(file_path),
-                    "file_name": os.path.basename(file_path)
+                    "file_size": os_path.getsize(file_path),
+                    "file_name": os_path.basename(file_path)
                 }
                 
                 if reader.metadata:
@@ -583,7 +582,173 @@ class PDFOperations:
                 
         except Exception as e:
             return {"error": str(e)}
+    
+    def pdf_to_txt(self, input_path: str, output_path: str) -> Tuple[bool, str]:
+        """
+        Extract text from PDF and save to TXT file
         
+        Args:
+            input_path: Path to input PDF file
+            output_path: Path to output TXT file
+            
+        Returns:
+            Tuple of (success: bool, message: str)
+        """
+        try:
+            if not PdfReader:
+                return False, "PyPDF2/pypdf not available"
+            
+            with open(input_path, 'rb') as file:
+                reader = PdfReader(file)
+                text_content = ""
+                
+                total_pages = len(reader.pages)
+                for i, page in enumerate(reader.pages):
+                    self.update_progress(int((i + 1) / total_pages * 100))
+                    if self._cancel_requested:
+                        return False, "Operation cancelled"
+                    
+                    text_content += page.extract_text() + "\n\n"
+                
+            with open(output_path, 'w', encoding='utf-8') as txt_file:
+                txt_file.write(text_content)
+                
+            return True, f"Text extracted to {output_path}"
+            
+        except Exception as e:
+            return False, f"Text extraction failed: {str(e)}"
+    
+    def extract_hidden_info(self, input_path: str, output_path: str) -> Tuple[bool, str]:
+        """
+        Extract hidden information and metadata from PDF
+        
+        Args:
+            input_path: Path to input PDF file
+            output_path: Path to output TXT file with extracted info
+            
+        Returns:
+            Tuple of (success: bool, message: str)
+        """
+        try:
+            if not PdfReader:
+                return False, "PyPDF2/pypdf not available"
+            
+            info = self.get_pdf_info(input_path)
+            if "error" in info:
+                return False, info["error"]
+            
+            # Extract additional hidden information
+            hidden_info = []
+            hidden_info.append("=== PDF METADATA ===")
+            hidden_info.append(f"Title: {info.get('title', 'N/A')}")
+            hidden_info.append(f"Author: {info.get('author', 'N/A')}")
+            hidden_info.append(f"Creator: {info.get('creator', 'N/A')}")
+            hidden_info.append(f"Producer: {info.get('producer', 'N/A')}")
+            hidden_info.append(f"Pages: {info.get('pages', 'N/A')}")
+            hidden_info.append(f"File Size: {info.get('file_size', 'N/A')} bytes")
+            
+            # Try to extract more detailed info
+            try:
+                with open(input_path, 'rb') as file:
+                    reader = PdfReader(file)
+                    
+                    # Check for JavaScript
+                    if hasattr(reader, 'javascript') and reader.javascript:
+                        hidden_info.append("\n=== JAVASCRIPT FOUND ===")
+                        for js in reader.javascript:
+                            hidden_info.append(f"JavaScript: {js}")
+                    
+                    # Check for embedded files
+                    if hasattr(reader, 'attachments') and reader.attachments:
+                        hidden_info.append("\n=== EMBEDDED FILES ===")
+                        for name, data in reader.attachments.items():
+                            hidden_info.append(f"Attachment: {name} ({len(data)} bytes)")
+                    
+                    # Check for form fields
+                    if hasattr(reader, 'get_fields') and reader.get_fields():
+                        hidden_info.append("\n=== FORM FIELDS ===")
+                        fields = reader.get_fields()
+                        for field_name, field in fields.items():
+                            hidden_info.append(f"Field: {field_name} - {field.get('/FT', 'Unknown type')}")
+                            
+            except Exception as e:
+                hidden_info.append(f"\nError extracting additional info: {str(e)}")
+            
+            # Write to output file
+            with open(output_path, 'w', encoding='utf-8') as f:
+                f.write('\n'.join(hidden_info))
+            
+            return True, f"Hidden information extracted to {output_path}"
+            
+        except Exception as e:
+            return False, f"Hidden info extraction failed: {str(e)}"
+    
+    def pdf_to_word(self, input_path: str, output_path: str) -> Tuple[bool, str]:
+        """
+        Convert PDF to Word document
+        
+        Args:
+            input_path: Path to input PDF file
+            output_path: Path to output DOCX file
+            
+        Returns:
+            Tuple of (success: bool, message: str)
+        """
+        try:
+            # Try to import python-docx
+            try:
+                from docx import Document
+                from docx.shared import Inches
+            except ImportError:
+                return False, "python-docx not installed. Please install with: pip install python-docx"
+            
+            if not fitz:
+                return False, "PyMuPDF not available for PDF to Word conversion"
+            
+            # Open PDF with PyMuPDF
+            doc = Document()
+            pdf_document = fitz.open(input_path)
+            
+            total_pages = len(pdf_document)
+            for page_num in range(total_pages):
+                self.update_progress(int((page_num + 1) / total_pages * 100))
+                if self._cancel_requested:
+                    return False, "Operation cancelled"
+                
+                page = pdf_document.load_page(page_num)
+                text = page.get_text()
+                
+                # Add page content to document
+                doc.add_heading(f'Page {page_num + 1}', level=1)
+                doc.add_paragraph(text)
+                
+                # Try to extract images
+                image_list = page.get_images(full=True)
+                for img_index, img in enumerate(image_list):
+                    xref = img[0]
+                    base_image = pdf_document.extract_image(xref)
+                    image_bytes = base_image["image"]
+                    image_ext = base_image["ext"]
+                    
+                    # Save image temporarily and add to doc
+                    temp_img_path = f"temp_image_{page_num}_{img_index}.{image_ext}"
+                    with open(temp_img_path, "wb") as img_file:
+                        img_file.write(image_bytes)
+                    
+                    try:
+                        doc.add_picture(temp_img_path, width=Inches(4))
+                        unlink(temp_img_path)  # Clean up temp file
+                    except:
+                        unlink(temp_img_path)  # Clean up even if add fails
+            
+            pdf_document.close()
+            doc.save(output_path)
+            
+            return True, f"PDF converted to Word document: {output_path}"
+            
+        except Exception as e:
+            return False, f"PDF to Word conversion failed: {str(e)}"
+    
     def _show_compression_error_popup(self):
         """
         Show a custom popup with compression error gif when no compression is achieved
@@ -605,8 +770,8 @@ class PDFOperations:
             popup.grab_set()
             
             # Load and display the gif
-            gif_path = os.path.join("assets", "compression_err.gif")
-            if os.path.exists(gif_path):
+            gif_path = os_path.join("assets", "compression_err.gif")
+            if os_path.exists(gif_path):
                 try:
                     # Load the GIF and handle animation
                     gif_image = Image.open(gif_path)

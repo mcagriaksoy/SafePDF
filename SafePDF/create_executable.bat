@@ -1,8 +1,10 @@
 @echo off
 echo Batch file started.
 
-REM Set project root (adjust if needed)
-set "ROOT=C:\Users\mcagr\Desktop\SafePDF\SafePDF"
+REM Set project root to the directory where this batch file is located
+set "ROOT=%~dp0"
+REM Remove trailing backslash if present
+if "%ROOT:~-1%"=="\" set "ROOT=%ROOT:~0,-1%"
 echo ROOT is set to: %ROOT%
 
 REM Check for pyinstaller (but don't exit if not found)
@@ -17,7 +19,7 @@ if errorlevel 1 (
 )
 
 echo About to call pyinstaller...
-pyinstaller --noconfirm --onefile --windowed --icon "%ROOT%\assets\icon.ico" --version-file "%ROOT%\version.txt" --add-data "%ROOT%\assets;assets/" --add-data "%ROOT%\ui;ui/" --add-data "%ROOT%\pdf_operations.py;." --add-data "%ROOT%\safe_pdf_controller.py;." --add-data "%ROOT%\help_content.txt;." --add-data "%ROOT%\welcome_content.html;." --add-data "%ROOT%\welcome_content.txt;." "%ROOT%\safe_pdf_app.py"
+pyinstaller --noconfirm --onefile --windowed --icon "%ROOT%\assets\icon.ico" --version-file "%ROOT%\version.txt" --add-data "%ROOT%\assets;assets/" --add-data "%ROOT%\ui;ui/" --add-data "%ROOT%\pdf_operations.py;." --add-data "%ROOT%\safe_pdf_controller.py;." --add-data "%ROOT%\text;text/" "%ROOT%\safe_pdf_app.py"
 pause
 
 if errorlevel 1 (

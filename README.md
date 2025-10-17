@@ -12,6 +12,9 @@ SafePDF is a powerful, privacy-focused PDF manipulation tool designed to handle 
 
 Unlike cloud-based tools, SafePDF performs all operations directly on your device, eliminating the risk of data exposure. It's ideal for professionals, legal teams, healthcare providers, and anyone who values document confidentiality.
 
+Medium article: https://medium.com/dev-genius/the-untold-security-concerns-of-online-pdf-editing-tools-6ee1d83facd6
+
+
 ## Features
 
 - **PDF Compression**: Reduce PDF file size with adjustable quality settings
@@ -201,9 +204,6 @@ Feel free to contribute by:
 - Submitting pull requests
 - Improving documentation
 
-## Version History
-
-- v1.0.0: Initial Tkinter implementation with core PDF operations
 
 ## Comparison with Qt Version
 

@@ -9,14 +9,13 @@ This application provides various PDF operations including:
 - PDF Rotate
 - PDF Repair
 """
-
+import sys
 import tkinter as tk
+
 from tkinterdnd2 import TkinterDnD
 from safe_pdf_controller import SafePDFController
 from ui.safe_pdf_ui import SafePDFUI
-import sys
-import os
-import ctypes
+from ctypes import windll
 from pathlib import Path
 
 class SafePDFApp:
@@ -45,7 +44,7 @@ def _set_app_icon_and_taskbar(root):
     if sys.platform == "win32":
         try:
             app_id = u"com.mcagriaksoy.safepdf"  # change to your unique id
-            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
+            windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
         except Exception:
             pass
 
