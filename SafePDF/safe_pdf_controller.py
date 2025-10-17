@@ -57,7 +57,7 @@ class SafePDFController:
     
     def select_operation(self, operation):
         """Select a PDF operation"""
-        valid_operations = ["compress", "split", "merge", "to_jpg", "rotate", "repair"]
+        valid_operations = ["compress", "split", "merge", "to_jpg", "rotate", "repair", "to_word", "to_txt", "extract_info"]
         if operation in valid_operations:
             self.selected_operation = operation
             return True
@@ -89,9 +89,16 @@ class SafePDFController:
                 return custom_output_path, None
         
         # Default paths with minimal processing
-        if self.selected_operation in ["compress", "rotate", "repair"]:
+        if self.selected_operation in ["compress", "rotate", "repair", "to_word", "to_txt", "extract_info"]:
             base_name = os_path.splitext(self.selected_file)[0]
-            return f"{base_name}_{self.selected_operation}.pdf", None
+            if self.selected_operation == "to_word":
+                return f"{base_name}.docx", None
+            elif self.selected_operation == "to_txt":
+                return f"{base_name}.txt", None
+            elif self.selected_operation == "extract_info":
+                return f"{base_name}_info.txt", None
+            else:
+                return f"{base_name}_{self.selected_operation}.pdf", None
         else:
             base_dir = os_path.dirname(self.selected_file)
             base_name = os_path.splitext(os_path.basename(self.selected_file))[0]
@@ -176,6 +183,24 @@ class SafePDFController:
                     except Exception as e:
                         success = False
                         message = f"Merge failed: {e}"
+            
+            elif self.selected_operation == "to_word":
+                # PDF to Word conversion
+                base_name = os_path.splitext(self.selected_file)[0]
+                output_path = f"{base_name}.docx"
+                success, message = self.pdf_ops.pdf_to_word(self.selected_file, output_path)
+                
+            elif self.selected_operation == "to_txt":
+                # PDF to TXT conversion
+                base_name = os_path.splitext(self.selected_file)[0]
+                output_path = f"{base_name}.txt"
+                success, message = self.pdf_ops.pdf_to_txt(self.selected_file, output_path)
+                
+            elif self.selected_operation == "extract_info":
+                # Extract hidden information
+                base_name = os_path.splitext(self.selected_file)[0]
+                output_path = f"{base_name}_info.txt"
+                success, message = self.pdf_ops.extract_hidden_info(self.selected_file, output_path)
             
             # Store current output location
             self.current_output = output_path or output_dir if success else None

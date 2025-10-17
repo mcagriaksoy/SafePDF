@@ -582,7 +582,173 @@ class PDFOperations:
                 
         except Exception as e:
             return {"error": str(e)}
+    
+    def pdf_to_txt(self, input_path: str, output_path: str) -> Tuple[bool, str]:
+        """
+        Extract text from PDF and save to TXT file
         
+        Args:
+            input_path: Path to input PDF file
+            output_path: Path to output TXT file
+            
+        Returns:
+            Tuple of (success: bool, message: str)
+        """
+        try:
+            if not PdfReader:
+                return False, "PyPDF2/pypdf not available"
+            
+            with open(input_path, 'rb') as file:
+                reader = PdfReader(file)
+                text_content = ""
+                
+                total_pages = len(reader.pages)
+                for i, page in enumerate(reader.pages):
+                    self.update_progress(int((i + 1) / total_pages * 100))
+                    if self._cancel_requested:
+                        return False, "Operation cancelled"
+                    
+                    text_content += page.extract_text() + "\n\n"
+                
+            with open(output_path, 'w', encoding='utf-8') as txt_file:
+                txt_file.write(text_content)
+                
+            return True, f"Text extracted to {output_path}"
+            
+        except Exception as e:
+            return False, f"Text extraction failed: {str(e)}"
+    
+    def extract_hidden_info(self, input_path: str, output_path: str) -> Tuple[bool, str]:
+        """
+        Extract hidden information and metadata from PDF
+        
+        Args:
+            input_path: Path to input PDF file
+            output_path: Path to output TXT file with extracted info
+            
+        Returns:
+            Tuple of (success: bool, message: str)
+        """
+        try:
+            if not PdfReader:
+                return False, "PyPDF2/pypdf not available"
+            
+            info = self.get_pdf_info(input_path)
+            if "error" in info:
+                return False, info["error"]
+            
+            # Extract additional hidden information
+            hidden_info = []
+            hidden_info.append("=== PDF METADATA ===")
+            hidden_info.append(f"Title: {info.get('title', 'N/A')}")
+            hidden_info.append(f"Author: {info.get('author', 'N/A')}")
+            hidden_info.append(f"Creator: {info.get('creator', 'N/A')}")
+            hidden_info.append(f"Producer: {info.get('producer', 'N/A')}")
+            hidden_info.append(f"Pages: {info.get('pages', 'N/A')}")
+            hidden_info.append(f"File Size: {info.get('file_size', 'N/A')} bytes")
+            
+            # Try to extract more detailed info
+            try:
+                with open(input_path, 'rb') as file:
+                    reader = PdfReader(file)
+                    
+                    # Check for JavaScript
+                    if hasattr(reader, 'javascript') and reader.javascript:
+                        hidden_info.append("\n=== JAVASCRIPT FOUND ===")
+                        for js in reader.javascript:
+                            hidden_info.append(f"JavaScript: {js}")
+                    
+                    # Check for embedded files
+                    if hasattr(reader, 'attachments') and reader.attachments:
+                        hidden_info.append("\n=== EMBEDDED FILES ===")
+                        for name, data in reader.attachments.items():
+                            hidden_info.append(f"Attachment: {name} ({len(data)} bytes)")
+                    
+                    # Check for form fields
+                    if hasattr(reader, 'get_fields') and reader.get_fields():
+                        hidden_info.append("\n=== FORM FIELDS ===")
+                        fields = reader.get_fields()
+                        for field_name, field in fields.items():
+                            hidden_info.append(f"Field: {field_name} - {field.get('/FT', 'Unknown type')}")
+                            
+            except Exception as e:
+                hidden_info.append(f"\nError extracting additional info: {str(e)}")
+            
+            # Write to output file
+            with open(output_path, 'w', encoding='utf-8') as f:
+                f.write('\n'.join(hidden_info))
+            
+            return True, f"Hidden information extracted to {output_path}"
+            
+        except Exception as e:
+            return False, f"Hidden info extraction failed: {str(e)}"
+    
+    def pdf_to_word(self, input_path: str, output_path: str) -> Tuple[bool, str]:
+        """
+        Convert PDF to Word document
+        
+        Args:
+            input_path: Path to input PDF file
+            output_path: Path to output DOCX file
+            
+        Returns:
+            Tuple of (success: bool, message: str)
+        """
+        try:
+            # Try to import python-docx
+            try:
+                from docx import Document
+                from docx.shared import Inches
+            except ImportError:
+                return False, "python-docx not installed. Please install with: pip install python-docx"
+            
+            if not fitz:
+                return False, "PyMuPDF not available for PDF to Word conversion"
+            
+            # Open PDF with PyMuPDF
+            doc = Document()
+            pdf_document = fitz.open(input_path)
+            
+            total_pages = len(pdf_document)
+            for page_num in range(total_pages):
+                self.update_progress(int((page_num + 1) / total_pages * 100))
+                if self._cancel_requested:
+                    return False, "Operation cancelled"
+                
+                page = pdf_document.load_page(page_num)
+                text = page.get_text()
+                
+                # Add page content to document
+                doc.add_heading(f'Page {page_num + 1}', level=1)
+                doc.add_paragraph(text)
+                
+                # Try to extract images
+                image_list = page.get_images(full=True)
+                for img_index, img in enumerate(image_list):
+                    xref = img[0]
+                    base_image = pdf_document.extract_image(xref)
+                    image_bytes = base_image["image"]
+                    image_ext = base_image["ext"]
+                    
+                    # Save image temporarily and add to doc
+                    temp_img_path = f"temp_image_{page_num}_{img_index}.{image_ext}"
+                    with open(temp_img_path, "wb") as img_file:
+                        img_file.write(image_bytes)
+                    
+                    try:
+                        doc.add_picture(temp_img_path, width=Inches(4))
+                        unlink(temp_img_path)  # Clean up temp file
+                    except:
+                        unlink(temp_img_path)  # Clean up even if add fails
+            
+            pdf_document.close()
+            doc.save(output_path)
+            
+            return True, f"PDF converted to Word document: {output_path}"
+            
+        except Exception as e:
+            return False, f"PDF to Word conversion failed: {str(e)}"
+    
     def _show_compression_error_popup(self):
         """
         Show a custom popup with compression error gif when no compression is achieved
