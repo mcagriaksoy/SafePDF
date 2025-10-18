@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>SafePDF — Privacy‑First PDF Toolkit</title>
+    <link rel="stylesheet" href="style.css">
+    <meta name="description"
+        content="SafePDF — finally a privacy focused offline PDF compression, split, merge, convert, rotate and repair. Data never leaves your device.">
+    <link rel="canonical" href="https://mcagriaksoy.github.io/SafePDF/">
+    <meta name="keywords"
+        content="SafePDF, PDF, compress, split, merge, convert, rotate, repair, offline, privacy, safe pdf operations, privacy-focused, local pdf tool">
+    <meta name="author" content="mcagriaksoy">
+    <meta name="robots" content="index,follow">
+    <meta name="theme-color" content="#0f1720">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="SafePDF — Privacy‑First PDF Toolkit">
+    <meta property="og:description"
+        content="Offline PDF toolkit: compress, split, merge, convert, rotate and repair locally on your device.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://mcagriaksoy.github.io/SafePDF/">
+    <meta property="og:image" content="https://mcagriaksoy.github.io/SafePDF/img/SafePDF_Ad.jpg">
+
+    <!-- Twitter card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SafePDF — Privacy‑First PDF Toolkit">
+    <meta name="twitter:description"
+        content="Offline PDF toolkit: compress, split, merge, convert, rotate and repair locally on your device.">
+    <meta name="twitter:image" content="https://mcagriaksoy.github.io/SafePDF/img/SafePDF_Ad.jpg">
+
+    <!-- JSON-LD structured data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "SafePDF",
+      "url": "https://mcagriaksoy.github.io/SafePDF/",
+      "description": "Privacy-first offline PDF toolkit for compressing, splitting, merging, converting, rotating and repairing PDF documents.",
+      "author": { "@type": "Person", "name": "mcagriaksoy", "url": "https://github.com/mcagriaksoy" },
+      "operatingSystem": "Windows, macOS, Linux",
+      "applicationCategory": "DeveloperTool"
+    }
+    </script>
+</head>
+
+<body>
+    <header class="hero">
+
+        <div class="container">
+            <h1>SafePDF</h1>
+            <p class="tagline">SafePDF is a privacy-focused offline tool for PDF manipulation. Merge, compress, split,
+                and organize your PDF files securely: No internet required, your documents stay local and safe.</p>
+            <img class="hero-banner" src="../img/SafePDF_Ad.jpg" alt="Banner" />
+            <div class="badges">
+                <!-- simple badge links -->
+                <a class="btn primary" href="../README.md">Project</a>
+                <a class="btn" href="https://github.com/mcagriaksoy/SafePDF/releases">Download</a>
+                <a class="btn" href="../LICENSE">License</a>
+                <a class="btn" href="">Contact Me</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="features">
+            <h2>Key features</h2>
+            <div class="grid">
+                <div class="card">🔒 Offline / local processing</div>
+                <div class="card">🔐 Privacy-focused: no data leaks</div>
+                <div class="card">🔓 Open Source</div>
+                <div class="card">🗜️ PDF compression with quality presets</div>
+                <div class="card">✂️ Split / extract pages</div>
+                <div class="card">🧩 Merge PDFs</div>
+                <div class="card">🖼️ PDF → JPG conversion</div>
+                <div class="card">🔄 PDF → TXT conversion</div>
+                <div class="card">🔄 PDF → DOCX conversion</div>
+                <div class="card">🔁 Rotate pages</div>
+                <div class="card">🔧 Repair corrupted PDFs</div>
+                <div class="card">🛠️ PDF metadata editing</div>
+            </div>
+        </section>
+
+
+        <section class="screenshots">
+            <h2>Screenshots</h2>
+            <div class="shot-row">
+                <img src="../img/UI_v1.jpg" alt="Main Window" />
+                <img src="../img/UI_v1_p2.jpg" alt="Operations Window" />
+            </div>
+        </section>
+
+
+        <!-- New Operations section -->
+        <section class="operations">
+            <h2>Operations</h2>
+
+            <div class="op-grid">
+                <article class="op-card">
+                    <h3>PDF Compression</h3>
+                    <p>Reduce PDF file size using selectable quality presets. Suitable for email and storage.</p>
+                    <ul>
+                        <li>Presets: Low / Medium / High</li>
+                        <li>Adjust images DPI and JPEG quality</li>
+                        <li>Output: new compressed PDF</li>
+                    </ul>
+                    <p class="small">CLI-style example: python pdf_operations.py compress --input file.pdf --quality
+                        medium</p>
+                </article>
+
+                <article class="op-card">
+                    <h3>Split / Separate</h3>
+                    <p>Split a PDF into single pages or custom page ranges (e.g. "1-3,5,7-9").</p>
+                    <ul>
+                        <li>Modes: Per-page, Range</li>
+                        <li>Output: separate PDF files named by page or range</li>
+                    </ul>
+                    <p class="small">UI: select page ranges or "split all pages".</p>
+                </article>
+
+                <article class="op-card">
+                    <h3>Merge PDFs</h3>
+                    <p>Combine multiple PDF files into a single document. (Merge UI available in-app.)</p>
+                    <ul>
+                        <li>Drag & drop multiple files</li>
+                        <li>Reorder pages/files before merging</li>
+                    </ul>
+                    <p class="small">CLI-style example: python pdf_operations.py merge out.pdf in1.pdf in2.pdf</p>
+                </article>
+
+                <article class="op-card">
+                    <h3>PDF → JPG</h3>
+                    <p>Export each PDF page as a high-quality JPG image. Good for previewing or image processing.</p>
+                    <ul>
+                        <li>Configurable DPI (default 200)</li>
+                        <li>Per-page JPEG quality setting</li>
+                        <li>Output: folder with page_001.jpg, page_002.jpg, ...</li>
+                    </ul>
+                    <p class="small">Uses PyMuPDF/Pillow for reliable rendering.</p>
+                </article>
+
+                <article class="op-card">
+                    <h3>Rotate Pages</h3>
+                    <p>Rotate all or selected pages by 90°, 180° or 270° clockwise.</p>
+                    <ul>
+                        <li>Apply to single page, page range, or whole document</li>
+                        <li>Save as new PDF (non-destructive)</li>
+                    </ul>
+                    <p class="small">Example: choose rotation angle and target pages, then run.</p>
+                </article>
+
+                <article class="op-card">
+                    <h3>Repair Corrupted PDFs</h3>
+                    <p>Attempt recovery of damaged PDFs using relaxed parsing and page-by-page salvage.</p>
+                    <ul>
+                        <li>Best-effort recovery — some content may be lost</li>
+                        <li>Outputs recovered pages as a new PDF</li>
+                    </ul>
+                    <p class="small">If a file is partially readable, the tool extracts readable pages into a new file.
+                    </p>
+                </article>
+            </div>
+            <!-- Ad Start -->
+            <script async="async" data-cfasync="false"
+                src="//pl27874534.effectivegatecpm.com/9d0886b7f535bd48b85b4b80b77ccf31/invoke.js"></script>
+            <div id="container-9d0886b7f535bd48b85b4b80b77ccf31"></div>
+            <!-- Ad End -->
+
+        </section>
+
+    </main>
+
+    <footer class="site-footer">
+        <div class="container footer-grid">
+            <div class="footer-col">
+                <h4>SafePDF</h4>
+                <p class="muted">Privacy-first PDF toolkit. All operations run locally — no cloud upload.</p>
+                <p class="small">Released under <a href="../LICENSE">GPL‑3.0</a></p>
+            </div>
+
+            <div class="footer-col">
+                <h4>Resources</h4>
+                <ul class="footer-links">
+                    <li><a href="../README.md">Project README</a></li>
+                    <li><a href="https://github.com/mcagriaksoy/SafePDF/releases">Downloads / Releases</a></li>
+                    <li><a href="../docs/">Documentation</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>Community</h4>
+                <ul class="footer-links">
+                    <li><a href="https://github.com/mcagriaksoy/SafePDF/issues">Report an issue</a></li>
+                    <li><a href="https://github.com/mcagriaksoy/SafePDF">GitHub repo</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>Contact</h4>
+                <p class="muted">For support or inquiries:</p>
+                <p class="small"><a href="https://github.com/mcagriaksoy/SafePDF/discussions">Open a Ticket</a></p>
+                <p class="small">Version: <strong>v1.0.5</strong></p>
+            </div>
+        </div>
+        <div class="container footer-bottom">
+            <p class="muted">© <span id="copy-year"></span> mcagriaksoy • <a
+                    href="https://github.com/mcagriaksoy/SafePDF">Repository</a>
+            </p>
+            <button id="back-to-top" title="Back to top"
+                style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">↑</button>
+        </div>
+    </footer>
+
+    <!-- small scripts for footer -->
+    <script>
+        // update copyright year
+        document.getElementById('copy-year').textContent = new Date().getFullYear();
+
+        // back to top smooth scroll
+        document.getElementById('back-to-top').addEventListener('click', function () {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    </script>
+</body>
+
+</html>

@@ -8,6 +8,8 @@
 
 SafePDF is a powerful, privacy-focused PDF manipulation tool designed to handle your documents entirely offline. Whether you're compressing large files, splitting pages, merging multiple PDFs, converting to images, rotating pages, or repairing corrupted documents—SafePDF does it all locally, ensuring your sensitive data never leaves your device.
 
+![Banner](img/SafePDF_Ad.jpg)
+
 ## Why SafePDF?
 
 Unlike cloud-based tools, SafePDF performs all operations directly on your device, eliminating the risk of data exposure. It's ideal for professionals, legal teams, healthcare providers, and anyone who values document confidentiality.
