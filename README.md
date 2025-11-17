@@ -6,7 +6,7 @@
 [![License](https://img.shields.io/badge/License-GPL--3.0--1-red)](#license)
 [![issues - SafePDF](https://img.shields.io/github/issues/mcagriaksoy/SafePDF)](https://github.com/mcagriaksoy/SafePDF/issues)
 
-SafePDF is a powerful, privacy-focused PDF manipulation tool designed to handle your documents entirely offline. Whether you're compressing large files, splitting pages, merging multiple PDFs, converting to images, rotating pages, or repairing corrupted documents—SafePDF does it all locally, ensuring your sensitive data never leaves your device.
+SafePDF is a powerful, privacy-focused PDF manipulation tool designed to handle your documents entirely offline. Whether you're compressing large files, splitting pages, merging multiple PDFs, converting to images, rotating pages, or repairing corrupted documents SafePDF does it all locally, ensuring your sensitive data never leaves your device.
 
 ![Banner](img/SafePDF_Ad.jpg)
 
@@ -52,10 +52,19 @@ Released under [GPL-3.0-1](/LICENSE) by [@mcagriaksoy](https://github.com/mcagri
 
 ## Installation
 
+You can use the executable directly or download the source-code and run given instructions.
+
 ### Prerequisites
 
 - Python 3.7 or higher
 - pip (Python package installer)
+- PyPDF2>=3.0.0
+- Pillow>=9.0.0
+- PyMuPDF>=1.20.0
+- tkinterdnd2>=0.3.0
+- python-docx>=0.8.11
+  
+Note: If you encounter issues with `tkinterdnd2`, the application will still work without drag-and-drop functionality.
 
 ### Install Dependencies
 
@@ -63,18 +72,11 @@ Released under [GPL-3.0-1](/LICENSE) by [@mcagriaksoy](https://github.com/mcagri
 pip install -r requirements.txt
 ```
 
-### Required Packages
-
-- `PyPDF2` or `pypdf`: Core PDF manipulation
-- `Pillow`: Image processing
-- `PyMuPDF`: High-quality PDF to image conversion
-- `tkinterdnd2`: Drag and drop support (optional)
-
-If you encounter issues with `tkinterdnd2`, the application will still work without drag-and-drop functionality.
-
 ## Usage
 
 ### Running the Application
+
+You can use the executable or download the source-code and run below:
 
 ```bash
 # Run the main application
@@ -205,15 +207,6 @@ Feel free to contribute by:
 - Suggesting new features
 - Submitting pull requests
 - Improving documentation
-
-
-## Comparison with Qt Version
-
-This Tkinter version provides the same functionality as the Qt form.ui with these advantages:
-- Pure Python implementation
-- No external UI framework dependencies
-- Cross-platform compatibility
-- Lightweight and fast startup
 - Easy to modify and extend
 
 For more information, visit: https://github.com/mcagriaksoy/SafePDF
