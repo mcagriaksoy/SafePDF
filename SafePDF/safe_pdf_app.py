@@ -41,79 +41,76 @@ class SafePDFApp:
         
         # Initialize UI with controller reference
         self.ui = SafePDFUI(root, self.controller)
+        
         # Module logger
         self.logger = get_logger('SafePDF.App')
+
+        # Set application icon and taskbar properties
+        self.set_app_icon_and_taskbar()
     
     def update_progress(self, value):
         """Progress callback for PDF operations"""
         if hasattr(self.ui, 'update_progress'):
             self.ui.update_progress(value)
 
-def _set_app_icon_and_taskbar(root):
-    """Set Windows AppUserModelID and application icon so the app shows on taskbar."""
-    # Only on Windows: set AppUserModelID for proper taskbar grouping & icon
-    if sys.platform == "win32":
+    def set_app_icon_and_taskbar(self):
+        """Set Windows AppUserModelID and application icon so the app shows on taskbar."""
+        # Only on Windows: set AppUserModelID for proper taskbar grouping & icon
+        if sys.platform == "win32":
+            try:
+                windll.shell32.SetCurrentProcessExplicitAppUserModelID("com.mca.safepdf")
+            except Exception:
+                self.logger.debug("Error setting AppUserModelID", exc_info=True)
+                pass
+
+        # Find an icon file (check assets folder next to this file)
+        base = Path(__file__).parent
+        candidates = [
+            base / "assets" / "icon.ico",
+            base / "assets" / "icon.png",
+            Path(sys.argv[0]).with_suffix('.ico'),
+        ]
+        icon_path = None
+        for c in candidates:
+            if c and c.exists():
+                icon_path = c
+                break
+
+        # Apply icon: prefer .ico with iconbitmap on Windows, also set wm_iconphoto for other types
         try:
-            windll.shell32.SetCurrentProcessExplicitAppUserModelID("com.mca.safepdf")
+            if icon_path:
+                # .ico on Windows
+                if icon_path.suffix.lower() == '.ico' and sys.platform == "win32":
+                    self.root.iconbitmap(str(icon_path))
+                else:
+                    img = tk.PhotoImage(file=str(icon_path))
+                    # keep reference to avoid garbage collection
+                    try:
+                        self.root._icon_image = img
+                    except Exception:
+                        self.logger.error("Error keeping icon image reference", exc_info=True)
+                        pass
+                    self.root.wm_iconphoto(False, img)
         except Exception:
-            app.logger.debug("Error setting AppUserModelID", exc_info=True)
+            self.logger.error("Error setting application icon", exc_info=True)
             pass
-
-    # Find an icon file (check assets folder next to this file)
-    base = Path(__file__).parent
-    candidates = [
-        base / "assets" / "icon.ico",
-        base / "assets" / "icon.png",
-        Path(sys.argv[0]).with_suffix('.ico'),
-    ]
-    icon_path = None
-    for c in candidates:
-        if c and c.exists():
-            icon_path = c
-            break
-
-    # Apply icon: prefer .ico with iconbitmap on Windows, also set wm_iconphoto for other types
-    try:
-        if icon_path:
-            # .ico on Windows
-            if icon_path.suffix.lower() == '.ico' and sys.platform == "win32":
-                root.iconbitmap(str(icon_path))
-            else:
-                img = tk.PhotoImage(file=str(icon_path))
-                # keep reference to avoid garbage collection
-                try:
-                    root._icon_image = img
-                except Exception:
-                    pass
-                root.wm_iconphoto(False, img)
-    except Exception:
-        # Safe fallback: ignore icon errors
-        pass
 
 def main():
     """Main application entry point"""
     try:
         root = TkinterDnD.Tk()  # Use TkinterDnD root for drag-and-drop support
-    except:
+    except Exception:
         root = tk.Tk()  # Fallback if tkinterdnd2 is not available
 
-    # Ensure title is set (helps some window managers)
-    root.title("SafePDF™")
-
-    # Set icon and AppUserModelID/taskbar behavior
-    _set_app_icon_and_taskbar(root)
-    
-    # DO NOT use root.withdraw() - keep the window visible for taskbar
-    # Force normal window state without hiding
     try:
+        root.title("SafePDF™")
         root.state("normal")
         root.lift()
         root.focus_force()
     except Exception:
-        logging.debug("Error setting window state and focus", exc_info=True)
         pass
 
-    app = SafePDFApp(root)
+    SafePDFApp(root)
     root.mainloop()
 
 if __name__ == "__main__":

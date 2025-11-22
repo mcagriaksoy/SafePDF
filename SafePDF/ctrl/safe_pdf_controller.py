@@ -227,7 +227,7 @@ class SafePDFController:
             if hasattr(self.pdf_ops, 'request_cancel'):
                 self.pdf_ops.request_cancel()
         except Exception:
-            logger.debug("Error requesting operation cancellation", exc_info=True)
+            self.logger.debug("Error requesting operation cancellation", exc_info=True)
             pass
 
         # Wait briefly for operation to observe cancel request
@@ -259,9 +259,9 @@ class SafePDFController:
         
         # Reset PDF operations handler (clears any cached data)
         if hasattr(self.pdf_ops, '_fitz'):
-            self.pdf_ops._fitz = None
+            setattr(self.pdf_ops, '_fitz', None)
         if hasattr(self.pdf_ops, '_imagetk'):
-            self.pdf_ops._imagetk = None
+            setattr(self.pdf_ops, '_imagetk', None)
     
     def get_state_summary(self):
         """Get a summary of the current application state"""

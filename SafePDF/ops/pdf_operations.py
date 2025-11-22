@@ -8,6 +8,7 @@ from os import path as os_path
 
 from pathlib import Path
 from tempfile import mkstemp as tmp_mkstemp
+from SafePDF.logger.logging_config import get_logger
 from typing import List, Tuple
 from io import BytesIO
 
@@ -21,12 +22,8 @@ try:
     from PyPDF2 import PdfReader, PdfWriter
     from PyPDF2.errors import PdfReadError
 except ImportError:
-    try:
-        from pypdf import PdfReader, PdfWriter
-        from pypdf.errors import PdfReadError
-    except ImportError:
-        print("Warning: PyPDF2 or pypdf not installed. PDF operations will not work.")
-        PdfReader = PdfWriter = None
+    print("Warning: PyPDF2 not installed. PDF operations will not work.")
+    PdfReader = PdfWriter = None
 
 try:
     from PIL import Image, ImageTk
@@ -48,6 +45,9 @@ class PDFOperations:
         self.progress_callback = progress_callback
         # Cancellation flag that can be set by controller/UI
         self._cancel_requested = False
+
+        # Module logger
+        self.logger = get_logger('SafePDF.PDFOps')
         
     def _ensure_parent_dir(self, file_path: str):
         """
@@ -60,6 +60,7 @@ class PDFOperations:
                 os.makedirs(parent, exist_ok=True)
         except Exception:
             # Creation failure should be handled by the caller when opening/writing files.
+            self.logger.error(f"Failed to create parent directory for {file_path}", exc_info=True)
             pass
 
     def _atomic_write_file(self, final_path: str, write_func):
@@ -96,6 +97,7 @@ class PDFOperations:
             tmp_path = None  # Successfully moved
             
         except Exception:
+            self.logger.error(f"Error during atomic write to {final_path}", exc_info=True)
             raise
         finally:
             # Cleanup on error
@@ -103,11 +105,13 @@ class PDFOperations:
                 try:
                     os.close(fd)
                 except Exception:
+                    self.logger.error("Error closing file descriptor", exc_info=True)
                     pass
             if tmp_path and os_path.exists(tmp_path):
                 try:
                     os.remove(tmp_path)
                 except Exception:
+                    self.logger.error("Error removing temporary file", exc_info=True)
                     pass
 
     def _atomic_write_via_path(self, final_path: str, write_path_func):
@@ -788,28 +792,16 @@ class PDFOperations:
             try:
                 with open(input_path, 'rb') as file:
                     reader = PdfReader(file)
-                    
-                    # Check for JavaScript
-                    if hasattr(reader, 'javascript') and reader.javascript:
-                        hidden_info.append("\n=== JAVASCRIPT FOUND ===")
-                        for js in reader.javascript:
-                            hidden_info.append(f"JavaScript: {js}")
-                    
-                    # Check for embedded files
-                    if hasattr(reader, 'attachments') and reader.attachments:
-                        hidden_info.append("\n=== EMBEDDED FILES ===")
-                        for name, data in reader.attachments.items():
-                            hidden_info.append(f"Attachment: {name} ({len(data)} bytes)")
-                    
-                    # Check for form fields
-                    if hasattr(reader, 'get_fields') and reader.get_fields():
-                        hidden_info.append("\n=== FORM FIELDS ===")
-                        fields = reader.get_fields()
-                        for field_name, field in fields.items():
-                            hidden_info.append(f"Field: {field_name} - {field.get('/FT', 'Unknown type')}")
-                            
+                    if reader.trailer and "/Info" in reader.trailer:
+                        info_dict = reader.trailer["/Info"]
+                        hidden_info.append("\n=== ADDITIONAL INFO DICTIONARY ===")
+                        for key, value in info_dict.items():
+                            hidden_info.append(f"{key}: {value}")
             except Exception as e:
                 hidden_info.append(f"\nError extracting additional info: {str(e)}")
+            
+            hidden_info.append("\n=== END OF EXTRACTED INFORMATION ===")
+            hidden_info.append("These details are extracted by SafePDF.")
             
             # Write to output file atomically
             def _write_info(tmpf):
@@ -953,10 +945,11 @@ class PDFOperations:
                     
                 except Exception:
                     # If gif loading fails, show text instead
-                    Label(popup, text="Compression Info", font=("Arial", 16, "bold")).pack(pady=10)
+                    Label(popup, text="Compression Info", font=("Calibri", 16, "bold")).pack(pady=10)
+                    self.logger.error("Error loading compression error GIF", exc_info=True)
             else:
                 # If gif file doesn't exist, show icon
-                Label(popup, text="Compression Info", font=("Arial", 16, "bold")).pack(pady=10)
+                Label(popup, text="Compression Info", font=("Calibri", 16, "bold")).pack(pady=10)
             
             # Info message with better formatting
             info_text = (
@@ -968,11 +961,11 @@ class PDFOperations:
             )
             
             Label(popup, text=info_text, justify="center", wraplength=400, 
-                  font=("Arial", 10), padx=20, pady=10).pack(pady=10)
+                  font=("Calibri", 10), padx=20, pady=10).pack(pady=10)
             
             # OK button
             Button(popup, text="OK", command=popup.destroy, width=10, 
-                   font=("Arial", 10)).pack(pady=15)
+                   font=("Calibri", 10)).pack(pady=15)
             
             # Center the popup on screen
             popup.update_idletasks()

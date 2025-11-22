@@ -46,6 +46,7 @@ def setup_logging(log_dir: str | None = None, max_bytes: int = 5 * 1024 * 1024, 
     try:
         log_dir_path.mkdir(parents=True, exist_ok=True)
     except Exception:
+        logging.error(f"Failed to create log directory at {log_dir_path}, falling back to current working directory.", exc_info=True)
         # Fall back to current working directory
         log_dir_path = Path.cwd()
 

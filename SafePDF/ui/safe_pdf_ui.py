@@ -6,7 +6,6 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import os
 import json
-import re
 import urllib.request
 import logging
 from logging.handlers import RotatingFileHandler
@@ -16,6 +15,7 @@ from urllib.parse import urlparse
 from pathlib import Path
 from subprocess import run as subprocess_run
 from platform import system as platform_system
+import sys
 
 # Setup logging configuration
 def setup_logging():
@@ -43,6 +43,29 @@ def setup_logging():
     logger.addHandler(file_handler)
     
     return log_file
+
+
+def resource_path(relative_path: str) -> Path:
+    """
+    Resolve a resource path that works both during development and when
+    packaged with PyInstaller. When frozen (PyInstaller), files are extracted
+    to `sys._MEIPASS`.
+
+    Args:
+        relative_path: relative path inside the project (e.g., "assets/icon.ico")
+
+    Returns:
+        Path: absolute Path to the resource
+    """
+    try:
+        if getattr(sys, 'frozen', False):
+            base = Path(sys._MEIPASS)
+        else:
+            base = Path(__file__).parent.parent
+    except Exception:
+        base = Path(__file__).parent.parent
+
+    return base / Path(relative_path)
 
 # Initialize logging and get log file path
 LOG_FILE_PATH = setup_logging()
@@ -296,10 +319,9 @@ class SafePDFUI:
     def _find_icon(self):
         """Find and store the application icon path"""
         try:
-            base = Path(__file__).parent.parent
             candidates = [
-                base / "assets" / "icon.ico",
-                base / "assets" / "icon.png",
+                resource_path("assets/icon.ico"),
+                resource_path("assets/icon.png"),
             ]
             for c in candidates:
                 if c and c.exists():
@@ -553,8 +575,6 @@ class SafePDFUI:
                     else:
                         img = tk.PhotoImage(file=str(icon_path))
                         self.taskbar_window.iconphoto(False, img)
-                        # Keep reference to prevent garbage collection
-                        self.taskbar_window._icon_img = img
                 except Exception:
                     logger.debug("Icon could not be set for taskbar window")
                     pass  # Icon setting failed, not critical
@@ -672,9 +692,11 @@ class SafePDFUI:
             from tkinter import html
             html_widget = html.HTMLWidget(html_frame)
             html_widget.pack(fill='both', expand=True)
+
+            html_widget.config(state="disabled")
             
             # Load the HTML file from the moved `text/` folder
-            welcome_html_path = Path(__file__).parent.parent / "text" / "welcome_content.html"
+            welcome_html_path = resource_path("text/welcome_content.html")
             with open(str(welcome_html_path), 'r', encoding='utf-8') as f:
                 html_content = f.read()
             html_widget.set_html(html_content)
@@ -717,7 +739,7 @@ class SafePDFUI:
         """Load welcome content from text file or use fallback"""
         try:
             # First try to load from moved text folder
-            welcome_txt_path = Path(__file__).parent.parent / "text" / "welcome_content.txt"
+            welcome_txt_path = resource_path("text/welcome_content.txt")
             if welcome_txt_path.exists():
                 with open(str(welcome_txt_path), 'r', encoding='utf-8') as f:
                     return f.read()
@@ -833,7 +855,7 @@ class SafePDFUI:
         else:
             Image, ImageTk = _get_pil()
         
-        abs_img_path = Path(__file__).parent.parent / img_path
+        abs_img_path = resource_path(img_path)
         try:
             if abs_img_path.exists():
                 # Optimize image loading
@@ -1339,17 +1361,34 @@ class SafePDFUI:
 
         # If merge operation, ensure we react to second-file selection changes
         try:
-            # Remove any existing trace to avoid duplicate traces
+            # Remove any existing trace to avoid duplicate traces. Only attempt
+            # removal when we actually have a stored trace id.
+            trace_id = getattr(self, '_merge_trace_id', None)
+            if trace_id:
+                try:
+                    # Prefer the modern API if available, otherwise fall back
+                    # to older trace_vdelete semantics. We avoid calling
+                    # trace_vdelete with a None id which raises TclError.
+                    if hasattr(self.merge_second_file_var, 'trace_remove'):
+                        # trace_remove expects the ops name like 'write'
+                        self.merge_second_file_var.trace_remove('write', trace_id)
+                    else:
+                        # Older tkinter uses trace_vdelete(mode, callbackname)
+                        self.merge_second_file_var.trace_vdelete('w', trace_id)
+                except Exception:
+                    logger.debug("Error removing existing trace for merge second file variable", exc_info=True)
+
+            # Add trace to update the execute button when second file is chosen.
+            # Prefer trace_add if available (modern tkinter), otherwise use trace.
             try:
-                self.merge_second_file_var.trace_vdelete('w', getattr(self, '_merge_trace_id', None))
+                if hasattr(self.merge_second_file_var, 'trace_add'):
+                    self._merge_trace_id = self.merge_second_file_var.trace_add('write', lambda *args: self._update_execute_button_state())
+                else:
+                    self._merge_trace_id = self.merge_second_file_var.trace('w', lambda *args: self._update_execute_button_state())
             except Exception:
-                logger.debug("Error removing existing trace for merge second file variable", exc_info=True)
-                pass
-            # Add trace to update the execute button when second file is chosen
-            self._merge_trace_id = self.merge_second_file_var.trace('w', lambda *args: self._update_execute_button_state())
+                logger.debug("Error setting trace for merge second file variable", exc_info=True)
         except Exception:
-            logger.debug("Error setting trace for merge second file variable", exc_info=True)
-            pass
+            logger.debug("Unexpected error handling merge second file trace", exc_info=True)
     
     def create_compress_settings(self):
         """Create settings for PDF compression"""
@@ -1891,19 +1930,6 @@ class SafePDFUI:
             logger.debug("Error loading welcome content from file", exc_info=True)
             pass  # File may not exist or be readable, continue to fallback
 
-        # Fallback to version.txt for pyinstaller info
-        try:
-            version_txt = Path(__file__).parent.parent / "version.txt"
-            if version_txt.exists():
-                with open(str(version_txt), 'r', encoding='utf-8') as f:
-                    content = f.read()
-                    m = re.search(r"FileVersion',\s*'([0-9_.]+)'", content)
-                    if m:
-                        return 'v' + m.group(1).replace('_', '.')
-        except Exception:
-            logger.debug("Error loading version from version.txt", exc_info=True)
-            pass  # Version file may not exist or be readable, use default
-
         return 'v0.0.0'
 
     def _normalize_tag(self, tag: str) -> str:
@@ -1932,11 +1958,11 @@ class SafePDFUI:
             return tuple(parts[:3])
 
         try:
-            c = to_tuple(current)
-            l = to_tuple(latest)
-            if l > c:
+            curr = to_tuple(current)
+            last = to_tuple(latest)
+            if last > curr:
                 return -1
-            if l == c:
+            if last == curr:
                 return 0
             return 1
         except Exception:
@@ -2364,30 +2390,23 @@ class SafePDFUI:
         """Optimized theme application"""
         try:
             style = ttk.Style()
-            
-            # Apply theme directly if available
-            if theme in self.available_themes:
-                style.theme_use(theme)
+            style.theme_use(theme)
+            # Apply minimal customizations only
+            try:
+                # Keep essential custom styles
+                style.configure("Accent.TButton", 
+                                background="#00b386", 
+                                foreground="#000000", 
+                                font=(FONT, 10, "bold"))
                 
-                # Apply minimal customizations only
-                try:
-                    # Keep essential custom styles
-                    style.configure("Accent.TButton", 
-                                  background="#00b386", 
-                                  foreground="#000000", 
-                                  font=(FONT, 10, "bold"))
-                    
-                    # Keep brand colors for tabs
-                    style.map("TNotebook.Tab", foreground=[("selected", RED_COLOR), ("active", RED_COLOR)])
-                except Exception:
-                    logger.debug("Theme customization failed, continuing with defaults.", exc_info=True)
-                    pass
+                # Keep brand colors for tabs
+                style.map("TNotebook.Tab", foreground=[("selected", RED_COLOR), ("active", RED_COLOR)])
+            except Exception:
+                logger.debug("Theme customization failed, continuing with defaults.", exc_info=True)
+                pass
         except Exception:
             logger.debug("Theme application failed, continuing with system theme.", exc_info=True)
             pass
-
-        style.map("TNotebook.Tab", foreground=[("selected", RED_COLOR), ("active", RED_COLOR)])
-
 
     def select_to_word(self):
         self.controller.select_operation("to_word")
