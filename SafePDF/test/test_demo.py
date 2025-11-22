@@ -35,7 +35,7 @@ def test_imports():
         print(f"⚠ tkinterdnd2 import failed: {e} (drag & drop will not work)")
     
     try:
-        from pdf_operations import PDFOperations
+        from SafePDF.ops.pdf_operations import PDFOperations
         print("✓ pdf_operations imported successfully")
     except ImportError as e:
         print(f"✗ pdf_operations import failed: {e}")
@@ -80,7 +80,7 @@ def demo_application():
     print("\nLaunching SafePDF application...")
     
     try:
-        from safe_pdf_app import main
+        from SafePDF.safe_pdf_app import main
         print("✓ Application imported successfully")
         print("✓ Starting SafePDF GUI...")
         main()

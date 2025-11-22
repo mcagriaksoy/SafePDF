@@ -10,11 +10,20 @@ This application provides various PDF operations including:
 - PDF Repair
 """
 import sys
+import os
+
+# Add parent directory to sys.path so SafePDF package imports work
+# when running this script directly
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
 import tkinter as tk
 
 from tkinterdnd2 import TkinterDnD
-from safe_pdf_controller import SafePDFController
-from ui.safe_pdf_ui import SafePDFUI
+from SafePDF.ctrl.safe_pdf_controller import SafePDFController
+from SafePDF.ui.safe_pdf_ui import SafePDFUI
+from SafePDF.logger.logging_config import get_logger
 from ctypes import windll
 from pathlib import Path
 
@@ -32,6 +41,8 @@ class SafePDFApp:
         
         # Initialize UI with controller reference
         self.ui = SafePDFUI(root, self.controller)
+        # Module logger
+        self.logger = get_logger('SafePDF.App')
     
     def update_progress(self, value):
         """Progress callback for PDF operations"""
@@ -43,9 +54,9 @@ def _set_app_icon_and_taskbar(root):
     # Only on Windows: set AppUserModelID for proper taskbar grouping & icon
     if sys.platform == "win32":
         try:
-            app_id = u"com.mcagriaksoy.safepdf"  # change to your unique id
-            windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
+            windll.shell32.SetCurrentProcessExplicitAppUserModelID("com.mca.safepdf")
         except Exception:
+            app.logger.debug("Error setting AppUserModelID", exc_info=True)
             pass
 
     # Find an icon file (check assets folder next to this file)
@@ -99,6 +110,7 @@ def main():
         root.lift()
         root.focus_force()
     except Exception:
+        logging.debug("Error setting window state and focus", exc_info=True)
         pass
 
     app = SafePDFApp(root)

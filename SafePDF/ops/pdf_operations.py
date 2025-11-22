@@ -3,10 +3,12 @@ PDF Operations Backend for SafePDF
 Implements various PDF manipulation operations using PyPDF2/pypdf and Pillow
 """
 
+import os
 from os import path as os_path
-from os import makedirs, unlink
+
+from pathlib import Path
+from tempfile import mkstemp as tmp_mkstemp
 from typing import List, Tuple
-from tempfile import NamedTemporaryFile
 from io import BytesIO
 
 try:
@@ -47,6 +49,110 @@ class PDFOperations:
         # Cancellation flag that can be set by controller/UI
         self._cancel_requested = False
         
+    def _ensure_parent_dir(self, file_path: str):
+        """
+        Ensure the parent directory for `file_path` exists. If `file_path`
+        does not contain a directory component, do nothing.
+        """
+        try:
+            parent = os_path.dirname(file_path) if file_path else ''
+            if parent:
+                os.makedirs(parent, exist_ok=True)
+        except Exception:
+            # Creation failure should be handled by the caller when opening/writing files.
+            pass
+
+    def _atomic_write_file(self, final_path: str, write_func):
+        """
+        Atomically write to `final_path` using a temp file in the same directory.
+        `write_func` is called with an open file object (binary mode) to write content.
+        Uses os.replace for atomic move and ensures cleanup on errors.
+        """
+        parent = os_path.dirname(final_path) or os.getcwd()
+        self._ensure_parent_dir(final_path)
+        
+        fd = None
+        tmp_path = None
+        try:
+            # Create secure temp file in same directory as target
+            fd, tmp_path = tmp_mkstemp(
+                prefix=".safepdf_tmp_",
+                suffix=os_path.splitext(final_path)[1] or ".tmp",
+                dir=parent
+            )
+            
+            # Write content via callback
+            with os.fdopen(fd, "wb") as tmpf:
+                fd = None  # fdopen takes ownership
+                write_func(tmpf)
+                tmpf.flush()
+                try:
+                    os.fsync(tmpf.fileno())
+                except (OSError, AttributeError):
+                    pass
+            
+            # Atomic replace
+            os.replace(tmp_path, final_path)
+            tmp_path = None  # Successfully moved
+            
+        except Exception:
+            raise
+        finally:
+            # Cleanup on error
+            if fd is not None:
+                try:
+                    os.close(fd)
+                except Exception:
+                    pass
+            if tmp_path and os_path.exists(tmp_path):
+                try:
+                    os.remove(tmp_path)
+                except Exception:
+                    pass
+
+    def _atomic_write_via_path(self, final_path: str, write_path_func):
+        """
+        Atomically write to `final_path` by providing a temp path to write_path_func.
+        `write_path_func` is called with a temp file path (string) to write to.
+        Uses os.replace for atomic move and ensures cleanup on errors.
+        """
+        parent = os_path.dirname(final_path) or os.getcwd()
+        self._ensure_parent_dir(final_path)
+        
+        fd = None
+        tmp_path = None
+        try:
+            # Create secure temp file in same directory
+            fd, tmp_path = tmp_mkstemp(
+                prefix=".safepdf_tmp_",
+                suffix=os_path.splitext(final_path)[1] or ".tmp",
+                dir=parent
+            )
+            os.close(fd)
+            fd = None
+            
+            # Let caller write to temp path
+            write_path_func(tmp_path)
+            
+            # Atomic replace
+            os.replace(tmp_path, final_path)
+            tmp_path = None  # Successfully moved
+            
+        except Exception:
+            raise
+        finally:
+            # Cleanup on error
+            if fd is not None:
+                try:
+                    os.close(fd)
+                except Exception:
+                    pass
+            if tmp_path and os_path.exists(tmp_path):
+                try:
+                    os.remove(tmp_path)
+                except Exception:
+                    pass
+
     def update_progress(self, value):
         """Update progress if callback is available"""
         if self.progress_callback:
@@ -173,27 +279,41 @@ class PDFOperations:
                             new_page.insert_image(page_rect, stream=img_bytes, keep_proportion=True)
                         except Exception:
                             # if inserting stream fails, try writing a temp image file and insert by filename
+                            tmp_fd = None
+                            tmp_name = None
                             try:
-                                tmpf = NamedTemporaryFile(delete=False, suffix=".jpg")
-                                tmpf.write(img_bytes)
-                                tmpf.close()
-                                new_page.insert_image(page_rect, filename=tmpf.name, keep_proportion=True)
-                                unlink(tmpf.name)
+                                tmp_fd, tmp_name = tmp_mkstemp(suffix=".jpg")
+                                os.write(tmp_fd, img_bytes)
+                                os.close(tmp_fd)
+                                tmp_fd = None
+                                new_page.insert_image(page_rect, filename=tmp_name, keep_proportion=True)
                             except Exception:
                                 # if even that fails, skip page (should be rare)
                                 pass
+                            finally:
+                                if tmp_fd is not None:
+                                    try:
+                                        os.close(tmp_fd)
+                                    except Exception:
+                                        pass
+                                if tmp_name and os_path.exists(tmp_name):
+                                    try:
+                                        os.remove(tmp_name)
+                                    except Exception:
+                                        pass
                     
                     self.update_progress(15 + (75 * i // total_pages))
                 
-                # Ensure output directory exists
-                makedirs(os_path.dirname(output_path), exist_ok=True)
+                # Save new PDF atomically using temp file
+                def _save_compressed(tmp_path):
+                    try:
+                        new_doc.save(tmp_path, deflate=True, garbage=4)
+                    except TypeError:
+                        # Older PyMuPDF may not accept those kwargs
+                        new_doc.save(tmp_path)
                 
-                # Save new PDF (deflate/garbage options to reduce size)
                 try:
-                    new_doc.save(output_path, deflate=True, garbage=4)
-                except TypeError:
-                    # Older PyMuPDF may not accept those kwargs
-                    new_doc.save(output_path)
+                    self._atomic_write_via_path(output_path, _save_compressed)
                 finally:
                     new_doc.close()
                     doc.close()
@@ -212,13 +332,22 @@ class PDFOperations:
                     if compressed_size < original_size:
                         compression_ratio = (1 - (compressed_size / original_size)) * 100
                         return True, f"PDF compressed successfully. Quality: {quality}. Size reduced by {abs(compression_ratio):.1f}%"
-                    elif compressed_size == original_size:
-                        self._show_compression_error_popup()
-                        return False, "No size reduction achieved. Please try a different quality or method."
                     else:
-                        increase_pct = ((compressed_size / original_size) - 1) * 100
-                        self._show_compression_error_popup()
-                        return False, f"Compression increased file size by {increase_pct:.1f}%. Try a different quality."
+                        # If compression didn't reduce size, try with lower quality automatically
+                        if quality == "high":
+                            # Try medium quality
+                            return self.compress_pdf(input_path, output_path, "medium")
+                        elif quality == "medium":
+                            # Try low quality
+                            return self.compress_pdf(input_path, output_path, "low")
+                        else:
+                            # Already tried low quality, show warning
+                            self._show_compression_error_popup()
+                            if compressed_size == original_size:
+                                return False, "No size reduction achieved. Please try a different quality setting or use 'Microsoft Print to PDF' from the print dialog."
+                            else:
+                                increase_pct = ((compressed_size / original_size) - 1) * 100
+                                return False, f"Compression increased file size by {increase_pct:.1f}%. Please try a different quality setting."
                 
                 return False, "Compression completed but output file is invalid"
             
@@ -239,9 +368,10 @@ class PDFOperations:
                 writer.add_page(page)
                 self.update_progress(10 + (80 * i // max(1, total_pages)))
             
-            makedirs(os_path.dirname(output_path), exist_ok=True)
-            with open(output_path, 'wb') as output_file:
-                writer.write(output_file)
+            def _write_compressed(tmpf):
+                writer.write(tmpf)
+            
+            self._atomic_write_file(output_path, _write_compressed)
             self.update_progress(100)
             
             # Compare sizes and warn if increased
@@ -253,13 +383,14 @@ class PDFOperations:
                 if compressed_size < original_size:
                     compression_ratio = (1 - (compressed_size / original_size)) * 100
                     return True, f"PDF compressed successfully (fallback). Quality: {quality}. Size reduced by {abs(compression_ratio):.1f}%"
-                elif compressed_size == original_size:
-                    self._show_compression_error_popup()
-                    return False, "No size reduction achieved using fallback method."
                 else:
-                    increase_pct = ((compressed_size / original_size) - 1) * 100
+                    # Show warning immediately when compression doesn't reduce size
                     self._show_compression_error_popup()
-                    return False, f"Fallback compression increased file size by {increase_pct:.1f}%. Try different settings."
+                    if compressed_size == original_size:
+                        return False, "No size reduction achieved using fallback method. Please try a different quality setting or use 'Microsoft Print to PDF' from the print dialog."
+                    else:
+                        increase_pct = ((compressed_size / original_size) - 1) * 100
+                        return False, f"Fallback compression increased file size by {increase_pct:.1f}%. Please try a different quality setting."
             
             return False, "Fallback compression completed but output file is invalid"
             
@@ -302,9 +433,10 @@ class PDFOperations:
                         output_filename = f"page_{i+1}.pdf"
                         output_path = os_path.join(output_dir, output_filename)
                         
-                        with open(output_path, 'wb') as output_file:
-                            writer.write(output_file)
-                            
+                        def _write_page(tmpf):
+                            writer.write(tmpf)
+                        
+                        self._atomic_write_file(output_path, _write_page)
                         self.update_progress(20 + (70 * i // total_pages))
                         
                     self.update_progress(100)
@@ -325,9 +457,10 @@ class PDFOperations:
                         output_filename = f"pages_{start}-{end}.pdf"
                         output_path = os_path.join(output_dir, output_filename)
                         
-                        with open(output_path, 'wb') as output_file:
-                            writer.write(output_file)
-                            
+                        def _write_range(tmpf):
+                            writer.write(tmpf)
+                        
+                        self._atomic_write_file(output_path, _write_range)
                         self.update_progress(20 + (70 * i // len(ranges)))
                         
                     self.update_progress(100)
@@ -368,9 +501,10 @@ class PDFOperations:
                         
                 self.update_progress(10 + (80 * i // total_files))
             
-            with open(output_path, 'wb') as output_file:
-                writer.write(output_file)
-                
+            def _write_merged(tmpf):
+                writer.write(tmpf)
+            
+            self._atomic_write_file(output_path, _write_merged)
             self.update_progress(100)
             return True, f"Successfully merged {total_files} PDF files"
             
@@ -457,9 +591,10 @@ class PDFOperations:
                     writer.add_page(rotated_page)
                     self.update_progress(30 + (60 * i // total_pages))
                 
-                with open(output_path, 'wb') as output_file:
-                    writer.write(output_file)
-                    
+                def _write_rotated(tmpf):
+                    writer.write(tmpf)
+                
+                self._atomic_write_file(output_path, _write_rotated)
             self.update_progress(100)
             return True, f"PDF rotated by {angle} degrees"
             
@@ -509,9 +644,10 @@ class PDFOperations:
                     pass  # Continue with whatever pages we could recover
                 
                 if pages_recovered > 0:
-                    with open(output_path, 'wb') as output_file:
-                        writer.write(output_file)
-                        
+                    def _write_repaired(tmpf):
+                        writer.write(tmpf)
+                    
+                    self._atomic_write_file(output_path, _write_repaired)
                     self.update_progress(100)
                     return True, f"PDF repaired. Recovered {pages_recovered} pages"
                 else:
@@ -610,9 +746,10 @@ class PDFOperations:
                     
                     text_content += page.extract_text() + "\n\n"
                 
-            with open(output_path, 'w', encoding='utf-8') as txt_file:
-                txt_file.write(text_content)
-                
+            def _write_text(tmpf):
+                tmpf.write(text_content.encode('utf-8'))
+            
+            self._atomic_write_file(output_path, _write_text)
             return True, f"Text extracted to {output_path}"
             
         except Exception as e:
@@ -674,10 +811,11 @@ class PDFOperations:
             except Exception as e:
                 hidden_info.append(f"\nError extracting additional info: {str(e)}")
             
-            # Write to output file
-            with open(output_path, 'w', encoding='utf-8') as f:
-                f.write('\n'.join(hidden_info))
+            # Write to output file atomically
+            def _write_info(tmpf):
+                tmpf.write('\n'.join(hidden_info).encode('utf-8'))
             
+            self._atomic_write_file(output_path, _write_info)
             return True, f"Hidden information extracted to {output_path}"
             
         except Exception as e:
@@ -730,20 +868,36 @@ class PDFOperations:
                     image_bytes = base_image["image"]
                     image_ext = base_image["ext"]
                     
-                    # Save image temporarily and add to doc
-                    temp_img_path = f"temp_image_{page_num}_{img_index}.{image_ext}"
-                    with open(temp_img_path, "wb") as img_file:
-                        img_file.write(image_bytes)
-                    
+                    # Save image temporarily using secure temp file
+                    tmp_fd = None
+                    tmp_name = None
                     try:
-                        doc.add_picture(temp_img_path, width=Inches(4))
-                        unlink(temp_img_path)  # Clean up temp file
-                    except:
-                        unlink(temp_img_path)  # Clean up even if add fails
+                        tmp_fd, tmp_name = tmp_mkstemp(suffix='.' + image_ext)
+                        os.write(tmp_fd, image_bytes)
+                        os.close(tmp_fd)
+                        tmp_fd = None
+                        doc.add_picture(tmp_name, width=Inches(4))
+                    except Exception:
+                        pass
+                    finally:
+                        if tmp_fd is not None:
+                            try:
+                                os.close(tmp_fd)
+                            except Exception:
+                                pass
+                        if tmp_name and os_path.exists(tmp_name):
+                            try:
+                                os.remove(tmp_name)
+                            except Exception:
+                                pass
             
             pdf_document.close()
-            doc.save(output_path)
             
+            # Save Word document atomically
+            def _save_docx(tmp_path):
+                doc.save(tmp_path)
+            
+            self._atomic_write_via_path(output_path, _save_docx)
             return True, f"PDF converted to Word document: {output_path}"
             
         except Exception as e:
@@ -769,12 +923,13 @@ class PDFOperations:
             popup.transient()
             popup.grab_set()
             
-            # Load and display the gif
-            gif_path = os_path.join("assets", "compression_err.gif")
-            if os_path.exists(gif_path):
+            # Load and display the gif using package-relative path
+            module_dir = Path(__file__).parent
+            gif_path = module_dir / "assets" / "compression_err.gif"
+            if gif_path.exists():
                 try:
                     # Load the GIF and handle animation
-                    gif_image = Image.open(gif_path)
+                    gif_image = Image.open(str(gif_path))
                     frames = []
                     
                     try:
@@ -798,10 +953,10 @@ class PDFOperations:
                     
                 except Exception:
                     # If gif loading fails, show text instead
-                    Label(popup, text="🔧 Compression Info", font=("Arial", 16, "bold")).pack(pady=10)
+                    Label(popup, text="Compression Info", font=("Arial", 16, "bold")).pack(pady=10)
             else:
                 # If gif file doesn't exist, show icon
-                Label(popup, text="🔧 Compression Info", font=("Arial", 16, "bold")).pack(pady=10)
+                Label(popup, text="Compression Info", font=("Arial", 16, "bold")).pack(pady=10)
             
             # Info message with better formatting
             info_text = (

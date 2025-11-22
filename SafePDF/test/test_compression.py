@@ -4,7 +4,7 @@ Test script for PDF compression functionality
 """
 import os
 import sys
-from pdf_operations import PDFOperations
+from SafePDF.ops.pdf_operations import PDFOperations
 import tempfile
 
 def test_compression():

@@ -79,8 +79,14 @@ pip install -r requirements.txt
 You can use the executable or download the source-code and run below:
 
 ```bash
-# Run the main application
+# Run the main application (from project root)
+python run_safe_pdf.py
+
+# Or run the main application directly (from SafePDF/ directory)
 python safe_pdf_app.py
+
+# Or run as a module (from project root)
+python -m SafePDF.safe_pdf_app
 
 # Or run the test/demo script
 python test_demo.py
@@ -130,11 +136,29 @@ python test_demo.py --test-only
 ## File Structure
 
 ```
-SafePDF/Tk/
-├── safe_pdf_app.py      # Main application file
-├── pdf_operations.py    # PDF operations backend
+SafePDF/
+├── run_safe_pdf.py      # Launcher script (run from project root)
+├── SafePDF/             # Main package
+│   ├── __init__.py      # Package initializer
+│   ├── safe_pdf_app.py  # Main application file
+│   ├── ctrl/
+│   │   └── safe_pdf_controller.py
+│   ├── ui/
+│   │   ├── __init__.py
+│   │   └── safe_pdf_ui.py
+│   ├── logger/
+│   │   └── logging_config.py
+│   ├── ops/
+│   │   └── pdf_operations.py
+│   ├── test/
+│   │   ├── test_demo.py
+│   │   └── test_compression.py
+│   ├── assets/
+│   ├── text/
+│   └── version.txt
 ├── requirements.txt     # Python dependencies
-└── README.md           # This file
+├── README.md           # This file
+└── LICENSE
 ```
 
 ## Navigation Controls

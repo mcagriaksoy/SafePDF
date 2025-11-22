@@ -1,17 +1,19 @@
 """
-SafePDF Controller - Core Business Logic
-v1.0.0 by mcagriaksoy - 2025
+SafePDF Controller - Core Logic
+by mcagriaksoy - 2025
 
 This module handles the core application logic, state management,
 and coordination of PDF operations.
 """
+
 from os import path as os_path
 from os import makedirs
 from threading import Thread
-from pdf_operations import PDFOperations
+from SafePDF.logger.logging_config import get_logger
+from SafePDF.ops.pdf_operations import PDFOperations
 
 class SafePDFController:
-    """Controller class that manages application state and business logic"""
+    """Controller class that manages application state and logic"""
     
     def __init__(self, progress_callback=None):
         # Application state
@@ -31,6 +33,8 @@ class SafePDFController:
         self.progress_callback = progress_callback
         self.update_ui_callback = None
         self.completion_callback = None
+        # Module logger
+        self.logger = get_logger('SafePDF.Controller')
     
     def set_ui_callbacks(self, update_ui_callback=None, completion_callback=None):
         """Set callback functions for UI updates"""
@@ -223,6 +227,7 @@ class SafePDFController:
             if hasattr(self.pdf_ops, 'request_cancel'):
                 self.pdf_ops.request_cancel()
         except Exception:
+            logger.debug("Error requesting operation cancellation", exc_info=True)
             pass
 
         # Wait briefly for operation to observe cancel request

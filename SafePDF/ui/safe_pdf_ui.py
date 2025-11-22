@@ -8,9 +8,109 @@ import os
 import json
 import re
 import urllib.request
-from webbrowser import open as open_url
+import logging
+from logging.handlers import RotatingFileHandler
+from datetime import datetime
+from webbrowser import open as webbrowser_open
+from urllib.parse import urlparse
+from pathlib import Path
 from subprocess import run as subprocess_run
 from platform import system as platform_system
+
+# Setup logging configuration
+def setup_logging():
+    """Setup application logging with rotating file handler"""
+    log_dir = Path.home() / ".safepdf"
+    log_dir.mkdir(exist_ok=True)
+    log_file = log_dir / "safepdf.log"
+    
+    # Create formatter
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
+    
+    # Create rotating file handler (max 5MB, keep 3 backups)
+    file_handler = RotatingFileHandler(
+        log_file, maxBytes=5*1024*1024, backupCount=3, encoding='utf-8'
+    )
+    file_handler.setFormatter(formatter)
+    file_handler.setLevel(logging.DEBUG)
+    
+    # Setup root logger
+    logger = logging.getLogger('SafePDF')
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(file_handler)
+    
+    return log_file
+
+# Initialize logging and get log file path
+LOG_FILE_PATH = setup_logging()
+logger = logging.getLogger('SafePDF.UI')
+
+def safe_open_file_or_folder(path):
+    """
+    Safely open a file or folder using the system's default application.
+    Validates the path to prevent execution of untrusted input.
+    
+    Args:
+        path: The file or folder path to open
+        
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    try:
+        # Validate that path exists and is absolute
+        path = Path(path).resolve()
+        if not path.exists():
+            logger.warning(f"Attempted to open non-existent path: {path}")
+            return False
+        
+        # Convert to string for subprocess
+        path_str = str(path)
+        
+        # Use platform-specific safe methods
+        if platform_system() == 'Windows':
+            os.startfile(path_str)
+        elif platform_system() == 'Darwin':  # macOS
+            # Use hardcoded command path and validate file path
+            subprocess_run(['/usr/bin/open', path_str], check=False)  # nosec B603
+        else:  # Linux
+            # Use hardcoded command path and validate file path
+            subprocess_run(['/usr/bin/xdg-open', path_str], check=False)  # nosec B603
+        
+        logger.info(f"Opened path: {path_str}")
+        return True
+    except Exception as e:
+        logger.error(f"Error opening path {path}: {e}", exc_info=True)
+        return False
+
+def open_url(url: str) -> bool:
+    """
+    Safely open a URL in the default browser.
+    Only allows HTTP and HTTPS schemes to prevent security issues.
+    
+    Args:
+        url: The URL to open
+        
+    Returns:
+        True if URL was opened, False otherwise
+    """
+    try:
+        parsed = urlparse(url)
+        # Only allow http and https schemes
+        if parsed.scheme.lower() not in ('http', 'https'):
+            logger.warning(f"Security: Blocked attempt to open non-HTTP(S) URL: {url}")
+            return False
+        webbrowser_open(url)
+        logger.info(f"Opened URL: {url}")
+        return True
+    except Exception as e:
+        logger.error(f"Error opening URL {url}: {e}", exc_info=True)
+        return False
+
+SIZE_STR = "780x620"
+SIZE_LIST = 780, 620
 
 # Lazy imports for optional components
 def _get_tkinterdnd():
@@ -116,8 +216,8 @@ class SafePDFUI:
     def setup_main_window(self):
         """Configure the main application window with modern design and custom title bar"""
         self.root.title("SafePDF - A tool for PDF Manipulation")
-        self.root.geometry("780x600")
-        self.root.minsize(780, 600)
+        self.root.geometry(SIZE_STR)
+        self.root.minsize(*SIZE_LIST)
         self.root.configure(bg="#f4f6fb")
         
         # IMPORTANT: First update the window to ensure it's created properly
@@ -157,18 +257,19 @@ class SafePDFUI:
                 SWP_NOZORDER = 0x0004
                 ctypes.windll.user32.SetWindowPos(hwnd, 0, 0, 0, 0, 0,
                     SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER)
+                
         except Exception as e:
-            print(f"Could not set taskbar visibility: {e}")
-        
-        # Final update to apply changes
+            logger.warning(f"Could not set taskbar visibility: {e}")        # Final update to apply changes
         self.root.update_idletasks()
 
         # Apply ttk theme for modern look
         style = ttk.Style()
         try:
             style.theme_use("winnative")
-        except Exception:
+        except Exception as e:
+            logger.debug(f"Theme application failed: {e}, continuing with system theme")
             pass
+
         style.configure("TNotebook", background="#f4f6fb", borderwidth=0)
         style.configure("TNotebook.Tab", background="#e9ecef", padding=10, font=(FONT, 10), borderwidth=0)
         style.map("TNotebook.Tab",
@@ -195,7 +296,6 @@ class SafePDFUI:
     def _find_icon(self):
         """Find and store the application icon path"""
         try:
-            from pathlib import Path
             base = Path(__file__).parent.parent
             candidates = [
                 base / "assets" / "icon.ico",
@@ -206,6 +306,7 @@ class SafePDFUI:
                     self.icon_path = str(c)
                     break
         except Exception:
+            logger.debug("Icon not found or error occurred while finding icon")
             pass
     
     def _ensure_taskbar_visibility(self):
@@ -249,8 +350,9 @@ class SafePDFUI:
                 
                 # Final update
                 self.root.update()
+                
         except Exception as e:
-            print(f"Could not ensure taskbar visibility: {e}")
+            logger.warning(f"Could not ensure taskbar visibility: {e}")
     
     def center_window(self):
         """Center the window on screen"""
@@ -445,7 +547,6 @@ class SafePDFUI:
             # Apply icon to taskbar window BEFORE iconifying
             if self.icon_path:
                 try:
-                    from pathlib import Path
                     icon_path = Path(self.icon_path)
                     if icon_path.suffix.lower() == '.ico':
                         self.taskbar_window.iconbitmap(str(icon_path))
@@ -454,8 +555,9 @@ class SafePDFUI:
                         self.taskbar_window.iconphoto(False, img)
                         # Keep reference to prevent garbage collection
                         self.taskbar_window._icon_img = img
-                except Exception as e:
-                    print(f"Could not set taskbar window icon: {e}")
+                except Exception:
+                    logger.debug("Icon could not be set for taskbar window")
+                    pass  # Icon setting failed, not critical
             
             # Set window size and position offscreen
             self.taskbar_window.geometry("200x50+-32000+-32000")
@@ -488,6 +590,7 @@ class SafePDFUI:
                 if state == 'normal':  # Window is being restored
                     self.restore_window()
             except Exception:
+                logger.debug("Error in on_taskbar_restore event handler", exc_info=True)
                 pass
     
     def restore_window(self, event=None):
@@ -501,6 +604,7 @@ class SafePDFUI:
                 try:
                     self.taskbar_window.destroy()
                 except Exception:
+                    logger.debug("Error destroying taskbar window", exc_info=True)
                     pass
             
             # Restore main window
@@ -570,8 +674,8 @@ class SafePDFUI:
             html_widget.pack(fill='both', expand=True)
             
             # Load the HTML file from the moved `text/` folder
-            welcome_html_path = os.path.join(os.path.dirname(__file__), "..", "text", "welcome_content.html")
-            with open(welcome_html_path, 'r', encoding='utf-8') as f:
+            welcome_html_path = Path(__file__).parent.parent / "text" / "welcome_content.html"
+            with open(str(welcome_html_path), 'r', encoding='utf-8') as f:
                 html_content = f.read()
             html_widget.set_html(html_content)
             
@@ -613,12 +717,13 @@ class SafePDFUI:
         """Load welcome content from text file or use fallback"""
         try:
             # First try to load from moved text folder
-            welcome_txt_path = os.path.join(os.path.dirname(__file__), "..", "text", "welcome_content.txt")
-            if os.path.exists(welcome_txt_path):
-                with open(welcome_txt_path, 'r', encoding='utf-8') as f:
+            welcome_txt_path = Path(__file__).parent.parent / "text" / "welcome_content.txt"
+            if welcome_txt_path.exists():
+                with open(str(welcome_txt_path), 'r', encoding='utf-8') as f:
                     return f.read()
-        except Exception as e:
-            print(f"Could not load welcome content: {e}")
+        except Exception:
+            logger.debug("Error loading welcome content from file", exc_info=True)
+            pass  # File not found, use fallback
         
         # Fallback content if file doesn't exist
         return "Welcome to SafePDF!\n\nThis application helps you perform various PDF operations."
@@ -715,6 +820,7 @@ class SafePDFUI:
                 self.drop_label.dnd_bind('<<DragLeave>>', self.on_drag_leave)
                 self._dnd_loaded = True
             except Exception:
+                logger.debug("Error setting up drag and drop", exc_info=True)
                 pass
     
     def _load_operation_image(self, img_path: str):
@@ -727,16 +833,17 @@ class SafePDFUI:
         else:
             Image, ImageTk = _get_pil()
         
-        abs_img_path = os.path.join(os.path.dirname(__file__), "..", img_path)
+        abs_img_path = Path(__file__).parent.parent / img_path
         try:
-            if os.path.exists(abs_img_path):
+            if abs_img_path.exists():
                 # Optimize image loading
-                img = Image.open(abs_img_path)
+                img = Image.open(str(abs_img_path))
                 # Reduce size for memory efficiency
                 max_size = 80  # Reduced from 100
                 img.thumbnail((max_size, max_size), Image.LANCZOS)
                 return ImageTk.PhotoImage(img)
         except Exception:
+            logger.debug(f"Error loading operation image: {img_path}", exc_info=True)
             pass
         return None
     
@@ -1009,13 +1116,15 @@ class SafePDFUI:
             try:
                 paypal_btn.config(bg='#FFC107')
             except Exception:
-                pass
+                logger.debug("Error in PayPal button hover enter event", exc_info=True)
+                pass  # Widget may be destroyed, ignore
 
         def on_paypal_leave(event):
             try:
                 paypal_btn.config(bg='#FFD43B')
             except Exception:
-                pass
+                logger.debug("Error in PayPal button hover leave event", exc_info=True)
+                pass  # Widget may be destroyed, ignore
 
         paypal_btn.bind("<Enter>", on_paypal_enter)
         paypal_btn.bind("<Leave>", on_paypal_leave)
@@ -1234,10 +1343,12 @@ class SafePDFUI:
             try:
                 self.merge_second_file_var.trace_vdelete('w', getattr(self, '_merge_trace_id', None))
             except Exception:
+                logger.debug("Error removing existing trace for merge second file variable", exc_info=True)
                 pass
             # Add trace to update the execute button when second file is chosen
             self._merge_trace_id = self.merge_second_file_var.trace('w', lambda *args: self._update_execute_button_state())
         except Exception:
+            logger.debug("Error setting trace for merge second file variable", exc_info=True)
             pass
     
     def create_compress_settings(self):
@@ -1340,6 +1451,7 @@ class SafePDFUI:
                 self.root.after(500, lambda: self.pulse_compression_indicator(colors, index + 1))
             except tk.TclError:
                 # Widget was destroyed, stop animation
+                logger.error("Error in pulse_compression_indicator animation", exc_info=True)
                 pass
 
     def create_rotate_settings(self):
@@ -1435,7 +1547,8 @@ class SafePDFUI:
             if getattr(self, 'output_frame', None) and self.output_frame.winfo_exists():
                 self.output_frame.destroy()
         except Exception:
-            pass
+            logger.debug("Error destroying previous output frame", exc_info=True)
+            pass  # Frame may already be destroyed, ignore
 
         output_frame = ttk.LabelFrame(self.settings_container, text="Output Location", padding="10")
         output_frame.pack(fill='x', pady=(10, 5))
@@ -1487,7 +1600,7 @@ class SafePDFUI:
             else:
                 self.browse_output_file()
         except Exception:
-            # Fallback to file browser
+            # Fallback to file browser if controller state is unavailable
             self.browse_output_file()
         
     def toggle_output_selection(self):
@@ -1499,7 +1612,8 @@ class SafePDFUI:
                 if getattr(self, 'browse_output_btn', None):
                     self.browse_output_btn.config(state='disabled')
             except Exception:
-                pass
+                logger.debug("Error toggling output selection to default", exc_info=True)
+                pass  # Widgets may not exist yet, ignore
             self.output_path_var.set("")
         else:
             try:
@@ -1508,7 +1622,8 @@ class SafePDFUI:
                 if getattr(self, 'browse_output_btn', None):
                     self.browse_output_btn.config(state='normal')
             except Exception:
-                pass
+                logger.debug("Error toggling output selection to custom", exc_info=True)
+                pass  # Widgets may not exist yet, ignore
     
     def browse_output_file(self):
         """Browse for output file location"""
@@ -1533,7 +1648,8 @@ class SafePDFUI:
                     self.output_entry.config(state='normal')
                     self.output_entry.update_idletasks()
             except Exception:
-                pass
+                logger.debug("Error updating output entry widget after file browse", exc_info=True)
+                pass  # Widget may not exist or be ready, ignore
     
     def browse_output_directory(self):
         """Browse for output directory location"""
@@ -1554,7 +1670,8 @@ class SafePDFUI:
                     self.output_entry.config(state='normal')
                     self.output_entry.update_idletasks()
             except Exception:
-                pass
+                logger.debug("Error updating output entry widget after directory browse", exc_info=True)
+                pass  # Widget may not exist or be ready, ignore
     
     # Navigation methods
     def next_tab(self):
@@ -1594,25 +1711,13 @@ class SafePDFUI:
             try:
                 output_path = self.controller.current_output
                 
-                if os.path.isfile(output_path):
-                    # Open single file
-                    if platform_system() == 'Windows':
-                        os.startfile(output_path)
-                    elif platform_system() == 'Darwin':  # macOS
-                        subprocess_run(['open', output_path])
-                    else:  # Linux
-                        subprocess_run(['xdg-open', output_path])
-                elif os.path.isdir(output_path):
-                    # Open directory
-                    if platform_system() == 'Windows':
-                        os.startfile(output_path)
-                    elif platform_system() == 'Darwin':  # macOS
-                        subprocess_run(['open', output_path])
-                    else:  # Linux
-                        subprocess_run(['xdg-open', output_path])
+                if os.path.isfile(output_path) or os.path.isdir(output_path):
+                    if not safe_open_file_or_folder(output_path):
+                        messagebox.showerror("Error", "Could not open output file/folder.")
                 else:
                     messagebox.showwarning("File Not Found", f"Output file/folder not found: {output_path}")
             except Exception as e:
+                logger.error(f"Error opening output: {e}", exc_info=True)
                 messagebox.showerror("Error", f"Could not open output: {str(e)}")
         else:
             messagebox.showwarning("No Output", "No output file available to open.")
@@ -1762,7 +1867,8 @@ class SafePDFUI:
             if getattr(self, 'next_btn', None):
                 self.next_btn.config(state='normal' if enabled else 'disabled')
         except Exception:
-            pass
+            logger.debug("Error updating execute button state", exc_info=True)
+            pass  # Button may not exist during initialization, ignore
     
     # Utility methods
     def open_github(self, event):
@@ -1774,27 +1880,29 @@ class SafePDFUI:
         # Try welcome_content.txt first (it contains 'Version: vX.Y.Z')
         try:
             # welcome_content.txt moved into the text/ folder
-            welcome_path = os.path.join(os.path.dirname(__file__), "..", "text", "welcome_content.txt")
-            if os.path.exists(welcome_path):
-                with open(welcome_path, 'r', encoding='utf-8') as f:
+            welcome_path = Path(__file__).parent.parent / "text" / "welcome_content.txt"
+            if welcome_path.exists():
+                with open(str(welcome_path), 'r', encoding='utf-8') as f:
                     for line in f:
                         if line.strip().lower().startswith('version:'):
                             v = line.split(':', 1)[1].strip()
                             return v
         except Exception:
-            pass
+            logger.debug("Error loading welcome content from file", exc_info=True)
+            pass  # File may not exist or be readable, continue to fallback
 
         # Fallback to version.txt for pyinstaller info
         try:
-            version_txt = os.path.join(os.path.dirname(__file__), "..", "version.txt")
-            if os.path.exists(version_txt):
-                with open(version_txt, 'r', encoding='utf-8') as f:
+            version_txt = Path(__file__).parent.parent / "version.txt"
+            if version_txt.exists():
+                with open(str(version_txt), 'r', encoding='utf-8') as f:
                     content = f.read()
                     m = re.search(r"FileVersion',\s*'([0-9_.]+)'", content)
                     if m:
                         return 'v' + m.group(1).replace('_', '.')
         except Exception:
-            pass
+            logger.debug("Error loading version from version.txt", exc_info=True)
+            pass  # Version file may not exist or be readable, use default
 
         return 'v0.0.0'
 
@@ -1832,7 +1940,7 @@ class SafePDFUI:
                 return 0
             return 1
         except Exception:
-            return 0
+            return 0  # Invalid version format, treat as equal
 
     def check_for_updates(self, event=None):
         """Check GitHub releases for updates and notify the user if newer release exists."""
@@ -1844,9 +1952,21 @@ class SafePDFUI:
         current_norm = self._normalize_tag(current)
 
         api_url = 'https://api.github.com/repos/mcagriaksoy/SafePDF/releases/latest'
+        
+        # Validate URL scheme for security (only allow HTTPS)
+        try:
+            parsed_url = urlparse(api_url)
+            if parsed_url.scheme != 'https':
+                messagebox.showerror('Security Error', 'Update check failed: Invalid URL scheme')
+                return
+        except Exception:
+            messagebox.showerror('Security Error', 'Update check failed: Invalid URL')  # URL parsing failed
+            return
+        
         try:
             req = urllib.request.Request(api_url, headers={'User-Agent': 'SafePDF-Update-Checker'})
-            with urllib.request.urlopen(req, timeout=6) as resp:
+            # Security: URL scheme validated above - only HTTPS allowed
+            with urllib.request.urlopen(req, timeout=6) as resp:  # nosec B310
                 data = json.load(resp)
                 tag = data.get('tag_name') or data.get('name') or ''
                 latest_norm = self._normalize_tag(tag)
@@ -1871,20 +1991,20 @@ class SafePDFUI:
         lang = self.language_var.get() if hasattr(self, 'language_var') else 'en'
 
         # Look for localized help file first, then fallback to default help_content.txt
-        base_dir = os.path.join(os.path.dirname(__file__), "..")
+        base_dir = Path(__file__).parent.parent
         # Help files were moved into text/ folder; check there first
         candidates = [
-            os.path.join(base_dir, "text", f"help_content_{lang}.txt"),
-            os.path.join(base_dir, "text", "help_content.txt"),
-            os.path.join(base_dir, f"help_content_{lang}.txt"),
-            os.path.join(base_dir, "help_content.txt")
+            base_dir / "text" / f"help_content_{lang}.txt",
+            base_dir / "text" / "help_content.txt",
+            base_dir / f"help_content_{lang}.txt",
+            base_dir / "help_content.txt"
         ]
 
         help_text = None
         for p in candidates:
             try:
-                if os.path.exists(p):
-                    with open(p, 'r', encoding='utf-8') as f:
+                if p.exists():
+                    with open(str(p), 'r', encoding='utf-8') as f:
                         help_text = f.read()
                         break
             except Exception:
@@ -1932,7 +2052,9 @@ class SafePDFUI:
 
 
             dlg.wait_window()
+            
         except Exception as e:
+            logger.error(f"Error creating help dialog: {e}", exc_info=True)
             messagebox.showinfo("Help", help_text)
 
     def show_settings(self):
@@ -1943,10 +2065,10 @@ class SafePDFUI:
             dlg.transient(self.root)
             dlg.grab_set()
             dlg.resizable(False, False)
-            dlg.geometry("360x240")
+            dlg.geometry("360x320")
             # Center the dialog
             x = self.root.winfo_x() + (self.root.winfo_width() // 2) - (360 // 2)
-            y = self.root.winfo_y() + (self.root.winfo_height() // 2) - (240 // 2)
+            y = self.root.winfo_y() + (self.root.winfo_height() // 2) - (320 // 2)
             dlg.geometry(f"+{x}+{y}")
             dlg.configure(bg="#f8f9fa")
             # Hide the menu bar if any
@@ -1966,6 +2088,14 @@ class SafePDFUI:
             ttk.Radiobutton(theme_frame, text="Light", variable=self.theme_var, value="light").pack(side='left', padx=6)
             ttk.Radiobutton(theme_frame, text="Dark", variable=self.theme_var, value="dark").pack(side='left', padx=6)
 
+            # Log file section
+            ttk.Label(dlg, text="Error Log:", font=(FONT, 10, "bold")).pack(anchor='w', padx=12, pady=(12, 4))
+            log_frame = ttk.Frame(dlg)
+            log_frame.pack(fill='x', padx=12, pady=4)
+            ttk.Button(log_frame, text="View Log File", command=self.view_log_file).pack(side='left', padx=(0, 6))
+            ttk.Button(log_frame, text="Clear Log", command=self.clear_log_file).pack(side='left', padx=6)
+            ttk.Button(log_frame, text="Open Log Folder", command=self.open_log_folder).pack(side='left', padx=6)
+
             # Buttons
             btn_frame = ttk.Frame(dlg)
             btn_frame.pack(fill='x', pady=18, padx=12)
@@ -1978,6 +2108,7 @@ class SafePDFUI:
                     elif hasattr(self.controller, "set_app_settings"):
                         self.controller.set_app_settings(settings)
                 except Exception:
+                    logger.debug("Error applying settings from dialog", exc_info=True)
                     pass
 
             def on_ok():
@@ -1994,6 +2125,120 @@ class SafePDFUI:
             dlg.wait_window()
         except Exception as e:
             messagebox.showerror("Settings Error", f"Could not open settings: {e}")
+    
+    def view_log_file(self):
+        """Open log file viewer dialog"""
+        try:
+            if not LOG_FILE_PATH.exists():
+                messagebox.showinfo("Log File", "No log file found yet.")
+                return
+            
+            # Create log viewer dialog
+            log_dlg = tk.Toplevel(self.root)
+            log_dlg.title("SafePDF Error Log")
+            log_dlg.geometry("700x500")
+            log_dlg.transient(self.root)
+            
+            # Center the dialog
+            x = self.root.winfo_x() + (self.root.winfo_width() // 2) - 350
+            y = self.root.winfo_y() + (self.root.winfo_height() // 2) - 250
+            log_dlg.geometry(f"+{x}+{y}")
+            
+            # Info frame
+            info_frame = ttk.Frame(log_dlg)
+            info_frame.pack(fill='x', padx=10, pady=5)
+            log_size = LOG_FILE_PATH.stat().st_size / 1024  # KB
+            ttk.Label(
+                info_frame,
+                text=f"Log Location: {LOG_FILE_PATH}\nSize: {log_size:.1f} KB",
+                font=(FONT, 9)
+            ).pack(anchor='w')
+            
+            # Text widget with scrollbar
+            text_frame = ttk.Frame(log_dlg)
+            text_frame.pack(fill='both', expand=True, padx=10, pady=5)
+            
+            scrollbar = ttk.Scrollbar(text_frame)
+            scrollbar.pack(side='right', fill='y')
+            
+            log_text = tk.Text(
+                text_frame,
+                wrap=tk.WORD,
+                yscrollcommand=scrollbar.set,
+                font=("Consolas", 9),
+                bg="#f8f9fa",
+                fg="#333"
+            )
+            log_text.pack(side='left', fill='both', expand=True)
+            scrollbar.config(command=log_text.yview)
+            
+            # Load log content
+            try:
+                with open(LOG_FILE_PATH, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                    log_text.insert('1.0', content)
+                    # Auto-scroll to bottom
+                    log_text.see(tk.END)
+            except Exception as e:
+                log_text.insert('1.0', f"Error reading log file: {e}")
+            
+            log_text.config(state=tk.DISABLED)
+            
+            # Button frame
+            btn_frame = ttk.Frame(log_dlg)
+            btn_frame.pack(fill='x', padx=10, pady=10)
+            ttk.Button(btn_frame, text="Refresh", command=lambda: self.refresh_log_view(log_text)).pack(side='left', padx=5)
+            ttk.Button(btn_frame, text="Close", command=log_dlg.destroy).pack(side='right', padx=5)
+            
+        except Exception as e:
+            logger.error(f"Error opening log viewer: {e}", exc_info=True)
+            messagebox.showerror("Error", f"Could not open log viewer: {e}")
+    
+    def refresh_log_view(self, text_widget):
+        """Refresh the log viewer content"""
+        try:
+            text_widget.config(state=tk.NORMAL)
+            text_widget.delete('1.0', tk.END)
+            with open(LOG_FILE_PATH, 'r', encoding='utf-8') as f:
+                content = f.read()
+                text_widget.insert('1.0', content)
+                text_widget.see(tk.END)
+            text_widget.config(state=tk.DISABLED)
+        except Exception as e:
+            logger.error(f"Error refreshing log view: {e}", exc_info=True)
+            text_widget.insert('1.0', f"Error reading log file: {e}")
+    
+    def clear_log_file(self):
+        """Clear the log file after confirmation"""
+        try:
+            if not LOG_FILE_PATH.exists():
+                messagebox.showinfo("Log File", "No log file to clear.")
+                return
+            
+            response = messagebox.askyesno(
+                "Clear Log",
+                "Are you sure you want to clear the error log?\nThis action cannot be undone."
+            )
+            
+            if response:
+                # Clear the log file
+                with open(LOG_FILE_PATH, 'w', encoding='utf-8') as f:
+                    f.write(f"Log cleared by user at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+                logger.info("Log file cleared by user")
+                messagebox.showinfo("Success", "Log file has been cleared.")
+        except Exception as e:
+            logger.error(f"Error clearing log file: {e}", exc_info=True)
+            messagebox.showerror("Error", f"Could not clear log file: {e}")
+    
+    def open_log_folder(self):
+        """Open the folder containing the log file"""
+        try:
+            log_dir = LOG_FILE_PATH.parent
+            if not safe_open_file_or_folder(log_dir):
+                messagebox.showerror("Error", "Could not open log folder.")
+        except Exception as e:
+            logger.error(f"Error opening log folder: {e}", exc_info=True)
+            messagebox.showerror("Error", f"Could not open log folder: {e}")
     
     def cancel_operation(self):
         """Cancel current operation with confirmation"""
@@ -2024,6 +2269,7 @@ class SafePDFUI:
             self.results_text.insert(tk.END, "\nOperation cancelled by user.\n")
             self.results_text.config(state=tk.DISABLED)
         except Exception:
+            logger.debug("Error updating UI after operation cancellation", exc_info=True)
             pass
     
     def save_results(self):
@@ -2134,9 +2380,12 @@ class SafePDFUI:
                     # Keep brand colors for tabs
                     style.map("TNotebook.Tab", foreground=[("selected", RED_COLOR), ("active", RED_COLOR)])
                 except Exception:
+                    logger.debug("Theme customization failed, continuing with defaults.", exc_info=True)
                     pass
         except Exception:
+            logger.debug("Theme application failed, continuing with system theme.", exc_info=True)
             pass
+
         style.map("TNotebook.Tab", foreground=[("selected", RED_COLOR), ("active", RED_COLOR)])
 
 
