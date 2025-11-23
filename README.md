@@ -6,6 +6,8 @@
 [![License](https://img.shields.io/badge/License-GPL--3.0--1-red)](#license)
 [![issues - SafePDF](https://img.shields.io/github/issues/mcagriaksoy/SafePDF)](https://github.com/mcagriaksoy/SafePDF/issues)
 
+<a href="https://www.producthunt.com/products/safepdf-privacy-first-pdf-toolkit?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-safepdf&#0045;privacy&#0045;first&#0045;pdf&#0045;toolkit" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1041419&theme=dark&t=1763928044526" alt="SafePDF&#0058;&#0032;Privacy‑First&#0032;PDF&#0032;Toolkit - It&#0032;is&#0032;a&#0032;privacy&#0045;focused&#0032;offline&#0032;tool&#0032;for&#0032;PDF&#0032;manipulation&#0046; | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
+
 SafePDF is a powerful, privacy-focused PDF manipulation tool designed to handle your documents entirely offline. Whether you're compressing large files, splitting pages, merging multiple PDFs, converting to images, rotating pages, or repairing corrupted documents SafePDF does it all locally, ensuring your sensitive data never leaves your device.
 
 ![Banner](img/SafePDF_Ad.jpg)
