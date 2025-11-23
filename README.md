@@ -32,6 +32,10 @@ Medium article: https://medium.com/dev-genius/the-untold-security-concerns-of-on
 ![Main Window](img/UI_v1.jpg)
 ![Operations Window](img/UI_v1_p2.jpg)
 
+### How to use?
+
+![How to Use?](img/HowToUse.gif)
+
 ## Download URL
 <a href="https://github.com/mcagriaksoy/SafePDF/releases/" download>
   <img src="https://img.shields.io/badge/Download-SafePDF_win64_x86.zip-blue?style=for-the-badge" alt="Download SafePDF_win64_x86.zip">
