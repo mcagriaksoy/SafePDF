@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>SafePDF — Privacy‑First PDF Toolkit</title>
+    <title>SafePDF: A Privacy-First PDF Toolkit</title>
     <link rel="stylesheet" href="style.css">
     <meta name="description"
         content="SafePDF — finally a privacy focused offline PDF compression, split, merge, convert, rotate and repair. Data never leaves your device.">
@@ -42,6 +42,7 @@
       "operatingSystem": "Windows, macOS, Linux",
       "applicationCategory": "DeveloperTool"
     }
+    }
     </script>
 </head>
 
@@ -57,8 +58,8 @@
                 <!-- simple badge links -->
                 <a class="btn primary" href="../README.md">Project</a>
                 <a class="btn" href="https://github.com/mcagriaksoy/SafePDF/releases">Download</a>
-                <a class="btn" href="../LICENSE">License</a>
-                <a class="btn" href="">Contact Me</a>
+                <a class="btn" href="https://github.com/mcagriaksoy/SafePDF/blob/main/LICENSE">License</a>
+                <a class="btn" href="#" id="contact-btn">Contact Me</a>
             </div>
         </div>
     </header>
@@ -169,6 +170,11 @@
 
         </section>
 
+        <div class="product-hunt-section">
+            <h3> Product Hunt </h3>
+        <iframe style="border: none;" src="https://cards.producthunt.com/cards/products/1129974" width="500" height="405" frameborder="0" scrolling="no" allowfullscreen></iframe>
+        </div>
+
     </main>
 
     <footer class="site-footer">
@@ -176,7 +182,7 @@
             <div class="footer-col">
                 <h4>SafePDF</h4>
                 <p class="muted">Privacy-first PDF toolkit. All operations run locally — no cloud upload.</p>
-                <p class="small">Released under <a href="../LICENSE">GPL‑3.0</a></p>
+                <p class="small">Released under <a href="https://github.com/mcagriaksoy/SafePDF/blob/main/LICENSE">GPL‑3.0</a></p>
             </div>
 
             <div class="footer-col">
@@ -200,7 +206,7 @@
                 <h4>Contact</h4>
                 <p class="muted">For support or inquiries:</p>
                 <p class="small"><a href="https://github.com/mcagriaksoy/SafePDF/discussions">Open a Ticket</a></p>
-                <p class="small">Version: <strong>v1.0.5</strong></p>
+                <p class="small">Version: <strong>v1.0.6</strong></p>
             </div>
         </div>
         <div class="container footer-bottom">
@@ -212,6 +218,30 @@
         </div>
     </footer>
 
+    <!-- Contact Modal -->
+    <div id="contact-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Contact Me</h2>
+            <form action="https://formspree.io/f/xnnrkpvk" method="POST">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required>
+                
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+                
+                <label for="message">Message:</label>
+                <textarea id="message" name="message" required></textarea>
+                
+                <div id="captcha-question"></div>
+                <label for="captcha-answer">Answer:</label>
+                <input type="text" id="captcha-answer" name="captcha" required>
+                
+                <button type="submit">Send</button>
+            </form>
+        </div>
+    </div>
+
     <!-- small scripts for footer -->
     <script>
         // update copyright year
@@ -221,6 +251,46 @@
         document.getElementById('back-to-top').addEventListener('click', function () {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
+
+        // Modal functionality
+        var modal = document.getElementById('contact-modal');
+        var btn = document.getElementById('contact-btn');
+        var span = document.getElementsByClassName('close')[0];
+
+        // Math captcha
+        var correctAnswer;
+        function generateCaptcha() {
+            var num1 = Math.floor(Math.random() * 10) + 1;
+            var num2 = Math.floor(Math.random() * 10) + 1;
+            correctAnswer = num1 + num2;
+            document.getElementById('captcha-question').innerHTML = 'What is ' + num1 + ' + ' + num2 + '?';
+        }
+
+        btn.onclick = function() {
+            modal.style.display = 'block';
+            generateCaptcha();
+        }
+
+        span.onclick = function() {
+            modal.style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Form validation
+        document.querySelector('#contact-modal form').onsubmit = function(e) {
+            var userAnswer = document.getElementById('captcha-answer').value;
+            if (parseInt(userAnswer) !== correctAnswer) {
+                alert('Incorrect answer to the math question. Please try again.');
+                e.preventDefault();
+                generateCaptcha();
+                return false;
+            }
+        }
     </script>
 </body>
 

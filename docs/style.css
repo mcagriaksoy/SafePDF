@@ -3,14 +3,16 @@
   --max-width:1100px;
 }
 *{box-sizing:border-box}
-body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,#071023 0%,#071627 60%);color:#e6eef6;line-height:1.4}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:#0f1720;color:#e6eef6;line-height:1.4}
 .container{max-width:var(--max-width);margin:0 auto;padding:24px}
-.hero{padding:48px 0;text-align:center;background:linear-gradient(90deg,rgba(225,29,72,0.06),transparent)}
+.hero{padding:48px 0;text-align:center;background:#0b1220}
 .hero h1{margin:0;font-size:clamp(28px,6vw,44px);letter-spacing:-0.5px}
 .tagline{color:var(--muted);margin-top:8px}
 .badges{margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 .btn{display:inline-block;padding:10px 14px;border-radius:8px;background:transparent;color:#e6eef6;text-decoration:none;border:1px solid rgba(255,255,255,0.06)}
 .btn.primary{background:var(--accent);border-color:transparent;color:white}
+
+.product-hunt-section{text-align:center;margin:40px 0;padding:20px 0;background:rgba(255,255,255,0.01);border-radius:12px}
 
 .features{margin-top:28px}
 .features h2{color:#fff}
@@ -112,4 +114,88 @@ pre{background:rgba(0,0,0,0.25);padding:12px;border-radius:8px;overflow:auto;col
 @media (max-width:520px){
   .hero-banner{ max-width:100%; max-height:140px; }
   /* ...existing code... */
+}
+
+/* Modal styles */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+  background-color: var(--card);
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  width: 90%;
+  max-width: 500px;
+  color: #e6eef6;
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close:hover {
+  color: #fff;
+}
+
+.modal h2 {
+  margin-top: 0;
+  color: #fff;
+}
+
+.modal form {
+  display: flex;
+  flex-direction: column;
+}
+
+.modal label {
+  margin-top: 10px;
+  color: var(--muted);
+}
+
+.modal input, .modal textarea {
+  padding: 10px;
+  margin-top: 5px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 5px;
+  background: rgba(255,255,255,0.05);
+  color: #e6eef6;
+}
+
+.modal textarea {
+  height: 100px;
+  resize: vertical;
+}
+
+#captcha-question {
+  margin-top: 10px;
+  color: var(--muted);
+  font-weight: bold;
+}
+
+.modal button {
+  margin-top: 20px;
+  padding: 10px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.modal button:hover {
+  background: #d11b46;
 }
