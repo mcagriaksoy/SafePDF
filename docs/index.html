@@ -6,14 +6,18 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>SafePDF: A Privacy-First PDF Toolkit</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <meta name="description"
         content="SafePDF — finally a privacy focused offline PDF compression, split, merge, convert, rotate and repair. Data never leaves your device.">
     <link rel="canonical" href="https://mcagriaksoy.github.io/SafePDF/">
     <meta name="keywords"
-        content="SafePDF, PDF, compress, split, merge, convert, rotate, repair, offline, privacy, safe pdf operations, privacy-focused, local pdf tool">
+        content="SafePDF, PDF, compress, split, merge, convert, rotate, repair, offline, privacy, safe pdf operations, privacy-focused, local pdf tool, pdf toolkit, pdf editor, pdf compressor">
     <meta name="author" content="mcagriaksoy">
     <meta name="robots" content="index,follow">
     <meta name="theme-color" content="#0f1720">
+    <meta name="language" content="English">
+    <meta name="geo.region" content="DE">
+    <meta name="geo.placename" content="Germany">
 
     <!-- Open Graph -->
     <meta property="og:title" content="SafePDF — Privacy‑First PDF Toolkit">
@@ -22,6 +26,7 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://mcagriaksoy.github.io/SafePDF/">
     <meta property="og:image" content="https://github.com/mcagriaksoy/SafePDF/raw/main/img/SafePDF_Ad.jpg">
+    <meta property="og:image:alt" content="SafePDF application banner showing privacy-focused PDF operations">
 
     <!-- Twitter card -->
     <meta name="twitter:card" content="summary_large_image">
@@ -29,6 +34,7 @@
     <meta name="twitter:description"
         content="Offline PDF toolkit: compress, split, merge, convert, rotate and repair locally on your device.">
     <meta name="twitter:image" content="https://github.com/mcagriaksoy/SafePDF/raw/main/img/SafePDF_Ad.jpg">
+    <meta name="twitter:image:alt" content="SafePDF application banner showing privacy-focused PDF operations">
 
     <!-- JSON-LD structured data -->
     <script type="application/ld+json">
@@ -40,24 +46,47 @@
       "description": "Privacy-first offline PDF toolkit for compressing, splitting, merging, converting, rotating and repairing PDF documents.",
       "author": { "@type": "Person", "name": "mcagriaksoy", "url": "https://github.com/mcagriaksoy" },
       "operatingSystem": "Windows, macOS, Linux",
-      "applicationCategory": "DeveloperTool"
-    }
+      "applicationCategory": "DeveloperTool",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "featureList": [
+        "Offline PDF processing",
+        "Privacy-focused operations",
+        "PDF compression",
+        "Split and merge PDFs",
+        "Convert PDF to JPG/TXT/DOCX",
+        "Rotate PDF pages",
+        "Repair corrupted PDFs",
+        "Edit PDF metadata"
+      ]
     }
     </script>
 </head>
 
 <body>
-    <header class="hero">
+    <nav class="navbar">
+        <div class="container">
+            <a href="" class="nav-brand">SafePDF™</a>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#screenshots">Screenshots</a></li>
+                <li><a href="#operations">Operations</a></li>
+                <li><a href="#" id="nav-contact-btn">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header class="hero" id="hero">
 
         <div class="container">
-            <h1>SafePDF</h1>
             <p class="tagline">SafePDF is a privacy-focused offline tool for PDF manipulation. Merge, compress, split,
                 and organize your PDF files securely: No internet required, your documents stay local and safe.</p>
-            <img class="hero-banner" src="https://github.com/mcagriaksoy/SafePDF/raw/main/img/SafePDF_Ad.jpg" alt="Banner" />
+            <img class="hero-banner" src="https://github.com/mcagriaksoy/SafePDF/raw/main/img/SafePDF_Ad.jpg" alt="SafePDF application banner showcasing privacy-focused PDF operations interface" />
             <div class="badges">
-                <!-- simple badge links -->
-                <a class="btn primary" href="../README.md">Project</a>
-                <a class="btn" href="https://github.com/mcagriaksoy/SafePDF/releases">Download</a>
+                <a class="btn primary" href="https://github.com/mcagriaksoy/SafePDF/releases">Download</a>
                 <a class="btn" href="https://github.com/mcagriaksoy/SafePDF/blob/main/LICENSE">License</a>
                 <a class="btn" href="#" id="contact-btn">Contact Me</a>
             </div>
@@ -65,7 +94,7 @@
     </header>
 
     <main class="container">
-        <section class="features">
+        <section class="features" id="features">
             <h2>Key features</h2>
             <div class="grid">
                 <div class="card">🔒 Offline / local processing</div>
@@ -84,17 +113,17 @@
         </section>
 
 
-        <section class="screenshots">
+        <section class="screenshots" id="screenshots">
             <h2>Screenshots</h2>
             <div class="shot-row">
-                <img src="https://github.com/mcagriaksoy/SafePDF/raw/main/img/UI_v1.jpg" alt="Main Window" />
-                <img src="https://github.com/mcagriaksoy/SafePDF/raw/main/img/UI_v1_p2.jpg" alt="Operations Window" />
+                <img src="https://github.com/mcagriaksoy/SafePDF/raw/main/img/UI_v1.jpg" alt="SafePDF main application window showing PDF operation options" />
+                <img src="https://github.com/mcagriaksoy/SafePDF/raw/main/img/UI_v1_p2.jpg" alt="SafePDF operations interface displaying file selection and processing controls" />
             </div>
         </section>
 
 
         <!-- New Operations section -->
-        <section class="operations">
+        <section class="operations" id="operations">
             <h2>Operations</h2>
 
             <div class="op-grid">
@@ -172,16 +201,16 @@
 
         <div class="product-hunt-section">
             <h3> Product Hunt </h3>
-        <iframe style="border: none;" src="https://cards.producthunt.com/cards/products/1129974" width="500" height="405" frameborder="0" scrolling="no" allowfullscreen></iframe>
+        <iframe style="border: none;" src="https://cards.producthunt.com/cards/products/1129974" width="500" height="405" frameborder="0" scrolling="no" allowfullscreen title="Product Hunt card for SafePDF"></iframe>
         </div>
 
     </main>
 
-    <footer class="site-footer">
+    <footer class="site-footer" id="contact">
         <div class="container footer-grid">
             <div class="footer-col">
                 <h4>SafePDF</h4>
-                <p class="muted">Privacy-first PDF toolkit. All operations run locally — no cloud upload.</p>
+                <p class="muted">Privacy-first PDF toolkit. All operations run locally, no cloud upload.</p>
                 <p class="small">Released under <a href="https://github.com/mcagriaksoy/SafePDF/blob/main/LICENSE">GPL‑3.0</a></p>
             </div>
 
@@ -197,15 +226,15 @@
             <div class="footer-col">
                 <h4>Community</h4>
                 <ul class="footer-links">
-                    <li><a href="https://github.com/mcagriaksoy/SafePDF/issues">Report an issue</a></li>
-                    <li><a href="https://github.com/mcagriaksoy/SafePDF">GitHub repo</a></li>
+                    <li><a href="https://github.com/mcagriaksoy/SafePDF">GitHub Repository</a></li>
+                    <li><a href="https://github.com/mcagriaksoy/SafePDF/releases">Latest Release</a></li>
                 </ul>
             </div>
 
             <div class="footer-col">
-                <h4>Contact</h4>
-                <p class="muted">For support or inquiries:</p>
-                <p class="small"><a href="https://github.com/mcagriaksoy/SafePDF/discussions">Open a Ticket</a></p>
+                <h4>Contact & Support</h4>
+                <p class="muted">Need help or have feedback?</p>
+                <p class="small"><a href="#" id="contact-btn-footer">Contact Me</a></p>
                 <p class="small">Version: <strong>v1.0.6</strong></p>
             </div>
         </div>
@@ -222,23 +251,67 @@
     <div id="contact-modal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <h2>Contact Me</h2>
-            <form action="https://formspree.io/f/xnnrkpvk" method="POST">
-                <label for="name">Name:</label>
-                <input type="text" id="name" name="name" required>
-                
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" required>
-                
-                <label for="message">Message:</label>
-                <textarea id="message" name="message" required></textarea>
-                
-                <div id="captcha-question"></div>
-                <label for="captcha-answer">Answer:</label>
-                <input type="text" id="captcha-answer" name="captcha" required>
-                
-                <button type="submit">Send</button>
-            </form>
+            <h2>Contact & Support</h2>
+            <p class="contact-intro">Choose how you'd like to get in touch with me:</p>
+
+            <div class="contact-options">
+                <div class="contact-option">
+                    <h3>📧 Send a Message</h3>
+                    <p>Send me a direct message and I'll get back to you.</p>
+                    <button class="contact-btn primary" onclick="showContactForm()">Send Message</button>
+                </div>
+
+                <div class="contact-option">
+                    <h3>🐛 Report a Bug</h3>
+                    <p>Found an issue? Help improve SafePDF by reporting it.</p>
+                    <a href="https://github.com/mcagriaksoy/SafePDF/issues/new?template=bug_report.md" target="_blank" rel="noopener" class="contact-btn">Report Bug</a>
+                </div>
+
+                <div class="contact-option">
+                    <h3>💡 Request a Feature</h3>
+                    <p>Have an idea for a new feature? Let me know!</p>
+                    <a href="https://github.com/mcagriaksoy/SafePDF/issues/new?template=feature_request.md" target="_blank" rel="noopener" class="contact-btn">Request Feature</a>
+                </div>
+
+                <div class="contact-option">
+                    <h3>💬 Start a Discussion</h3>
+                    <p>Join the community discussion or ask questions.</p>
+                    <a href="https://github.com/mcagriaksoy/SafePDF/discussions" target="_blank" rel="noopener" class="contact-btn">Join Discussion</a>
+                </div>
+            </div>
+
+            <div id="contact-form" style="display: none;">
+                <h3>Send a Message</h3>
+                <form action="https://formspree.io/f/xnnrkpvk" method="POST">
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" name="name" required>
+
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required>
+
+                    <label for="subject">Subject:</label>
+                    <select id="subject" name="subject" required>
+                        <option value="">Select a subject</option>
+                        <option value="general">General Inquiry</option>
+                        <option value="support">Technical Support</option>
+                        <option value="feedback">Feedback</option>
+                        <option value="partnership">Partnership/Collaboration</option>
+                        <option value="other">Other</option>
+                    </select>
+
+                    <label for="message">Message:</label>
+                    <textarea id="message" name="message" required></textarea>
+
+                    <div id="captcha-question"></div>
+                    <label for="captcha-answer">Answer:</label>
+                    <input type="text" id="captcha-answer" name="captcha" required>
+
+                    <div class="form-buttons">
+                        <button type="button" class="contact-btn secondary" onclick="hideContactForm()">Back</button>
+                        <button type="submit" class="contact-btn primary">Send Message</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -246,6 +319,20 @@
     <script>
         // update copyright year
         document.getElementById('copy-year').textContent = new Date().getFullYear();
+
+        // smooth scroll for nav links
+        document.querySelectorAll('.nav-links a').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
 
         // back to top smooth scroll
         document.getElementById('back-to-top').addEventListener('click', function () {
@@ -255,6 +342,8 @@
         // Modal functionality
         var modal = document.getElementById('contact-modal');
         var btn = document.getElementById('contact-btn');
+        var btnFooter = document.getElementById('contact-btn-footer');
+        var btnNav = document.getElementById('nav-contact-btn');
         var span = document.getElementsByClassName('close')[0];
 
         // Math captcha
@@ -266,10 +355,33 @@
             document.getElementById('captcha-question').innerHTML = 'What is ' + num1 + ' + ' + num2 + '?';
         }
 
-        btn.onclick = function() {
-            modal.style.display = 'block';
+        function showContactForm() {
+            document.getElementById('contact-form').style.display = 'block';
+            document.querySelector('.contact-options').style.display = 'none';
             generateCaptcha();
         }
+
+        function hideContactForm() {
+            document.getElementById('contact-form').style.display = 'none';
+            document.querySelector('.contact-options').style.display = 'grid';
+        }
+
+        function openContactModal() {
+            modal.style.display = 'flex';
+            modal.style.justifyContent = 'center';
+            modal.style.alignItems = 'center';
+            hideContactForm(); // Reset to show options
+        }
+
+        btn.onclick = openContactModal;
+        btnFooter.onclick = function(e) {
+            e.preventDefault();
+            openContactModal();
+        };
+        btnNav.onclick = function(e) {
+            e.preventDefault();
+            openContactModal();
+        };
 
         span.onclick = function() {
             modal.style.display = 'none';
