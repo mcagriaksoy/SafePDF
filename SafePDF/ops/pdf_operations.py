@@ -286,7 +286,7 @@ class PDFOperations:
                             tmp_fd = None
                             tmp_name = None
                             try:
-                                tmp_fd, tmp_name = tmp_mkstemp(suffix=".jpg")
+                                tmp_fd, tmp_name = tmp_mkstemp(suffix=".avif")
                                 os.write(tmp_fd, img_bytes)
                                 os.close(tmp_fd)
                                 tmp_fd = None
@@ -549,7 +549,7 @@ class PDFOperations:
                 pix = page.get_pixmap(matrix=mat)
                 
                 # Save as JPG
-                output_filename = f"page_{page_num + 1}.jpg"
+                output_filename = f"page_{page_num + 1}.avif"
                 output_path = os_path.join(output_dir, output_filename)
                 pix.save(output_path)
                 
