@@ -2,20 +2,23 @@
 SafePDF UI - Optimized User Interface Components
 """
 
-import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
-import os
 import json
-import urllib.request
 import logging
-from logging.handlers import RotatingFileHandler
-from datetime import datetime
-from webbrowser import open as webbrowser_open
-from urllib.parse import urlparse
-from pathlib import Path
-from subprocess import run as subprocess_run
-from platform import system as platform_system
+import os
 import sys
+import tkinter as tk
+import urllib.request
+from datetime import datetime
+from logging.handlers import RotatingFileHandler
+from pathlib import Path
+from platform import system as platform_system
+from subprocess import run as subprocess_run
+from tkinter import filedialog, messagebox, ttk
+from urllib.parse import urlparse
+from webbrowser import open as webbrowser_open
+
+SIZE_STR = "780x620"
+SIZE_LIST = 780, 620
 
 # Setup logging configuration
 def setup_logging():
@@ -131,9 +134,6 @@ def open_url(url: str) -> bool:
     except Exception as e:
         logger.error(f"Error opening URL {url}: {e}", exc_info=True)
         return False
-
-SIZE_STR = "780x620"
-SIZE_LIST = 780, 620
 
 # Lazy imports for optional components
 def _get_tkinterdnd():
@@ -301,15 +301,17 @@ class SafePDFUI:
         )
         style.configure("TFrame", background="#ffffff")
         style.configure("TLabel", background="#ffffff", font=(FONT, 10))
-        style.configure("TButton", font=(FONT, 10), padding=6, background=RED_COLOR, foreground="#000")
+        style.configure("TButton", font=(FONT, 10), padding=6, background=RED_COLOR, foreground="#000", borderwidth=1, relief="flat")
         style.map("TButton",
             background=[("active", "#005fa3"), ("!active", RED_COLOR)],
-            foreground=[("active", "#000"), ("!active", "#000")]
+            foreground=[("active", "#000"), ("!active", "#000")],
+            relief=[("pressed", "sunken"), ("!pressed", "flat")]
         )
-        style.configure("Accent.TButton", background="#00b386", foreground="#000", font=(FONT, 10, "bold"), padding=8)
+        style.configure("Accent.TButton", background="#00b386", foreground="#000", font=(FONT, 10, "bold"), padding=8, borderwidth=1, relief="flat")
         style.map("Accent.TButton",
             background=[("active", "#09970"), ("!active", "#00b386")],
-            foreground=[("active", "#000"), ("!active", "#000")]
+            foreground=[("active", "#000"), ("!active", "#000")],
+            relief=[("pressed", "sunken"), ("!pressed", "flat")]
         )
         style.configure("Gray.TLabel", foreground="#888", background="#ffffff")
 
@@ -336,7 +338,7 @@ class SafePDFUI:
         try:
             if platform_system() == 'Windows':
                 import ctypes
-                
+
                 # Get window handle
                 hwnd = ctypes.windll.user32.GetParent(self.root.winfo_id())
                 if hwnd == 0:
@@ -446,6 +448,7 @@ class SafePDFUI:
             cursor="hand2",
             activebackground="#a01818",
             activeforeground="#fff",
+            relief=tk.FLAT,
             command=self.minimize_window
         )
         self.minimize_btn.pack(side='left', fill='y')
@@ -463,6 +466,7 @@ class SafePDFUI:
             cursor="hand2",
             activebackground="#a01818",
             activeforeground="#fff",
+            relief=tk.FLAT,
             command=self.toggle_fullscreen
         )
         self.maximize_btn.pack(side='left', fill='y')
@@ -480,6 +484,7 @@ class SafePDFUI:
             cursor="hand2",
             activebackground="#d32f2f",
             activeforeground="#fff",
+            relief=tk.FLAT,
             command=self.close_window
         )
         self.close_btn.pack(side='right', fill='y')
@@ -661,15 +666,15 @@ class SafePDFUI:
         self.notebook.add(self.welcome_frame, text="1. Welcome")
         self.create_welcome_tab()
         
-        # Tab 2: Select File
-        self.file_frame = ttk.Frame(self.notebook)
-        self.notebook.add(self.file_frame, text="2. Select File")
-        self.create_file_tab()
-        
-        # Tab 3: Select Operation
+        # Tab 2: Select Operation
         self.operation_frame = ttk.Frame(self.notebook)
-        self.notebook.add(self.operation_frame, text="3. Select Operation")
+        self.notebook.add(self.operation_frame, text="2. Select Operation")
         self.create_operation_tab()
+        
+        # Tab 3: Select File
+        self.file_frame = ttk.Frame(self.notebook)
+        self.notebook.add(self.file_frame, text="3. Select File")
+        self.create_file_tab()
         
         # Tab 4: Adjust Settings
         self.settings_frame = ttk.Frame(self.notebook)
@@ -791,19 +796,19 @@ class SafePDFUI:
         main_frame = ttk.Frame(self.file_frame, style="TFrame")
         main_frame.pack(fill='both', expand=True, padx=32, pady=32)
 
-        # Drop zone (modern look)
+        # Drop zone (modern look with rounded effect)
         self.drop_label = tk.Label(
             main_frame,
             text="Drop .PDF File Here!",
-            relief=tk.RIDGE,
-            bd=2,
+            relief=tk.FLAT,
+            bd=0,
             bg="#f8f9fa",
             font=(FONT, 13, "bold"),
             height=6,
             cursor="hand2",
             fg=RED_COLOR,
             highlightbackground="#d1d5db",
-            highlightthickness=2
+            highlightthickness=3
         )
         self.drop_label.pack(fill='both', expand=True, pady=(0, 12))
         self.drop_label.bind("<Button-1>", self.browse_file)
@@ -827,6 +832,19 @@ class SafePDFUI:
         # Selected file label
         self.file_label = ttk.Label(main_frame, text="No file selected", style="TLabel", foreground="#888")
         self.file_label.pack(pady=(12, 0))
+        
+        # Update UI based on selected operation
+        self.update_file_tab_ui()
+
+    def update_file_tab_ui(self):
+        """Update file tab UI based on selected operation"""
+        if not hasattr(self, 'drop_label') or not self.drop_label:
+            return
+        
+        if self.controller.selected_operation == 'merge':
+            self.drop_label.config(text="Drop PDF Files Here!")
+        else:
+            self.drop_label.config(text="Drop PDF File Here!")
     
     def setup_drag_drop(self):
         """Setup drag and drop with lazy loading"""
@@ -874,16 +892,6 @@ class SafePDFUI:
         # Modern group frame optimized for larger image buttons
         group_frame = tk.Frame(self.operation_frame, bg="#f9f9fa", relief=tk.FLAT)
         group_frame.pack(fill='both', expand=True, padx=0, pady=0)
-        
-        # Add title label
-        title_label = tk.Label(
-            group_frame, 
-            text="Choose PDF Operation", 
-            font=(FONT, 16, "bold"),
-            bg="#f9f9fa", 
-            fg=RED_COLOR
-        )
-        title_label.pack(pady=(0, 0))
 
         # Create container for the operation buttons
         operations_container = tk.Frame(group_frame, bg="#f9f9fa")
@@ -914,12 +922,12 @@ class SafePDFUI:
             tk_img = self._load_operation_image(img_path)
             self.operation_images.append(tk_img)
 
-            # Create clickable image button frame with shadow effect
-            shadow_frame = tk.Frame(operations_container, bg="#d0d0d0", relief=tk.FLAT)
-            shadow_frame.grid(row=row, column=col, padx=8, pady=8, sticky='nsew')
+            # Create clickable image button frame with modern rounded shadow effect
+            shadow_frame = tk.Frame(operations_container, bg="#e0e0e0", relief=tk.FLAT)
+            shadow_frame.grid(row=row, column=col, padx=10, pady=10, sticky='nsew')
             
-            op_frame = tk.Frame(shadow_frame, relief=tk.RAISED, bd=2, bg="#ffffff", cursor="hand2")
-            op_frame.place(x=-2, y=-2, relwidth=1, relheight=1)
+            op_frame = tk.Frame(shadow_frame, relief=tk.FLAT, bd=0, bg="#ffffff", cursor="hand2", highlightbackground="#e0e0e0", highlightthickness=3)
+            op_frame.place(x=2, y=2, relwidth=1, relheight=1, width=-4, height=-4)
             
             # Configure grid weights for centered content
             operations_container.grid_columnconfigure(col, weight=1)
@@ -935,7 +943,6 @@ class SafePDFUI:
                 img_button = tk.Button(
                     button_container,
                     image=tk_img,
-                    command=command,
                     relief=tk.FLAT,
                     bd=0,
                     bg="#ffffff",
@@ -967,10 +974,14 @@ class SafePDFUI:
                 )
                 desc_label.pack()
 
-                # Make all elements clickable (except img_button, which uses command)
-                clickable_widgets = [button_container, title_label, desc_label]
-                for widget in clickable_widgets:
-                    widget.bind("<Button-1>", lambda e, cmd=command: cmd())
+                # Make the entire frame clickable
+                op_frame.bind("<Button-1>", lambda e, cmd=command: cmd())
+                button_container.bind("<Button-1>", lambda e, cmd=command: cmd())
+                img_button.bind("<Button-1>", lambda e, cmd=command: cmd())
+                title_label.bind("<Button-1>", lambda e, cmd=command: cmd())
+                desc_label.bind("<Button-1>", lambda e, cmd=command: cmd())
+                
+                clickable_widgets = [button_container, img_button, title_label, desc_label]
                 
             else:
                 # Fallback button without image
@@ -993,32 +1004,33 @@ class SafePDFUI:
                 clickable_widgets = [img_button]
             
             # Enhanced hover effects for the frame and all clickable elements
-            def create_hover_effect(frame, widgets, operation_text):
+            def create_hover_effect(frame, widgets):
                 def on_enter(event):
-                    frame.config(relief=tk.RAISED, bd=3, bg="#f0f8ff")
+                    frame.config(relief=tk.FLAT, bg="#f0f8ff", highlightbackground="#0066cc", highlightthickness=3)
                     for widget in widgets:
                         if hasattr(widget, 'config'):
-                            widget.config(bg="#f0f8ff")
+                            try:
+                                widget.config(bg="#f0f8ff")
+                            except Exception:
+                                pass
                     
                 def on_leave(event):
-                    frame.config(relief=tk.RAISED, bd=2, bg="#ffffff")
+                    frame.config(relief=tk.FLAT, bg="#ffffff", highlightbackground="#e0e0e0", highlightthickness=3)
                     for widget in widgets:
                         if hasattr(widget, 'config'):
-                            widget.config(bg="#ffffff")
+                            try:
+                                widget.config(bg="#ffffff")
+                            except Exception:
+                                pass
                     
-                def on_click(event):
-                    frame.config(relief=tk.SUNKEN, bd=2, bg="#e6f3ff")
-                    # Reset after a short delay
-                    frame.after(100, lambda: frame.config(relief=tk.RAISED, bd=2, bg="#ffffff"))
-                    
-                # Bind events to frame and all clickable widgets
-                all_widgets = [frame] + widgets
-                for widget in all_widgets:
+                # Bind hover events to frame and all widgets
+                frame.bind("<Enter>", on_enter)
+                frame.bind("<Leave>", on_leave)
+                for widget in widgets:
                     widget.bind("<Enter>", on_enter)
                     widget.bind("<Leave>", on_leave)
-                    widget.bind("<Button-1>", on_click)
                     
-            create_hover_effect(op_frame, clickable_widgets, text)
+            create_hover_effect(op_frame, clickable_widgets)
             # Store the main clickable element for reference
             self.operation_buttons.append(clickable_widgets[0] if clickable_widgets else op_frame)
 
@@ -1107,11 +1119,12 @@ class SafePDFUI:
             fg="#000",
             font=(FONT, 9, "bold"),
             bd=0,
-            padx=10,
-            pady=5,
+            padx=12,
+            pady=6,
             cursor="hand2",
             relief=tk.FLAT,
-            highlightthickness=0
+            highlightthickness=0,
+            highlightbackground="#FF7F7A"
         )
         donate_btn.pack(side='left', padx=5)
 
@@ -1125,11 +1138,12 @@ class SafePDFUI:
             fg="#000",
             font=(FONT, 9, "bold"),
             bd=0,
-            padx=10,
+            padx=12,
             pady=6,
             cursor="hand2",
             relief=tk.FLAT,
-            highlightthickness=0
+            highlightthickness=0,
+            highlightbackground="#FFC107"
         )
         paypal_btn.pack(side='left', padx=5)
 
@@ -1188,78 +1202,125 @@ class SafePDFUI:
     
     def on_drag_enter(self, event):
         """Handle drag enter event - provide visual feedback"""
-        self.drop_label.config(bg="#e8f5e8", relief=tk.SOLID, bd=3)
+        self.drop_label.config(bg="#e8f5e8", relief=tk.FLAT, highlightbackground="#00b386", highlightthickness=4)
         
     def on_drag_leave(self, event):
         """Handle drag leave event - restore original appearance"""
         if not self.controller.selected_file:  # Only restore if no file is selected
-            self.drop_label.config(bg="#f8f9fa", relief=tk.RIDGE, bd=2)
+            self.drop_label.config(bg="#f8f9fa", relief=tk.FLAT, highlightbackground="#d1d5db", highlightthickness=3)
     
     def handle_drop(self, event):
         """Handle file drop event"""
         try:
             files = self.root.tk.splitlist(event.data)
             if files:
-                file_path = files[0].strip('"{}')  # Remove quotes and braces that might wrap the path
+                # For merge operation, allow multiple files
+                if self.controller.selected_operation == 'merge':
+                    file_paths = [f.strip('"{}') for f in files]
+                    if len(file_paths) < 2:
+                        messagebox.showwarning("Not enough files", "Please drop at least 2 PDF files to merge.")
+                        if hasattr(self, 'drop_label') and self.drop_label:
+                            self.on_drag_leave(None)
+                        return
+                else:
+                    # For other operations, take only the first file
+                    file_paths = [files[0].strip('"{}')]
                 
+                success, message = self.controller.select_file(file_paths)
+                
+                if success:
+                    if self.controller.selected_operation == 'merge':
+                        filenames = [os.path.basename(f) for f in file_paths]
+                        if hasattr(self, 'file_label') and self.file_label:
+                            self.file_label.config(text=f"Selected files: {', '.join(filenames)}", foreground='green')
+                        if hasattr(self, 'drop_label') and self.drop_label:
+                            self.drop_label.config(
+                                text=f"✅ Selected {len(filenames)} files for merge", 
+                                bg='#e8f5e8', 
+                                fg='#28a745',
+                                relief=tk.FLAT,
+                                highlightbackground='#28a745',
+                                highlightthickness=3
+                            )
+                    else:
+                        filename = os.path.basename(file_paths[0])
+                        if hasattr(self, 'file_label') and self.file_label:
+                            self.file_label.config(text=message, foreground='green')
+                        if hasattr(self, 'drop_label') and self.drop_label:
+                            self.drop_label.config(
+                                text=f"✅ Selected: {filename}", 
+                                bg='#e8f5e8', 
+                                fg='#28a745',
+                                relief=tk.FLAT,
+                                highlightbackground='#28a745',
+                                highlightthickness=3
+                            )
+                    
+                    # Show PDF info for the first file
+                    self.show_pdf_info()
+                else:
+                    messagebox.showwarning("Invalid File", message)
+                    if hasattr(self, 'drop_label') and self.drop_label:
+                        self.on_drag_leave(None)  # Restore original appearance
+            else:
+                messagebox.showwarning("No File", "No file was dropped.")
+                if hasattr(self, 'drop_label') and self.drop_label:
+                    self.on_drag_leave(None)  # Restore original appearance
+        except Exception as e:
+            messagebox.showerror("Drop Error", f"An error occurred while processing the dropped file: {str(e)}")
+            if hasattr(self, 'drop_label') and self.drop_label:
+                self.on_drag_leave(None)  # Restore original appearance
+    
+    def browse_file(self, event=None):
+        """Browse for PDF file"""
+        if not self.controller.selected_operation:
+            messagebox.showwarning("No Operation Selected", "Please select an operation first from the 'Select Operation' tab.")
+            return
+            
+        if self.controller.selected_operation == 'merge':
+            file_paths = filedialog.askopenfilenames(
+                title="Select PDF Files to Merge (Select multiple files)",
+                filetypes=[("PDF files", "*.pdf"), ("All files", "*.*")],
+            )
+            if file_paths:
+                if len(file_paths) < 2:
+                    messagebox.showwarning("Not enough files", "Please select at least 2 PDF files to merge.")
+                    return
+                success, message = self.controller.select_file(list(file_paths))
+                if success:
+                    self.update_file_display()
+                else:
+                    messagebox.showerror("Error", message)
+        else:
+            file_path = filedialog.askopenfilename(
+                title="Select PDF File",
+                filetypes=[("PDF files", "*.pdf"), ("All files", "*.*")],
+                defaultextension=".pdf",
+            )
+            
+            if file_path:
                 success, message = self.controller.select_file(file_path)
                 
                 if success:
                     filename = os.path.basename(file_path)
                     
-                    # Update UI
-                    self.file_label.config(text=message, foreground='green')
-                    self.drop_label.config(
-                        text=f"✅ Selected: {filename}", 
-                        bg='#e8f5e8', 
-                        fg='#28a745',
-                        relief=tk.SOLID,
-                        bd=2
-                    )
+                    # Update UI with consistent styling - check if widgets exist first
+                    if hasattr(self, 'file_label') and self.file_label:
+                        self.file_label.config(text=message, foreground='green')
+                    if hasattr(self, 'drop_label') and self.drop_label:
+                        self.drop_label.config(
+                            text=f"✅ Selected: {filename}", 
+                            bg='#e8f5e8',
+                            fg='#28a745',
+                            relief=tk.FLAT,
+                            highlightbackground='#28a745',
+                            highlightthickness=3
+                        )
                     
                     # Show PDF info
                     self.show_pdf_info()
-                    
-                    # Automatically move to next tab after successful file selection
-                    self.root.after(1000, lambda: self.notebook.select(2))
                 else:
-                    messagebox.showwarning("Invalid File", message)
-                    self.on_drag_leave(None)  # Restore original appearance
-            else:
-                messagebox.showwarning("No File", "No file was dropped.")
-                self.on_drag_leave(None)  # Restore original appearance
-        except Exception as e:
-            messagebox.showerror("Drop Error", f"An error occurred while processing the dropped file: {str(e)}")
-            self.on_drag_leave(None)  # Restore original appearance
-    
-    def browse_file(self, event=None):
-        """Browse for PDF file"""
-        file_path = filedialog.askopenfilename(
-            title="Select PDF File",
-            filetypes=[("PDF files", "*.pdf"), ("All files", "*.*")],
-            defaultextension=".pdf",
-        )
-        
-        if file_path:
-            success, message = self.controller.select_file(file_path)
-            
-            if success:
-                filename = os.path.basename(file_path)
-                
-                # Update UI with consistent styling
-                self.file_label.config(text=message, foreground='green')
-                self.drop_label.config(
-                    text=f"✅ Selected: {filename}", 
-                    bg='#e8f5e8',
-                    fg='#28a745',
-                    relief=tk.SOLID,
-                    bd=2
-                )
-                
-                # Show PDF info
-                self.show_pdf_info()
-            else:
-                messagebox.showerror("Error", message)
+                    messagebox.showerror("Error", message)
 
     def browse_merge_second_file(self):
         """Browse for the second PDF to merge"""
@@ -1285,8 +1346,9 @@ class SafePDFUI:
         if info and "error" not in info:
             info_text = f"Pages: {info.get('pages', 'Unknown')}\n"
             info_text += f"Size: {info.get('file_size', 0) / 1024:.1f} KB"
-            current_text = self.file_label.cget("text")
-            self.file_label.config(text=f"{current_text}\n{info_text}")
+            if hasattr(self, 'file_label') and self.file_label:
+                current_text = self.file_label.cget("text")
+                self.file_label.config(text=f"{current_text}\n{info_text}")
         elif info and "error" in info:
             messagebox.showerror("Error", f"Could not read PDF: {info['error']}")
     
@@ -1295,37 +1357,43 @@ class SafePDFUI:
         self.controller.select_operation("compress")
         self.highlight_selected_operation(0)
         self.update_settings_for_operation()
-        self.notebook.select(3)  # Always go to settings tab
+        self.update_file_tab_ui()
+        self.notebook.select(2)  # Go to file tab
 
     def select_split(self):
         self.controller.select_operation("split")
         self.highlight_selected_operation(1)
         self.update_settings_for_operation()
-        self.notebook.select(3)
+        self.update_file_tab_ui()
+        self.notebook.select(2)
 
     def select_merge(self):
         self.controller.select_operation("merge")
         self.highlight_selected_operation(2)
         self.update_settings_for_operation()
-        self.notebook.select(3)
+        self.update_file_tab_ui()
+        self.notebook.select(2)
 
     def select_to_jpg(self):
         self.controller.select_operation("to_jpg")
         self.highlight_selected_operation(3)
         self.update_settings_for_operation()
-        self.notebook.select(3)
+        self.update_file_tab_ui()
+        self.notebook.select(2)
 
     def select_rotate(self):
         self.controller.select_operation("rotate")
         self.highlight_selected_operation(4)
         self.update_settings_for_operation()
-        self.notebook.select(3)
+        self.update_file_tab_ui()
+        self.notebook.select(2)
 
     def select_repair(self):
         self.controller.select_operation("repair")
         self.highlight_selected_operation(5)
         self.update_settings_for_operation()
-        self.notebook.select(3)
+        self.update_file_tab_ui()
+        self.notebook.select(2)
     
     def highlight_selected_operation(self, selected_index):
         """Highlight the selected operation button"""
@@ -1537,24 +1605,16 @@ class SafePDFUI:
         
         ttk.Checkbutton(merge_frame, text="Add page numbers to merged PDF", variable=self.merge_var).pack(anchor='w')
 
-        # Second file selection
-        second_frame = ttk.Frame(self.settings_container)
-        second_frame.pack(fill='x', pady=(8, 6))
-        ttk.Label(second_frame, text="Second PDF to merge:").pack(anchor='w')
-        select_frame = ttk.Frame(second_frame)
-        select_frame.pack(fill='x', pady=2)
-
-        self.merge_second_label = ttk.Label(select_frame, text="No second file selected", foreground="#888")
-        self.merge_second_label.pack(side='left', fill='x', expand=True)
-
-        ttk.Button(select_frame, text="Browse...", width=12, command=self.browse_merge_second_file).pack(side='right')
-
-        # Order selection: at the end or at the beginning
-        order_frame = ttk.Frame(self.settings_container)
-        order_frame.pack(anchor='w', pady=5)
-        ttk.Label(order_frame, text="Add second file:").pack(side='left', padx=(0, 8))
-        ttk.Radiobutton(order_frame, text="At the end", variable=self.merge_order_var, value="end").pack(side='left')
-        ttk.Radiobutton(order_frame, text="At the beginning", variable=self.merge_order_var, value="beginning").pack(side='left')
+        # Show selected files
+        files_frame = ttk.LabelFrame(self.settings_container, text="Files to Merge (in order)", padding="10")
+        files_frame.pack(fill='x', pady=(8, 6))
+        
+        if self.controller.selected_files:
+            for idx, file_path in enumerate(self.controller.selected_files, 1):
+                file_label = ttk.Label(files_frame, text=f"{idx}. {os.path.basename(file_path)}", foreground="#00b386")
+                file_label.pack(anchor='w', pady=2)
+        else:
+            ttk.Label(files_frame, text="No files selected", foreground="#888").pack(anchor='w')
 
         # Add output path selection
         self.create_output_path_selection(is_directory=False)
@@ -1867,7 +1927,7 @@ class SafePDFUI:
         
         # Update results text
         self.results_text.config(state=tk.NORMAL)
-        self.results_text.insert(tk.END, f"\nOperation completed!\n")
+        self.results_text.insert(tk.END, "\nOperation completed!\n")
         self.results_text.insert(tk.END, f"Status: {'Success' if success else 'Failed'}\n")
         self.results_text.insert(tk.END, f"Details: {message}\n")
 
@@ -2339,6 +2399,7 @@ class SafePDFUI:
             if platform_system() == 'Windows':
                 try:
                     import ctypes
+
                     # Get work area (screen minus taskbar)
                     class RECT(ctypes.Structure):
                         _fields_ = [("left", ctypes.c_long),
@@ -2412,16 +2473,68 @@ class SafePDFUI:
         self.controller.select_operation("to_word")
         self.highlight_selected_operation(6)
         self.update_settings_for_operation()
-        self.notebook.select(3)
+        self.update_file_tab_ui()
+        self.notebook.select(2)
     
     def select_to_txt(self):
         self.controller.select_operation("to_txt")
         self.highlight_selected_operation(7)
         self.update_settings_for_operation()
-        self.notebook.select(3)
+        self.update_file_tab_ui()
+        self.notebook.select(2)
     
     def select_extract_info(self):
         self.controller.select_operation("extract_info")
         self.highlight_selected_operation(8)
         self.update_settings_for_operation()
-        self.notebook.select(3)
+        self.update_file_tab_ui()
+        self.notebook.select(2)
+    
+    def update_file_display(self):
+        """Update the file display UI after file selection"""
+        try:
+            if self.controller.selected_files:
+                if len(self.controller.selected_files) == 1:
+                    # Single file
+                    filename = os.path.basename(self.controller.selected_files[0])
+                    if hasattr(self, 'file_label') and self.file_label:
+                        self.file_label.config(text=f"Selected file: {filename}", foreground='green')
+                    if hasattr(self, 'drop_label') and self.drop_label:
+                        self.drop_label.config(
+                            text=f"✅ Selected: {filename}", 
+                            bg='#e8f5e8',
+                            fg='#28a745',
+                            relief=tk.SOLID,
+                            bd=2
+                        )
+                else:
+                    # Multiple files (merge operation)
+                    filenames = [os.path.basename(f) for f in self.controller.selected_files]
+                    if hasattr(self, 'file_label') and self.file_label:
+                        self.file_label.config(text=f"Selected files: {', '.join(filenames)}", foreground='green')
+                    if hasattr(self, 'drop_label') and self.drop_label:
+                        self.drop_label.config(
+                            text=f"✅ Selected {len(filenames)} files for merge", 
+                            bg='#e8f5e8',
+                            fg='#28a745',
+                            relief=tk.SOLID,
+                            bd=2
+                        )
+                
+                # Show PDF info for the first file
+                self.show_pdf_info()
+            else:
+                # No files selected
+                if hasattr(self, 'file_label') and self.file_label:
+                    self.file_label.config(text="No file selected", foreground='#888')
+                if hasattr(self, 'drop_label') and self.drop_label:
+                    self.drop_label.config(
+                        text="Drop PDF files here or click to browse", 
+                        bg="#f8f9fa",
+                        fg="#666",
+                        relief=tk.RIDGE,
+                        bd=2
+                    )
+        except Exception as e:
+            logger.debug(f"Error updating file display: {e}", exc_info=True)
+            pass

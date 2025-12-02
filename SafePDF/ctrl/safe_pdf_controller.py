@@ -6,17 +6,20 @@ This module handles the core application logic, state management,
 and coordination of PDF operations.
 """
 
-from os import path as os_path
 from os import makedirs
+from os import path as os_path
 from threading import Thread
+
 from SafePDF.logger.logging_config import get_logger
 from SafePDF.ops.pdf_operations import PDFOperations
+
 
 class SafePDFController:
     """Controller class that manages application state and logic"""
     
     def __init__(self, progress_callback=None):
         # Application state
+        self.selected_files = []
         self.selected_file = None
         self.selected_operation = None
         self.current_tab = 0
@@ -42,15 +45,23 @@ class SafePDFController:
         self.completion_callback = completion_callback
     
     def select_file(self, file_path):
-        """Select and validate a PDF file"""
-        if not os_path.exists(file_path):
-            return False, "File does not exist"
+        """Select and validate PDF file(s)"""
+        if isinstance(file_path, list):
+            self.selected_files = file_path
+        else:
+            self.selected_files = [file_path]
         
-        if not file_path.lower().endswith('.pdf'):
-            return False, "Please select a PDF file. Only .pdf files are supported."
+        self.selected_file = self.selected_files[0] if self.selected_files else None
         
-        self.selected_file = file_path
-        return True, f"Selected: {os_path.basename(file_path)}"
+        # Validate all files
+        for f in self.selected_files:
+            if not os_path.exists(f):
+                return False, f"File does not exist: {f}"
+            if not f.lower().endswith('.pdf'):
+                return False, f"Please select PDF files only. Invalid: {os_path.basename(f)}"
+        
+        filenames = [os_path.basename(f) for f in self.selected_files]
+        return True, f"Selected: {', '.join(filenames)}"
     
     def get_pdf_info(self):
         """Get information about the selected PDF file"""
@@ -73,14 +84,14 @@ class SafePDFController:
     
     def can_proceed_to_tab(self, tab_index):
         """Check if the user can proceed to a specific tab"""
-        if tab_index == 2:  # File selection tab
-            if not self.selected_file:
-                return False, "Please select a PDF file first!"
-        elif tab_index == 3:  # Operation selection tab
+        if tab_index == 3:  # File selection tab
             if not self.selected_operation:
                 return False, "Please select an operation first!"
         elif tab_index == 4:  # Settings tab - no additional validation needed
-            pass
+            if not self.selected_file:
+                return False, "Please select a file first!"
+            if self.selected_operation == 'merge' and len(self.selected_files) < 2:
+                return False, "Merge requires at least two files. Please select more files."
         
         return True, ""
     
@@ -93,7 +104,7 @@ class SafePDFController:
                 return custom_output_path, None
         
         # Default paths with minimal processing
-        if self.selected_operation in ["compress", "rotate", "repair", "to_word", "to_txt", "extract_info"]:
+        if self.selected_operation in ["compress", "rotate", "repair", "to_word", "to_txt", "extract_info", "merge"]:
             base_name = os_path.splitext(self.selected_file)[0]
             if self.selected_operation == "to_word":
                 return f"{base_name}.docx", None
@@ -101,6 +112,8 @@ class SafePDFController:
                 return f"{base_name}.txt", None
             elif self.selected_operation == "extract_info":
                 return f"{base_name}_info.txt", None
+            elif self.selected_operation == "merge":
+                return f"{base_name}_merged.pdf", None
             else:
                 return f"{base_name}_{self.selected_operation}.pdf", None
         else:
@@ -156,29 +169,16 @@ class SafePDFController:
                 success, message = self.pdf_ops.pdf_to_jpg(self.selected_file, output_dir, dpi)
                 
             elif self.selected_operation == "merge":
-                # Merge operation: expect primary selected_file and a second file provided in settings
-                second_file = self.operation_settings.get('second_file')
-                merge_order = self.operation_settings.get('merge_order', 'end')
-
-                if not second_file:
+                # Merge operation: use all selected files
+                if len(self.selected_files) < 2:
                     success = False
-                    message = "Merge requires a second PDF file to be selected."
-                elif not os_path.exists(second_file):
-                    success = False
-                    message = f"Second file not found: {second_file}"
+                    message = "Merge requires at least 2 PDF files to be selected."
                 else:
-                    # Determine input order
-                    if merge_order == 'beginning':
-                        input_paths = [second_file, self.selected_file]
-                    else:
-                        input_paths = [self.selected_file, second_file]
+                    # Use all selected files in order
+                    input_paths = self.selected_files
 
                     # Prepare output file path (single file)
                     output_path, _ = self.prepare_output_paths(custom_output_path=None, use_default=True)
-                    # If prepare_output_paths returned None for output_path (for split-like ops), construct default
-                    if not output_path:
-                        base_name = os_path.splitext(self.selected_file)[0]
-                        output_path = f"{base_name}_merged.pdf"
 
                     try:
                         success, message = self.pdf_ops.merge_pdfs(input_paths, output_path)
@@ -247,6 +247,7 @@ class SafePDFController:
         self.cancel_operation()
         
         # Reset all state variables
+        self.selected_files = []
         self.selected_file = None
         self.selected_operation = None
         self.operation_settings = {}
@@ -266,6 +267,7 @@ class SafePDFController:
     def get_state_summary(self):
         """Get a summary of the current application state"""
         return {
+            'selected_files': self.selected_files,
             'selected_file': self.selected_file,
             'selected_operation': self.selected_operation,
             'current_tab': self.current_tab,

@@ -4,17 +4,17 @@ Implements various PDF manipulation operations using PyPDF2/pypdf and Pillow
 """
 
 import os
+from io import BytesIO
 from os import path as os_path
-
 from pathlib import Path
 from tempfile import mkstemp as tmp_mkstemp
-from SafePDF.logger.logging_config import get_logger
 from typing import List, Tuple
-from io import BytesIO
+
+from SafePDF.logger.logging_config import get_logger
 
 try:
-    from tkinter import messagebox, Toplevel, Label, Button
     import tkinter as tk
+    from tkinter import Button, Label, Toplevel, messagebox
 except ImportError:
     messagebox = Toplevel = Label = Button = tk = None
 
@@ -26,8 +26,8 @@ except ImportError:
     PdfReader = PdfWriter = None
 
 try:
-    from PIL import Image, ImageTk
     import fitz  # PyMuPDF for better PDF to image conversion
+    from PIL import Image, ImageTk
 except ImportError:
     print("Warning: PIL/Pillow or PyMuPDF not installed. Some operations may not work.")
     Image = ImageTk = fitz = None
@@ -973,7 +973,7 @@ class PDFOperations:
             y = (popup.winfo_screenheight() // 2) - (popup.winfo_height() // 2)
             popup.geometry(f"+{x}+{y}")
             
-        except Exception as e:
+        except Exception:
             # Fallback to simple messagebox if custom popup fails
             if messagebox:
                 messagebox.showinfo("Compression Info", 

@@ -4,8 +4,8 @@ SafePDF Test & Demo Script
 This script demonstrates the functionality of the SafePDF Tkinter application
 """
 
-import sys
 import os
+import sys
 
 # Add current directory to path for imports
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -17,26 +17,26 @@ def test_imports():
     
     try:
         import tkinter as tk
-        print("✓ tkinter imported successfully")
+        print("✓ tkinter imported successfully", getattr(tk, '__name__', 'tkinter'))
     except ImportError as e:
         print(f"✗ tkinter import failed: {e}")
         return False
     
     try:
-        from tkinter import ttk, filedialog, messagebox, scrolledtext
-        print("✓ tkinter submodules imported successfully")
+        from tkinter import filedialog, messagebox, scrolledtext, ttk
+        print("✓ tkinter submodules imported successfully", filedialog, messagebox, scrolledtext, ttk)
     except ImportError as e:
         print(f"✗ tkinter submodules import failed: {e}")
         
     try:
         from tkinterdnd2 import DND_FILES, TkinterDnD
-        print("✓ tkinterdnd2 imported successfully (drag & drop available)")
+        print("✓ tkinterdnd2 imported successfully (drag & drop available)", DND_FILES, TkinterDnD)
     except ImportError as e:
         print(f"⚠ tkinterdnd2 import failed: {e} (drag & drop will not work)")
     
     try:
         from SafePDF.ops.pdf_operations import PDFOperations
-        print("✓ pdf_operations imported successfully")
+        print("✓ pdf_operations imported successfully", PDFOperations)
     except ImportError as e:
         print(f"✗ pdf_operations import failed: {e}")
         return False
@@ -54,7 +54,7 @@ def test_pdf_dependencies():
     except ImportError:
         try:
             from pypdf import PdfReader, PdfWriter
-            print("✓ pypdf imported successfully")
+            print("✓ pypdf imported successfully", PdfReader, PdfWriter)
         except ImportError:
             print("✗ Neither PyPDF2 nor pypdf available - PDF operations will not work")
             print("  Install with: pip install PyPDF2  OR  pip install pypdf")
@@ -62,7 +62,7 @@ def test_pdf_dependencies():
     # Test PIL/Pillow
     try:
         from PIL import Image
-        print("✓ PIL/Pillow imported successfully")
+        print("✓ PIL/Pillow imported successfully", Image)
     except ImportError:
         print("✗ PIL/Pillow not available - image operations may not work")
         print("  Install with: pip install Pillow")
@@ -70,7 +70,7 @@ def test_pdf_dependencies():
     # Test PyMuPDF
     try:
         import fitz
-        print("✓ PyMuPDF imported successfully")
+        print("✓ PyMuPDF imported successfully", fitz)
     except ImportError:
         print("⚠ PyMuPDF not available - PDF to image conversion may not work optimally")
         print("  Install with: pip install PyMuPDF")

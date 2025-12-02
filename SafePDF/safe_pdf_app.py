@@ -9,8 +9,8 @@ This application provides various PDF operations including:
 - PDF Rotate
 - PDF Repair
 """
-import sys
 import os
+import sys
 
 # Add parent directory to sys.path so SafePDF package imports work
 # when running this script directly
@@ -18,14 +18,16 @@ parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
-import tkinter as tk
+import tkinter as tk  # noqa: E402
+from ctypes import windll  # noqa: E402
+from pathlib import Path  # noqa: E402
 
-from tkinterdnd2 import TkinterDnD
-from SafePDF.ctrl.safe_pdf_controller import SafePDFController
-from SafePDF.ui.safe_pdf_ui import SafePDFUI
-from SafePDF.logger.logging_config import get_logger
-from ctypes import windll
-from pathlib import Path
+from tkinterdnd2 import TkinterDnD  # noqa: E402
+
+from SafePDF.ctrl.safe_pdf_controller import SafePDFController  # noqa: E402
+from SafePDF.logger.logging_config import get_logger  # noqa: E402
+from SafePDF.ui.safe_pdf_ui import SafePDFUI  # noqa: E402
+
 
 class SafePDFApp:
     """Main application coordinator that manages the UI and controller"""

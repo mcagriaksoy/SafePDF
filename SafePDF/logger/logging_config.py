@@ -12,11 +12,9 @@ Usage:
     logger = get_logger(__name__)
     logger.info("Ready")
 """
-from pathlib import Path
 import logging
 from logging.handlers import RotatingFileHandler
-from datetime import datetime
-import os
+from pathlib import Path
 
 DEFAULT_LOG_DIR_NAME = ".safepdf"
 DEFAULT_LOG_FILE = "safepdf.log"
