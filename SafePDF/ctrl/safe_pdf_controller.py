@@ -29,6 +29,10 @@ class SafePDFController:
         self.output_dir = None
         self.current_output = None
         
+        # Activation state
+        self.is_pro_activated = False
+        self.activation_key = None
+        
         # PDF operations handler
         self.pdf_ops = PDFOperations(progress_callback=progress_callback)
         
@@ -240,6 +244,41 @@ class SafePDFController:
 
         # Force-clear running flag as last resort
         self.operation_running = False
+    
+    def activate_pro_features(self, activation_key):
+        """Activate pro features with the provided key"""
+        # Simple validation - in a real app, this would check against a server or encrypted key
+        valid_keys = ["DEMOKEY123"]  # Demo keys for testing
+        
+        if activation_key in valid_keys:
+            self.is_pro_activated = True
+            self.activation_key = activation_key
+            self.logger.info("Pro features activated successfully")
+            return True, "Pro features activated successfully!"
+        else:
+            self.is_pro_activated = False
+            self.activation_key = None
+            return False, "Invalid activation key. Please check and try again."
+    
+    def deactivate_pro_features(self):
+        """Deactivate pro features"""
+        self.is_pro_activated = False
+        self.activation_key = None
+        self.logger.info("Pro features deactivated")
+    
+    def is_pro_feature_enabled(self, feature_name=None):
+        """Check if pro features are enabled, optionally for a specific feature"""
+        return self.is_pro_activated
+    
+    def apply_settings(self, settings_dict):
+        """Apply application settings"""
+        # Store settings for persistence (could save to file)
+        self.app_settings = settings_dict
+        self.logger.debug(f"Applied settings: {settings_dict}")
+    
+    def set_app_settings(self, settings_dict):
+        """Set application settings (alias for apply_settings)"""
+        self.apply_settings(settings_dict)
     
     def reset_state(self):
         """Reset the application state completely"""

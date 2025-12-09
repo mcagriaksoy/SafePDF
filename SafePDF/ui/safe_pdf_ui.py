@@ -219,6 +219,9 @@ class SafePDFUI:
         self.is_fullscreen = False
         self.restore_geometry = None
         
+        # Previous tab for reverting disabled tab selection
+        self.previous_tab = 0
+        
         # Store icon for taskbar window
         self.icon_path = None
         self._find_icon()
@@ -425,11 +428,31 @@ class SafePDFUI:
             fg="#fff",
             pady=10
         )
-        self.header_label.pack(side='left', padx=24)
+        self.header_label.pack(side='left', padx=(24, 8))
+        
+        # Pro status badge in title bar
+        pro_badge_color = "#00b386" if self.controller.is_pro_activated else "#888888"
+        pro_badge_text = "PRO" if self.controller.is_pro_activated else "FREE"
+        
+        self.pro_badge_label = tk.Label(
+            self.title_frame,
+            text=pro_badge_text,
+            font=(FONT, 8, "bold"),
+            bg=pro_badge_color,
+            fg="white",
+            padx=6,
+            pady=2,
+            cursor="hand2",
+            relief="flat",
+            bd=0
+        )
+        self.pro_badge_label.pack(side='left', padx=(4, 0))
+        self.pro_badge_label.bind("<Button-1>", lambda e: self.show_pro_dialog())
         
         # Make the title area draggable
         self.bind_drag_events(self.title_frame)
         self.bind_drag_events(self.header_label)
+        self.bind_drag_events(self.pro_badge_label)
         
         # Right side - Window controls
         self.controls_frame = tk.Frame(self.header_frame, bg=RED_COLOR)
@@ -685,6 +708,22 @@ class SafePDFUI:
         self.results_frame = ttk.Frame(self.notebook)
         self.notebook.add(self.results_frame, text="5. Results")
         self.create_results_tab()
+        
+        # Settings
+        self.app_settings_frame = ttk.Frame(self.notebook)
+        self.notebook.add(self.app_settings_frame, text="Settings")
+        self.create_app_settings_tab()
+
+        # Help
+        self.help_frame = ttk.Frame(self.notebook)
+        self.notebook.add(self.help_frame, text="Help")
+        self.create_help_tab()
+        
+        # Disable workflow tabs that require prerequisites
+        self.notebook.tab(2, state='disabled')  # Select File
+        self.notebook.tab(3, state='disabled')  # Adjust Settings
+        self.notebook.tab(4, state='disabled')  # Results
+        
     
     def create_welcome_tab(self):
         """Create the welcome tab content"""
@@ -1093,7 +1132,92 @@ class SafePDFUI:
 
         self.progress.pack(fill='x', pady=(0, 10))
         self.results_text.pack(fill='both', expand=True, pady=(0, 10))
+        
+        # Start new operation button
+        self.start_new_btn = ttk.Button(main_frame, text="Start New Operation", command=self.start_new_operation)
+        self.start_new_btn.pack(pady=(10, 0))
     
+    def create_help_tab(self):
+        """Create the help tab content"""
+        main_frame = ttk.Frame(self.help_frame, style="TFrame")
+        main_frame.pack(fill='both', expand=True, padx=24, pady=24)
+
+        # Load help text
+        lang = self.language_var.get() if hasattr(self, 'language_var') else 'en'
+        base_dir = Path(__file__).parent.parent
+        candidates = [
+            base_dir / "text" / f"help_content_{lang}.txt",
+            base_dir / "text" / "help_content.txt",
+            base_dir / f"help_content_{lang}.txt",
+            base_dir / "help_content.txt"
+        ]
+        help_text = None
+        for p in candidates:
+            try:
+                if p.exists():
+                    with open(str(p), 'r', encoding='utf-8') as f:
+                        help_text = f.read()
+                        break
+            except Exception:
+                pass
+        if not help_text:
+            help_text = (
+                "SafePDF™ Help\n\n"
+                "This application allows you to perform various PDF operations:\n\n"
+                "1. Select a PDF file using drag-and-drop or file browser\n"
+                "2. Choose the operation you want to perform\n"
+                "3. Adjust settings if needed\n"
+                "4. View and save results\n\n"
+                "For more information, visit our GitHub repository."
+            )
+
+        # Text widget with scrollbar
+        help_text_widget = tk.Text(
+            main_frame,
+            wrap=tk.WORD,
+            font=(FONT, 10),
+            bg="#f8f9fa",
+            fg="#222",
+            borderwidth=1,
+            relief=tk.FLAT
+        )
+        help_text_widget.insert('1.0', help_text)
+        help_text_widget.config(state=tk.DISABLED)
+
+        sb = ttk.Scrollbar(main_frame, orient='vertical', command=help_text_widget.yview)
+        help_text_widget['yscrollcommand'] = sb.set
+
+        help_text_widget.pack(side='left', fill='both', expand=True)
+        sb.pack(side='right', fill='y')
+    
+    def create_app_settings_tab(self):
+        """Create the application settings tab content"""
+        main_frame = ttk.Frame(self.app_settings_frame, style="TFrame")
+        main_frame.pack(fill='both', expand=True, padx=24, pady=24)
+
+        # Language selection
+        ttk.Label(main_frame, text="Language:", font=(FONT, 10, "bold")).pack(anchor='w', pady=(12, 4))
+        lang_options = ["English"]
+        lang_menu = ttk.OptionMenu(main_frame, self.language_var, self.language_var.get(), *lang_options)
+        lang_menu.pack(fill='x', pady=4)
+
+        # Theme selection
+        ttk.Label(main_frame, text="Theme:", font=(FONT, 10, "bold")).pack(anchor='w', pady=(12, 4))
+        theme_frame = ttk.Frame(main_frame)
+        theme_frame.pack(anchor='w', pady=4)
+        ttk.Radiobutton(theme_frame, text="System", variable=self.theme_var, value="system").pack(side='left', padx=6)
+        ttk.Radiobutton(theme_frame, text="Light", variable=self.theme_var, value="light").pack(side='left', padx=6)
+        ttk.Radiobutton(theme_frame, text="Dark", variable=self.theme_var, value="dark").pack(side='left', padx=6)
+
+        # Log file section
+        ttk.Label(main_frame, text="Error Log:", font=(FONT, 10, "bold")).pack(anchor='w', pady=(12, 4))
+        log_frame = ttk.Frame(main_frame)
+        log_frame.pack(fill='x', pady=4)
+        ttk.Button(log_frame, text="View Log File", command=self.view_log_file).pack(side='left', padx=(0, 6))
+        ttk.Button(log_frame, text="Clear Log", command=self.clear_log_file).pack(side='left', padx=6)
+        ttk.Button(log_frame, text="Open Log Folder", command=self.open_log_folder).pack(side='left', padx=6)
+
+
     def create_bottom_controls(self):
         """Create bottom navigation and control buttons"""
         control_frame = ttk.Frame(self.root)
@@ -1103,75 +1227,66 @@ class SafePDFUI:
         left_frame = ttk.Frame(control_frame)
         left_frame.pack(side='left')
         
-        help_btn = ttk.Button(left_frame, text="Help", command=self.show_help, width=10)
-        help_btn.pack(side='left', padx=(0, 5))
-        
-        settings_btn = ttk.Button(left_frame, text="Settings", command=self.show_settings, width=10)
-        settings_btn.pack(side='left', padx=5)
-        
-        # Add donation button
-        donate_btn = tk.Button(
-            left_frame,
-            text="🍵 Buy Me a Coffee",
-            command=self.open_donation_link,
-            bg='#FF9691',
-            activebackground='#FF7F7A',
-            fg="#000",
-            font=(FONT, 9, "bold"),
-            bd=0,
-            padx=12,
-            pady=6,
-            cursor="hand2",
-            relief=tk.FLAT,
-            highlightthickness=0,
-            highlightbackground="#FF7F7A"
-        )
-        donate_btn.pack(side='left', padx=5)
-
-        # Add paypal donation button
-        paypal_btn = tk.Button(
-            left_frame,
-            text="💖 Donate via PayPal",
-            command=self.open_paypal_link,
-            bg='#FFD43B',              # PayPal-style yellow
-            activebackground='#FFC107',
-            fg="#000",
-            font=(FONT, 9, "bold"),
-            bd=0,
-            padx=12,
-            pady=6,
-            cursor="hand2",
-            relief=tk.FLAT,
-            highlightthickness=0,
-            highlightbackground="#FFC107"
-        )
-        paypal_btn.pack(side='left', padx=5)
-
-        # Hover effect for PayPal button (subtle darken)
-        def on_paypal_enter(event):
-            try:
-                paypal_btn.config(bg='#FFC107')
-            except Exception:
-                logger.debug("Error in PayPal button hover enter event", exc_info=True)
-                pass  # Widget may be destroyed, ignore
-
-        def on_paypal_leave(event):
-            try:
-                paypal_btn.config(bg='#FFD43B')
-            except Exception:
-                logger.debug("Error in PayPal button hover leave event", exc_info=True)
-                pass  # Widget may be destroyed, ignore
-
-        paypal_btn.bind("<Enter>", on_paypal_enter)
-        paypal_btn.bind("<Leave>", on_paypal_leave)
-        
         # Center spacer
         center_frame = ttk.Frame(control_frame)
         center_frame.pack(side='left', expand=True, fill='x')
         
+        # Pro version status - more prominent design
+        pro_frame = ttk.Frame(center_frame, style="TFrame")
+        pro_frame.pack(side='left')
+        
+        # Pro status indicator with better styling
+        status_color = "#00b386" if self.controller.is_pro_activated else "#888888"
+        status_text = "PRO Version" if self.controller.is_pro_activated else "FREE Version - Upgrade now!"
+        
+        self.pro_status_btn = tk.Button(
+            pro_frame,
+            text=status_text,
+            command=self.show_pro_dialog,
+            font=(FONT, 9, "bold"),
+            fg="white",
+            bg=status_color,
+            bd=0,
+            padx=10,
+            pady=5,
+            cursor="hand2",
+            relief=tk.FLAT,
+            highlightthickness=0
+        )
+        self.pro_status_btn.pack()
+        
+        # Add a subtle border/shadow effect
+        self.pro_status_btn.config(highlightbackground=status_color, highlightcolor=status_color)
+        
+        # Hover effect for pro status button
+        def on_pro_enter(event):
+            try:
+                if self.controller.is_pro_activated:
+                    self.pro_status_btn.config(bg="#009970")  # Darker green
+                else:
+                    self.pro_status_btn.config(bg="#666666")  # Darker gray
+            except Exception:
+                pass
+
+        def on_pro_leave(event):
+            try:
+                status_color = "#00b386" if self.controller.is_pro_activated else "#888888"
+                self.pro_status_btn.config(bg=status_color)
+            except Exception:
+                pass
+
+        self.pro_status_btn.bind("<Enter>", on_pro_enter)
+        self.pro_status_btn.bind("<Leave>", on_pro_leave)
+        
         # Right side buttons - Navigation and Cancel
         right_frame = ttk.Frame(control_frame)
         right_frame.pack(side='right')
+        
+        settings_btn = ttk.Button(right_frame, text="Settings", command=lambda: self.notebook.select(self.app_settings_frame), width=10)
+        settings_btn.pack(side='left', padx=(0, 2))
+        
+        help_btn = ttk.Button(right_frame, text="Help", command=lambda: self.notebook.select(self.help_frame), width=10)
+        help_btn.pack(side='left', padx=(0, 50))
         
         # Navigation buttons frame
         nav_frame = ttk.Frame(right_frame)
@@ -1194,11 +1309,24 @@ class SafePDFUI:
         # Bind tab change event
         self.notebook.bind("<<NotebookTabChanged>>", self.on_tab_changed)
         
+    def animate_tab_change(self):
+        """Simple animation for tab change"""
+        original_bg = self.card_frame.cget('bg')
+        self.card_frame.config(bg='#f0f0f0')
+        self.root.after(200, lambda: self.card_frame.config(bg=original_bg))
+        
     # Event handlers
     def on_tab_changed(self, event):
         """Handle tab change event"""
-        self.controller.current_tab = self.notebook.index(self.notebook.select())
-        self.update_navigation_buttons()
+        new_tab = self.notebook.index(self.notebook.select())
+        if self.notebook.tab(new_tab, 'state') == 'disabled':
+            messagebox.showinfo("Tab Locked", "Please select an operation and file first.")
+            self.notebook.select(self.previous_tab)
+        else:
+            self.previous_tab = new_tab
+            self.controller.current_tab = new_tab
+            self.update_navigation_buttons()
+            self.animate_tab_change()
     
     def on_drag_enter(self, event):
         """Handle drag enter event - provide visual feedback"""
@@ -1258,6 +1386,9 @@ class SafePDFUI:
                     
                     # Show PDF info for the first file
                     self.show_pdf_info()
+                    
+                    # Enable settings tab
+                    self.notebook.tab(3, state='normal')
                 else:
                     messagebox.showwarning("Invalid File", message)
                     if hasattr(self, 'drop_label') and self.drop_label:
@@ -1289,6 +1420,7 @@ class SafePDFUI:
                 success, message = self.controller.select_file(list(file_paths))
                 if success:
                     self.update_file_display()
+                    self.notebook.tab(3, state='normal')
                 else:
                     messagebox.showerror("Error", message)
         else:
@@ -1319,6 +1451,9 @@ class SafePDFUI:
                     
                     # Show PDF info
                     self.show_pdf_info()
+                    
+                    # Enable settings tab
+                    self.notebook.tab(3, state='normal')
                 else:
                     messagebox.showerror("Error", message)
 
@@ -1358,6 +1493,7 @@ class SafePDFUI:
         self.highlight_selected_operation(0)
         self.update_settings_for_operation()
         self.update_file_tab_ui()
+        self.notebook.tab(2, state='normal')
         self.notebook.select(2)  # Go to file tab
 
     def select_split(self):
@@ -1365,6 +1501,7 @@ class SafePDFUI:
         self.highlight_selected_operation(1)
         self.update_settings_for_operation()
         self.update_file_tab_ui()
+        self.notebook.tab(2, state='normal')
         self.notebook.select(2)
 
     def select_merge(self):
@@ -1372,6 +1509,7 @@ class SafePDFUI:
         self.highlight_selected_operation(2)
         self.update_settings_for_operation()
         self.update_file_tab_ui()
+        self.notebook.tab(2, state='normal')
         self.notebook.select(2)
 
     def select_to_jpg(self):
@@ -1379,6 +1517,7 @@ class SafePDFUI:
         self.highlight_selected_operation(3)
         self.update_settings_for_operation()
         self.update_file_tab_ui()
+        self.notebook.tab(2, state='normal')
         self.notebook.select(2)
 
     def select_rotate(self):
@@ -1386,6 +1525,7 @@ class SafePDFUI:
         self.highlight_selected_operation(4)
         self.update_settings_for_operation()
         self.update_file_tab_ui()
+        self.notebook.tab(2, state='normal')
         self.notebook.select(2)
 
     def select_repair(self):
@@ -1393,6 +1533,7 @@ class SafePDFUI:
         self.highlight_selected_operation(5)
         self.update_settings_for_operation()
         self.update_file_tab_ui()
+        self.notebook.tab(2, state='normal')
         self.notebook.select(2)
     
     def highlight_selected_operation(self, selected_index):
@@ -1421,6 +1562,12 @@ class SafePDFUI:
             self.create_repair_settings()
         elif self.controller.selected_operation == "merge":
             self.create_merge_settings()
+        elif self.controller.selected_operation == "to_word":
+            self.create_to_word_settings()
+        elif self.controller.selected_operation == "to_txt":
+            self.create_to_txt_settings()
+        elif self.controller.selected_operation == "extract_info":
+            self.create_extract_info_settings()
         
         operation_name = self.controller.selected_operation.replace('_', ' ').title()
         self.settings_label.config(text=f"Settings for {operation_name}")
@@ -1473,6 +1620,12 @@ class SafePDFUI:
         ttk.Radiobutton(radio_frame, text="Low (Smaller file)", variable=self.quality_var, value="low", command=self.update_compression_visual).pack(anchor='w')
         ttk.Radiobutton(radio_frame, text="Medium (Balanced)", variable=self.quality_var, value="medium", command=self.update_compression_visual).pack(anchor='w')
         ttk.Radiobutton(radio_frame, text="High (Better quality)", variable=self.quality_var, value="high", command=self.update_compression_visual).pack(anchor='w')
+        
+        # Pro feature: Ultra quality
+        self.ultra_radio = ttk.Radiobutton(radio_frame, text="Ultra (Pro - Best quality)", variable=self.quality_var, value="ultra", command=self.update_compression_visual)
+        self.ultra_radio.pack(anchor='w')
+        # Enable/disable based on pro status
+        self.ultra_radio.config(state="normal" if self.controller.is_pro_activated else "disabled")
         
         # Right side - visual indicator
         self.compression_visual_frame = tk.Frame(quality_frame, bg="#ffffff", relief=tk.RIDGE, bd=1)
@@ -1528,6 +1681,15 @@ class SafePDFUI:
             )
             self.compression_visual_frame.config(bg="#f0f8ff")
             self.animate_compression("high")
+            
+        elif quality == "ultra":
+            self.compression_indicator.config(
+                text="💎 Ultra Quality (Pro)\n🎨 Lossless compression\n💾 Premium file size",
+                fg="#ff6b00",
+                bg="#fff8f0"
+            )
+            self.compression_visual_frame.config(bg="#fff8f0")
+            self.animate_compression("ultra")
 
     def animate_compression(self, quality):
         """Animate compression visual feedback"""
@@ -1545,6 +1707,10 @@ class SafePDFUI:
         elif quality == "high":
             # Subtle effect for high quality
             colors = ["#0066cc", "#3385d6", "#0066cc"]
+            self.pulse_compression_indicator(colors, 0)
+        elif quality == "ultra":
+            # Premium effect for ultra quality
+            colors = ["#ff6b00", "#ff8533", "#ff6b00"]
             self.pulse_compression_indicator(colors, 0)
 
     def pulse_compression_indicator(self, colors, index):
@@ -1638,6 +1804,49 @@ class SafePDFUI:
         
         # Add output path selection (directory for split files)
         self.create_output_path_selection(is_directory=True)
+    
+    def create_to_word_settings(self):
+        """Create settings for PDF to Word conversion"""
+        ttk.Label(self.settings_container, text="Convert PDF to Microsoft Word document (.docx)").pack(anchor='w', pady=5)
+        
+        info_frame = ttk.Frame(self.settings_container)
+        info_frame.pack(anchor='w', pady=5, fill='x')
+        
+        ttk.Label(info_frame, text="• Extracts text content from PDF", foreground="#666").pack(anchor='w')
+        ttk.Label(info_frame, text="• Attempts to preserve basic formatting", foreground="#666").pack(anchor='w')
+        ttk.Label(info_frame, text="• Includes images where possible", foreground="#666").pack(anchor='w')
+        ttk.Label(info_frame, text="• Requires python-docx and PyMuPDF", foreground="#666").pack(anchor='w')
+        
+        # Add output path selection
+        self.create_output_path_selection(is_directory=False)
+    
+    def create_to_txt_settings(self):
+        """Create settings for PDF to TXT conversion"""
+        ttk.Label(self.settings_container, text="Extract text content from PDF to plain text file").pack(anchor='w', pady=5)
+        
+        info_frame = ttk.Frame(self.settings_container)
+        info_frame.pack(anchor='w', pady=5, fill='x')
+        
+        ttk.Label(info_frame, text="• Extracts all readable text from PDF", foreground="#666").pack(anchor='w')
+        ttk.Label(info_frame, text="• Preserves page breaks with line separators", foreground="#666").pack(anchor='w')
+        ttk.Label(info_frame, text="• UTF-8 encoded output", foreground="#666").pack(anchor='w')
+        
+        # Add output path selection
+        self.create_output_path_selection(is_directory=False)
+    
+    def create_extract_info_settings(self):
+        """Create settings for PDF information extraction"""
+        ttk.Label(self.settings_container, text="Extract hidden information and metadata from PDF").pack(anchor='w', pady=5)
+        
+        info_frame = ttk.Frame(self.settings_container)
+        info_frame.pack(anchor='w', pady=5, fill='x')
+        
+        ttk.Label(info_frame, text="• Extracts PDF metadata (title, author, etc.)", foreground="#666").pack(anchor='w')
+        ttk.Label(info_frame, text="• Includes file properties and creation info", foreground="#666").pack(anchor='w')
+        ttk.Label(info_frame, text="• Saves detailed information to text file", foreground="#666").pack(anchor='w')
+        
+        # Add output path selection
+        self.create_output_path_selection(is_directory=False)
             
     def create_output_path_selection(self, is_directory=False):
         """Create output path selection UI"""
@@ -1840,10 +2049,42 @@ class SafePDFUI:
         # If on results tab with successful output, change to "Open Output"
         elif current_tab == 4 and self.controller.current_output:
             self.next_btn.config(text="📂 Open", state='normal')
-        elif current_tab < 4:
+        elif current_tab == 0:
+            self.next_btn.config(text="Next →", state='normal')
+        elif current_tab == 1:
+            if self.controller.selected_operation:
+                self.next_btn.config(text="Next →", state='normal')
+            else:
+                self.next_btn.config(text="Next →", state='disabled')
+        elif current_tab == 2:
             self.next_btn.config(text="Next →", state='normal')
         else:
             self.next_btn.config(state='disabled')
+
+    def start_new_operation(self):
+        """Reset for a new operation"""
+        # Reset controller state
+        self.controller.selected_operation = None
+        self.controller.selected_file = None
+        self.controller.current_output = None
+        
+        # Reset UI state
+        self.update_file_display()
+        self.update_navigation_buttons()
+        
+        # Clear results
+        self.results_text.config(state=tk.NORMAL)
+        self.results_text.delete('1.0', tk.END)
+        self.results_text.insert('1.0', "When selected operation finishes, the results will be displayed here.\nPlease go back and select the operation.")
+        self.results_text.config(state=tk.DISABLED)
+        
+        # Disable workflow tabs
+        self.notebook.tab(2, state='disabled')
+        self.notebook.tab(3, state='disabled')
+        self.notebook.tab(4, state='disabled')
+        
+        # Go to operation selection tab
+        self.notebook.select(1)
 
     def execute_operation(self):
         """Execute the selected PDF operation"""
@@ -1856,6 +2097,7 @@ class SafePDFUI:
             return
         
         # Move to results tab
+        self.notebook.tab(4, state='normal')
         self.notebook.select(4)  # Results tab
         
         # Clear previous results and reset progress
@@ -1946,6 +2188,42 @@ class SafePDFUI:
         """Generic UI update callback"""
         # This can be used for any general UI updates
         self.root.update_idletasks()
+        # Update pro features when UI updates
+        self.update_pro_features()
+
+    def update_pro_features(self):
+        """Update UI elements based on pro activation status"""
+        try:
+            is_pro = self.controller.is_pro_activated
+            
+            # Update ultra compression option
+            if hasattr(self, 'ultra_radio'):
+                self.ultra_radio.config(state="normal" if is_pro else "disabled")
+                
+            # Update bottom pro status button
+            if hasattr(self, 'pro_status_btn'):
+                self.pro_status_btn.config(
+                    text="PRO" if is_pro else "FREE",
+                    bg="#00b386" if is_pro else "#888888"
+                )
+                
+            # Update title bar pro badge
+            if hasattr(self, 'pro_badge_label'):
+                pro_badge_color = "#00b386" if is_pro else "#888888"
+                pro_badge_text = "PRO" if is_pro else "FREE"
+                self.pro_badge_label.config(
+                    text=pro_badge_text,
+                    bg=pro_badge_color
+                )
+                
+            # If ultra was selected but pro is deactivated, switch to high
+            if not is_pro and self.quality_var.get() == "ultra":
+                self.quality_var.set("high")
+                self.update_compression_visual()
+                
+        except Exception:
+            logger.debug("Error updating pro features", exc_info=True)
+            pass
 
     def _update_execute_button_state(self):
         """Enable or disable the Execute/Next button based on current operation and required inputs."""
@@ -2151,12 +2429,12 @@ class SafePDFUI:
             dlg.transient(self.root)
             dlg.grab_set()
             dlg.resizable(False, False)
-            dlg.geometry("360x320")
+            dlg.geometry("365x320")  # Increased size for activation section
             # Center the dialog
-            x = self.root.winfo_x() + (self.root.winfo_width() // 2) - (360 // 2)
+            x = self.root.winfo_x() + (self.root.winfo_width() // 2) - (365 // 2)
             y = self.root.winfo_y() + (self.root.winfo_height() // 2) - (320 // 2)
             dlg.geometry(f"+{x}+{y}")
-            dlg.configure(bg="#f8f9fa")
+            dlg.configure(bg="#ffffff")
             # Hide the menu bar if any
             dlg.overrideredirect(False)
 
@@ -2293,6 +2571,173 @@ class SafePDFUI:
         except Exception as e:
             logger.error(f"Error refreshing log view: {e}", exc_info=True)
             text_widget.insert('1.0', f"Error reading log file: {e}")
+    
+    def show_pro_dialog(self):
+        """Show pro activation or features dialog"""
+        try:
+            dlg = tk.Toplevel(self.root)
+            dlg.title("SafePDF Pro")
+            dlg.transient(self.root)
+            dlg.grab_set()
+            dlg.resizable(False, False)
+            
+            if self.controller.is_pro_activated:
+                # Pro activated - show features and deactivation option
+                dlg.geometry("450x400")
+                x = self.root.winfo_x() + (self.root.winfo_width() // 2) - (450 // 2)
+                y = self.root.winfo_y() + (self.root.winfo_height() // 2) - (400 // 2)
+                dlg.geometry(f"+{x}+{y}")
+                dlg.configure(bg="#ffffff")  # White background to match ttk widgets
+                
+                # Header
+                ttk.Label(dlg, text="🎉 Pro Version Active!", 
+                         font=(FONT, 14, "bold"), foreground="#00b386").pack(pady=(20, 10))
+                
+                ttk.Label(dlg, text="Thank you for supporting SafePDF!", 
+                         font=(FONT, 10)).pack(pady=(0, 20))
+                
+                # Features list
+                features_frame = ttk.Frame(dlg)
+                features_frame.pack(fill='both', expand=True, padx=20, pady=(0, 10))
+                
+                ttk.Label(features_frame, text="✅ Enabled Pro Features:", 
+                         font=(FONT, 11, "bold")).pack(anchor='w', pady=(0, 10))
+                
+                features = [
+                    "• Ultra High Quality Compression (300 DPI, 95% JPEG)",
+                    "• Advanced PDF Processing Options",
+                    "• Priority Support & Updates",
+                    "• Batch Processing Capabilities"
+                ]
+                
+                for feature in features:
+                    ttk.Label(features_frame, text=feature, font=(FONT, 9)).pack(anchor='w', pady=2)
+                
+                # Deactivation section
+                ttk.Separator(dlg, orient='horizontal').pack(fill='x', padx=20, pady=10)
+                
+                deactivate_frame = ttk.Frame(dlg)
+                deactivate_frame.pack(fill='x', padx=20, pady=(0, 10))
+                
+                ttk.Label(deactivate_frame, text="Switch back to Free Version:", 
+                         font=(FONT, 10, "bold")).pack(anchor='w', pady=(0, 5))
+                
+                def deactivate_pro():
+                    if messagebox.askyesno("Deactivate Pro", 
+                                         "Are you sure you want to deactivate Pro features?\n\n"
+                                         "You will lose access to:\n"
+                                         "• Ultra compression quality\n"
+                                         "• Advanced features\n\n"
+                                         "You can reactivate anytime with your key."):
+                        self.controller.deactivate_pro_features()
+                        dlg.destroy()
+                        self.update_pro_features()
+                        messagebox.showinfo("Deactivated", "Pro features have been deactivated.\nSwitched to Free version.")
+                
+                ttk.Button(deactivate_frame, text="Deactivate Pro", 
+                          command=deactivate_pro, style="TButton").pack(anchor='w', pady=5)
+            else:
+                # Free version - show activation or features
+                dlg.geometry("500x500")
+                x = self.root.winfo_x() + (self.root.winfo_width() // 2) - (500 // 2)
+                y = self.root.winfo_y() + (self.root.winfo_height() // 2) - (500 // 2)
+                dlg.geometry(f"+{x}+{y}")
+                dlg.configure(bg="#ffffff")  # White background to match ttk widgets
+                
+                # Header with better design
+                header_frame = ttk.Frame(dlg, style="TFrame")
+                header_frame.pack(fill='x', padx=20, pady=(20, 10))
+                
+                ttk.Label(header_frame, text="🚀 Upgrade for a more powerful SafePDF", 
+                         font=(FONT, 16, "bold"), foreground="#b62020").pack(pady=(0, 5))
+                
+                ttk.Label(header_frame, text="Unlock premium features for the best PDF experience", 
+                         font=(FONT, 9), foreground="#666").pack()
+                
+                # Activation section
+                activation_frame = ttk.Frame(dlg)
+                activation_frame.pack(fill='x', padx=20, pady=(10, 15))
+                
+                ttk.Label(activation_frame, text="🔑 Have an activation key?", 
+                         font=(FONT, 11, "bold")).pack(anchor='w', pady=(0, 8))
+                
+                key_frame = ttk.Frame(activation_frame)
+                key_frame.pack(fill='x', pady=(0, 5))
+                
+                activation_var = tk.StringVar()
+                key_entry = ttk.Entry(key_frame, textvariable=activation_var, 
+                                    font=(FONT, 10), show="*")
+                key_entry.pack(side='left', fill='x', expand=True)
+                key_entry.focus()
+                
+                def activate_pro():
+                    key = activation_var.get().strip()
+                    if not key:
+                        messagebox.showwarning("Activation", "Please enter an activation key.")
+                        return
+                    success, message = self.controller.activate_pro_features(key)
+                    if success:
+                        messagebox.showinfo("🎉 Activation Successful!", message)
+                        dlg.destroy()
+                        self.update_pro_features()
+                    else:
+                        messagebox.showerror("❌ Activation Failed", message)
+                
+                activate_btn = ttk.Button(key_frame, text="Activate Pro", command=activate_pro)
+                activate_btn.pack(side='left', padx=(10, 0))
+                
+                # Separator
+                ttk.Separator(dlg, orient='horizontal').pack(fill='x', padx=20, pady=15)
+                
+                # Pro features section
+                features_frame = ttk.Frame(dlg)
+                features_frame.pack(fill='both', expand=True, padx=20, pady=(0, 10))
+                
+                ttk.Label(features_frame, text="💎 Pro Features Include:", 
+                         font=(FONT, 12, "bold")).pack(anchor='w', pady=(0, 10))
+                
+                features = [
+                    "• Ultra High Quality Compression (300 DPI, 95% JPEG quality)",
+                    "• Lossless compression for maximum quality preservation",
+                    "• Priority customer support and faster response times",
+                    "• Regular updates with new features and improvements",
+                    "• Batch processing for multiple files at once",
+                    "• Premium user experience with advanced options"
+                ]
+                
+                for feature in features:
+                    ttk.Label(features_frame, text=feature, font=(FONT, 9)).pack(anchor='w', pady=1)
+                
+                # Call-to-action section
+                cta_frame = ttk.Frame(dlg)
+                cta_frame.pack(fill='x', padx=20, pady=(10, 20))
+                
+                def open_website():
+                    try:
+                        import webbrowser
+                        webbrowser.open("https://github.com/mcagriaksoy/SafePDF")
+                        messagebox.showinfo("Redirecting", "Opening SafePDF website for purchase information...")
+                    except Exception:
+                        messagebox.showerror("Error", "Could not open website.")
+                
+                purchase_btn = tk.Button(
+                    cta_frame,
+                    text="🌐 Get Pro Version Now",
+                    command=open_website,
+                    font=(FONT, 11, "bold"),
+                    fg="white",
+                    bg="#00b386",  # Use app's green accent color
+                    bd=0,
+                    padx=20,
+                    pady=8,
+                    cursor="hand2",
+                    relief=tk.FLAT
+                )
+                purchase_btn.pack(pady=5)
+                
+        except Exception as e:
+            logger.error(f"Error showing pro dialog: {e}", exc_info=True)
+            messagebox.showerror("Error", f"Could not open dialog: {e}")
     
     def clear_log_file(self):
         """Clear the log file after confirmation"""
@@ -2474,6 +2919,7 @@ class SafePDFUI:
         self.highlight_selected_operation(6)
         self.update_settings_for_operation()
         self.update_file_tab_ui()
+        self.notebook.tab(2, state='normal')
         self.notebook.select(2)
     
     def select_to_txt(self):
@@ -2481,6 +2927,7 @@ class SafePDFUI:
         self.highlight_selected_operation(7)
         self.update_settings_for_operation()
         self.update_file_tab_ui()
+        self.notebook.tab(2, state='normal')
         self.notebook.select(2)
     
     def select_extract_info(self):
@@ -2488,6 +2935,7 @@ class SafePDFUI:
         self.highlight_selected_operation(8)
         self.update_settings_for_operation()
         self.update_file_tab_ui()
+        self.notebook.tab(2, state='normal')
         self.notebook.select(2)
     
     def update_file_display(self):

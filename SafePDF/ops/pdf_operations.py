@@ -222,6 +222,9 @@ class PDFOperations:
                 elif quality == "high":
                     dpi = 220
                     jpeg_q = 85
+                elif quality == "ultra":
+                    dpi = 300
+                    jpeg_q = 95
                 else:  # medium
                     dpi = 150
                     jpeg_q = 60

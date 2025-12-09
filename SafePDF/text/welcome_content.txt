@@ -18,7 +18,7 @@ Click on Next to start the process and choose what you want to do.
 
 💻 Software Information
 
-Version: v1.0.7
+Version: v1.0.8
 🔗 Check for Updates
 👨‍💻 by mcagriaksoy - 2025
 
