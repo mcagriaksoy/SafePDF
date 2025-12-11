@@ -17,8 +17,8 @@ from tkinter import filedialog, messagebox, ttk
 from urllib.parse import urlparse
 from webbrowser import open as webbrowser_open
 
-SIZE_STR = "780x620"
-SIZE_LIST = 780, 620
+SIZE_STR = "780x630"
+SIZE_LIST = 780, 630
 
 # Setup logging configuration
 def setup_logging():
@@ -211,6 +211,9 @@ class SafePDFUI:
         self.language_var = tk.StringVar(value="English")
         self.theme_var = tk.StringVar(value="system")  # options: system, light, dark
         
+        # Theme colors (will be set by apply_theme)
+        self.current_theme_colors = {}
+        
         # Window dragging variables
         self.drag_data = {"x": 0, "y": 0}
         
@@ -235,6 +238,9 @@ class SafePDFUI:
         # Initialize UI
         self.setup_main_window()
         self.create_ui_components()
+        
+        # Set up theme change callback
+        self.theme_var.trace_add('write', self.apply_theme)
         
         # Schedule taskbar fix after UI is fully loaded
         self.root.after(100, self._ensure_taskbar_visibility)
@@ -296,25 +302,47 @@ class SafePDFUI:
             logger.debug(f"Theme application failed: {e}, continuing with system theme")
             pass
 
-        style.configure("TNotebook", background="#f4f6fb", borderwidth=0)
-        style.configure("TNotebook.Tab", background="#e9ecef", padding=10, font=(FONT, 10), borderwidth=0)
+        # Modern rounded style with red theme
+        style.configure("TNotebook", background="#f4f6fb", borderwidth=0, relief="flat")
+        style.configure("TNotebook.Tab", 
+            background="#e9ecef", 
+            padding=[15, 10],
+            font=(FONT, 10),
+            borderwidth=0,
+            relief="flat"
+        )
         style.map("TNotebook.Tab",
             background=[("selected", "#ffffff"), ("active", "#f8f9fa")],
-            foreground=[("selected", RED_COLOR), ("active", RED_COLOR)]
+            foreground=[("selected", RED_COLOR), ("active", RED_COLOR)],
+            expand=[("selected", [1, 1, 1, 0])]
         )
         style.configure("TFrame", background="#ffffff")
         style.configure("TLabel", background="#ffffff", font=(FONT, 10))
-        style.configure("TButton", font=(FONT, 10), padding=6, background=RED_COLOR, foreground="#000", borderwidth=1, relief="flat")
-        style.map("TButton",
-            background=[("active", "#005fa3"), ("!active", RED_COLOR)],
-            foreground=[("active", "#000"), ("!active", "#000")],
-            relief=[("pressed", "sunken"), ("!pressed", "flat")]
+        style.configure("TButton",
+            font=(FONT, 10),
+            padding=10,
+            background="#e9ecef",
+            foreground="#000000",
+            borderwidth=0,
+            relief="flat"
         )
-        style.configure("Accent.TButton", background="#00b386", foreground="#000", font=(FONT, 10, "bold"), padding=8, borderwidth=1, relief="flat")
+        style.map("TButton",
+            background=[("active", "#d6d8db"), ("!active", "#e9ecef")],
+            foreground=[("active", "#000000"), ("!active", "#000000")],
+            relief=[("pressed", "flat"), ("!pressed", "flat")]
+        )
+        style.configure("Accent.TButton", 
+            background="#00b386", 
+            foreground="#000000", 
+            font=(FONT, 10, "bold"), 
+            padding=12, 
+            borderwidth=0, 
+            relief="flat"
+        )
         style.map("Accent.TButton",
-            background=[("active", "#09970"), ("!active", "#00b386")],
-            foreground=[("active", "#000"), ("!active", "#000")],
-            relief=[("pressed", "sunken"), ("!pressed", "flat")]
+            background=[("active", "#009970"), ("!active", "#00b386")],
+            foreground=[("active", "#000000"), ("!active", "#000000")],
+            relief=[("pressed", "flat"), ("!pressed", "flat")]
         )
         style.configure("Gray.TLabel", foreground="#888", background="#ffffff")
 
@@ -430,7 +458,7 @@ class SafePDFUI:
         )
         self.header_label.pack(side='left', padx=(24, 8))
         
-        # Pro status badge in title bar
+        # Pro status badge in title bar with rounded appearance
         pro_badge_color = "#00b386" if self.controller.is_pro_activated else "#888888"
         pro_badge_text = "PRO" if self.controller.is_pro_activated else "FREE"
         
@@ -440,8 +468,8 @@ class SafePDFUI:
             font=(FONT, 8, "bold"),
             bg=pro_badge_color,
             fg="white",
-            padx=6,
-            pady=2,
+            padx=8,
+            pady=3,
             cursor="hand2",
             relief="flat",
             bd=0
@@ -671,9 +699,14 @@ class SafePDFUI:
         self.root.quit()
     
     def create_main_card(self):
-        """Create the main card-like container"""
-        self.card_frame = tk.Frame(self.root, bg="#ffffff", bd=0, highlightthickness=0)
-        self.card_frame.pack(fill='both', expand=True, padx=8, pady=(4, 8))
+        """Create the main card-like container with rounded appearance"""
+        # Create outer frame for shadow effect
+        shadow_frame = tk.Frame(self.root, bg="#e2e8f0")
+        shadow_frame.pack(fill='both', expand=True, padx=10, pady=(6, 10))
+        
+        # Create inner card frame with offset for shadow
+        self.card_frame = tk.Frame(shadow_frame, bg="#ffffff", bd=0, highlightthickness=0)
+        self.card_frame.place(x=2, y=2, relwidth=1, relheight=1, width=-4, height=-4)
         self.card_frame.grid_propagate(False)
         self.card_frame.update_idletasks()
     
@@ -683,7 +716,7 @@ class SafePDFUI:
         self.notebook.pack(fill='both', expand=True, padx=0, pady=0)
     
     def create_tabs(self):
-        """Create all application tabs"""
+        """Create all application tabs with tooltips"""
         # Tab 1: Welcome
         self.welcome_frame = ttk.Frame(self.notebook)
         self.notebook.add(self.welcome_frame, text="1. Welcome")
@@ -723,6 +756,82 @@ class SafePDFUI:
         self.notebook.tab(2, state='disabled')  # Select File
         self.notebook.tab(3, state='disabled')  # Adjust Settings
         self.notebook.tab(4, state='disabled')  # Results
+        
+        # Add tooltips to tabs
+        self.setup_tab_tooltips()
+    
+    def setup_tab_tooltips(self):
+        """Setup tooltips for notebook tabs"""
+        # Define tooltips for each tab
+        tooltips = {
+            0: "Start here - Welcome and introduction to SafePDF",
+            1: "Choose the PDF operation you want to perform",
+            2: "Select the PDF file(s) you want to process",
+            3: "Configure operation-specific settings",
+            4: "View the results of your PDF operation",
+            5: "Application settings and preferences",
+            6: "Help and documentation"
+        }
+        
+        # Create tooltip window
+        self.tooltip_window = None
+        
+        def show_tooltip(event, text):
+            """Show tooltip on hover"""
+            if self.tooltip_window:
+                self.tooltip_window.destroy()
+            
+            # Create a toplevel window for tooltip
+            self.tooltip_window = tk.Toplevel(self.root)
+            self.tooltip_window.wm_overrideredirect(True)
+            self.tooltip_window.wm_attributes("-topmost", True)
+            
+            label = tk.Label(
+                self.tooltip_window,
+                text=text,
+                background="#333333",
+                foreground="#ffffff",
+                relief=tk.FLAT,
+                bd=0,
+                font=(FONT, 9),
+                padx=10,
+                pady=5
+            )
+            label.pack()
+            
+            # Position tooltip near the cursor
+            x = event.x_root + 15
+            y = event.y_root + 10
+            self.tooltip_window.wm_geometry(f"+{x}+{y}")
+        
+        def hide_tooltip(event):
+            """Hide tooltip"""
+            if self.tooltip_window:
+                self.tooltip_window.destroy()
+                self.tooltip_window = None
+        
+        # Bind mouse events to notebook tabs
+        try:
+            # Get the notebook's internal tab container
+            self.notebook.bind("<Motion>", lambda e: self.check_tab_hover(e, tooltips, show_tooltip, hide_tooltip))
+            self.notebook.bind("<Leave>", hide_tooltip)
+        except Exception as e:
+            logger.debug(f"Could not setup tab tooltips: {e}")
+    
+    def check_tab_hover(self, event, tooltips, show_func, hide_func):
+        """Check which tab is being hovered"""
+        try:
+            # Use identify to find which tab is under cursor
+            tab_id = self.notebook.identify(event.x, event.y)
+            if tab_id:
+                # Get the tab index
+                tab_index = self.notebook.index("@%d,%d" % (event.x, event.y))
+                if tab_index in tooltips:
+                    show_func(event, tooltips[tab_index])
+                    return
+            hide_func(event)
+        except Exception:
+            hide_func(event)
         
     
     def create_welcome_tab(self):
@@ -835,22 +944,44 @@ class SafePDFUI:
         main_frame = ttk.Frame(self.file_frame, style="TFrame")
         main_frame.pack(fill='both', expand=True, padx=32, pady=32)
 
-        # Drop zone (modern look with rounded effect)
+        # Drop zone (modern design with custom dashed border)
+        # Create a frame to hold the canvas and label
+        drop_frame = tk.Frame(main_frame, bg="#f8f9fa", relief=tk.FLAT, bd=0)
+        drop_frame.pack(fill='both', expand=True, pady=(0, 12))
+        
+        # Create canvas for dashed border
+        self.drop_canvas = tk.Canvas(
+            drop_frame,
+            bg="#f8f9fa",
+            highlightthickness=0,
+            relief=tk.FLAT
+        )
+        self.drop_canvas.pack(fill='both', expand=True)
+        
+        # Create the drop label inside the canvas
         self.drop_label = tk.Label(
-            main_frame,
-            text="Drop .PDF File Here!",
+            self.drop_canvas,
+            text="📄 Drop PDF File Here\n\nClick to browse",
             relief=tk.FLAT,
             bd=0,
             bg="#f8f9fa",
             font=(FONT, 13, "bold"),
-            height=6,
+            height=8,
             cursor="hand2",
-            fg=RED_COLOR,
-            highlightbackground="#d1d5db",
-            highlightthickness=3
+            fg=RED_COLOR
         )
-        self.drop_label.pack(fill='both', expand=True, pady=(0, 12))
+        
+        # Bind click event to the label
         self.drop_label.bind("<Button-1>", self.browse_file)
+        
+        # Draw the dashed border
+        self._draw_dashed_border()
+        
+        # Bind resize event to redraw border
+        drop_frame.bind('<Configure>', lambda e: self._draw_dashed_border())
+        
+        # Setup drag and drop after drop_label is created
+        self.setup_drag_drop()
         
         # Setup drag and drop after drop_label is created
         self.setup_drag_drop()
@@ -891,12 +1022,12 @@ class SafePDFUI:
             return
             
         DND_FILES = _get_tkinterdnd()
-        if DND_FILES and hasattr(self, 'drop_label') and self.drop_label:
+        if DND_FILES and hasattr(self, 'drop_canvas') and self.drop_canvas:
             try:
-                self.drop_label.drop_target_register(DND_FILES)
-                self.drop_label.dnd_bind('<<Drop>>', self.handle_drop)
-                self.drop_label.dnd_bind('<<DragEnter>>', self.on_drag_enter)
-                self.drop_label.dnd_bind('<<DragLeave>>', self.on_drag_leave)
+                self.drop_canvas.drop_target_register(DND_FILES)
+                self.drop_canvas.dnd_bind('<<Drop>>', self.handle_drop)
+                self.drop_canvas.dnd_bind('<<DragEnter>>', self.on_drag_enter)
+                self.drop_canvas.dnd_bind('<<DragLeave>>', self.on_drag_leave)
                 self._dnd_loaded = True
             except Exception:
                 logger.debug("Error setting up drag and drop", exc_info=True)
@@ -925,6 +1056,79 @@ class SafePDFUI:
             logger.debug(f"Error loading operation image: {img_path}", exc_info=True)
             pass
         return None
+    
+    def _draw_dashed_border(self):
+        """Draw a dashed border around the drop zone using canvas"""
+        try:
+            if not hasattr(self, 'drop_canvas') or not self.drop_canvas:
+                return
+                
+            # Clear existing border
+            self.drop_canvas.delete("border")
+            
+            # Get canvas dimensions
+            width = self.drop_canvas.winfo_width()
+            height = self.drop_canvas.winfo_height()
+            
+            if width <= 1 or height <= 1:
+                # Canvas not yet sized, schedule redraw
+                self.drop_canvas.after(10, self._draw_dashed_border)
+                return
+            
+            # Border parameters
+            border_width = 3
+            dash_length = 8
+            gap_length = 4
+            border_color = "#acb2bb"
+            
+            # Calculate border segments
+            # Top border
+            x = border_width // 2
+            while x < width:
+                end_x = min(x + dash_length, width - border_width // 2)
+                self.drop_canvas.create_line(x, border_width // 2, end_x, border_width // 2, 
+                                           fill=border_color, width=border_width, tags="border")
+                x += dash_length + gap_length
+            
+            # Right border
+            y = border_width // 2
+            while y < height:
+                end_y = min(y + dash_length, height - border_width // 2)
+                self.drop_canvas.create_line(width - border_width // 2, y, width - border_width // 2, end_y, 
+                                           fill=border_color, width=border_width, tags="border")
+                y += dash_length + gap_length
+            
+            # Bottom border
+            x = width - border_width // 2
+            while x > 0:
+                start_x = max(x - dash_length, border_width // 2)
+                self.drop_canvas.create_line(x, height - border_width // 2, start_x, height - border_width // 2, 
+                                           fill=border_color, width=border_width, tags="border")
+                x -= dash_length + gap_length
+            
+            # Left border
+            y = height - border_width // 2
+            while y > 0:
+                start_y = max(y - dash_length, border_width // 2)
+                self.drop_canvas.create_line(border_width // 2, y, border_width // 2, start_y, 
+                                           fill=border_color, width=border_width, tags="border")
+                y -= dash_length + gap_length
+            
+            # Position the label in the center
+            if hasattr(self, 'drop_label') and self.drop_label:
+                self.drop_canvas.create_window(width//2, height//2, window=self.drop_label, tags="label")
+                
+        except Exception as e:
+            logger.debug(f"Error drawing dashed border: {e}", exc_info=True)
+    
+    def _update_canvas_border_color(self, color):
+        """Update the color of the dashed border on the canvas"""
+        try:
+            if hasattr(self, 'drop_canvas') and self.drop_canvas:
+                # Update all border lines
+                self.drop_canvas.itemconfig("border", fill=color)
+        except Exception as e:
+            logger.debug(f"Error updating canvas border color: {e}", exc_info=True)
     
     def create_operation_tab(self):
         """Optimized operation tab with smaller images"""        
@@ -962,11 +1166,11 @@ class SafePDFUI:
             self.operation_images.append(tk_img)
 
             # Create clickable image button frame with modern rounded shadow effect
-            shadow_frame = tk.Frame(operations_container, bg="#e0e0e0", relief=tk.FLAT)
-            shadow_frame.grid(row=row, column=col, padx=10, pady=10, sticky='nsew')
+            shadow_frame = tk.Frame(operations_container, bg="#e2e8f0", relief=tk.FLAT)
+            shadow_frame.grid(row=row, column=col, padx=12, pady=12, sticky='nsew')
             
-            op_frame = tk.Frame(shadow_frame, relief=tk.FLAT, bd=0, bg="#ffffff", cursor="hand2", highlightbackground="#e0e0e0", highlightthickness=3)
-            op_frame.place(x=2, y=2, relwidth=1, relheight=1, width=-4, height=-4)
+            op_frame = tk.Frame(shadow_frame, relief=tk.FLAT, bd=0, bg="#ffffff", cursor="hand2", highlightbackground="#cbd5e1", highlightthickness=2)
+            op_frame.place(x=3, y=3, relwidth=1, relheight=1, width=-6, height=-6)
             
             # Configure grid weights for centered content
             operations_container.grid_columnconfigure(col, weight=1)
@@ -1045,16 +1249,16 @@ class SafePDFUI:
             # Enhanced hover effects for the frame and all clickable elements
             def create_hover_effect(frame, widgets):
                 def on_enter(event):
-                    frame.config(relief=tk.FLAT, bg="#f0f8ff", highlightbackground="#0066cc", highlightthickness=3)
+                    frame.config(relief=tk.FLAT, bg="#fff5f5", highlightbackground=RED_COLOR, highlightthickness=2)
                     for widget in widgets:
                         if hasattr(widget, 'config'):
                             try:
-                                widget.config(bg="#f0f8ff")
+                                widget.config(bg="#fff5f5")
                             except Exception:
                                 pass
                     
                 def on_leave(event):
-                    frame.config(relief=tk.FLAT, bg="#ffffff", highlightbackground="#e0e0e0", highlightthickness=3)
+                    frame.config(relief=tk.FLAT, bg="#ffffff", highlightbackground="#cbd5e1", highlightthickness=2)
                     for widget in widgets:
                         if hasattr(widget, 'config'):
                             try:
@@ -1205,9 +1409,14 @@ class SafePDFUI:
         ttk.Label(main_frame, text="Theme:", font=(FONT, 10, "bold")).pack(anchor='w', pady=(12, 4))
         theme_frame = ttk.Frame(main_frame)
         theme_frame.pack(anchor='w', pady=4)
-        ttk.Radiobutton(theme_frame, text="System", variable=self.theme_var, value="system").pack(side='left', padx=6)
+        ttk.Radiobutton(theme_frame, text="System Default", variable=self.theme_var, value="system").pack(side='left', padx=6)
         ttk.Radiobutton(theme_frame, text="Light", variable=self.theme_var, value="light").pack(side='left', padx=6)
         ttk.Radiobutton(theme_frame, text="Dark", variable=self.theme_var, value="dark").pack(side='left', padx=6)
+        
+        # Theme description
+        theme_desc = ttk.Label(main_frame, text="Change the application's appearance. Restart may be required for full effect.", 
+                              font=(FONT, 9), foreground="#666")
+        theme_desc.pack(anchor='w', pady=(4, 0))
 
         # Log file section
         ttk.Label(main_frame, text="Error Log:", font=(FONT, 10, "bold")).pack(anchor='w', pady=(12, 4))
@@ -1216,6 +1425,177 @@ class SafePDFUI:
         ttk.Button(log_frame, text="View Log File", command=self.view_log_file).pack(side='left', padx=(0, 6))
         ttk.Button(log_frame, text="Clear Log", command=self.clear_log_file).pack(side='left', padx=6)
         ttk.Button(log_frame, text="Open Log Folder", command=self.open_log_folder).pack(side='left', padx=6)
+    
+    def apply_theme(self, *args):
+        """Apply the selected theme to the application"""
+        theme = self.theme_var.get()
+        
+        # Define color schemes
+        if theme == "dark":
+            # Dark theme colors
+            bg_main = "#1e1e1e"
+            bg_card = "#2d2d2d"
+            bg_frame = "#252525"
+            fg_text = "#e0e0e0"
+            fg_secondary = "#b0b0b0"
+            tab_bg = "#3a3a3a"
+            tab_selected = "#2d2d2d"
+            highlight_color = "#404040"
+            text_bg = "#2d2d2d"
+            text_fg = "#e0e0e0"
+            button_bg = "#404040"
+            button_fg = "#e0e0e0"
+            entry_bg = "#3a3a3a"
+            entry_fg = "#e0e0e0"
+        elif theme == "light":
+            # Light theme colors
+            bg_main = "#ffffff"
+            bg_card = "#f8f9fa"
+            bg_frame = "#ffffff"
+            fg_text = "#212529"
+            fg_secondary = "#6c757d"
+            tab_bg = "#e9ecef"
+            tab_selected = "#ffffff"
+            highlight_color = "#f8f9fa"
+            text_bg = "#f8f9fa"
+            text_fg = "#222"
+            button_bg = "#e9ecef"
+            button_fg = "#000000"
+            entry_bg = "#ffffff"
+            entry_fg = "#000000"
+        else:  # system default
+            # Use current system theme (keep existing colors)
+            bg_main = "#ffffff"
+            bg_card = "#f4f6fb"
+            bg_frame = "#ffffff"
+            fg_text = "#000000"
+            fg_secondary = "#666666"
+            tab_bg = "#e9ecef"
+            tab_selected = "#ffffff"
+            highlight_color = "#f8f9fa"
+            text_bg = "#f8f9fa"
+            text_fg = "#222"
+            button_bg = "#e9ecef"
+            button_fg = "#000000"
+            entry_bg = "#ffffff"
+            entry_fg = "#000000"
+        
+        # Store current theme colors for later use
+        self.current_theme_colors = {
+            'bg_main': bg_main,
+            'bg_card': bg_card,
+            'bg_frame': bg_frame,
+            'fg_text': fg_text,
+            'fg_secondary': fg_secondary,
+            'tab_bg': tab_bg,
+            'tab_selected': tab_selected,
+            'highlight_color': highlight_color,
+            'text_bg': text_bg,
+            'text_fg': text_fg,
+            'button_bg': button_bg,
+            'button_fg': button_fg,
+            'entry_bg': entry_bg,
+            'entry_fg': entry_fg
+        }
+        
+        try:
+            # Apply theme to main components
+            self.root.configure(bg=bg_card)
+            if hasattr(self, 'card_frame') and self.card_frame:
+                self.card_frame.configure(bg=bg_frame)
+            
+            # Update ttk styles
+            style = ttk.Style()
+            style.configure("TFrame", background=bg_frame)
+            style.configure("TLabel", background=bg_frame, foreground=fg_text)
+            style.configure("TButton", background=button_bg, foreground=button_fg)
+            style.configure("TEntry", fieldbackground=entry_bg, foreground=entry_fg)
+            style.configure("TNotebook", background=bg_card)
+            style.configure("TNotebook.Tab", background=tab_bg, foreground=fg_text)
+            style.map("TNotebook.Tab",
+                background=[("selected", tab_selected), ("active", highlight_color)],
+                foreground=[("selected", RED_COLOR), ("active", RED_COLOR), ("!selected", fg_text)]
+            )
+            
+            # Update button styles
+            style.map("TButton",
+                background=[("active", highlight_color), ("!active", button_bg)],
+                foreground=[("active", fg_text), ("!active", button_fg)]
+            )
+            
+            # Update specific frames if they exist
+            frames_to_update = [
+                self.welcome_frame, self.operation_frame, self.file_frame,
+                self.settings_frame, self.results_frame, self.app_settings_frame,
+                self.help_frame
+            ]
+            
+            for frame in frames_to_update:
+                if frame and hasattr(frame, 'configure'):
+                    try:
+                        frame.configure(style="TFrame")
+                    except Exception:
+                        pass
+            
+            # Update Text widgets
+            if hasattr(self, 'results_text') and self.results_text:
+                try:
+                    self.results_text.configure(background=text_bg, foreground=text_fg)
+                except Exception:
+                    pass
+            
+            # Update canvas border color for drop zone
+            if hasattr(self, 'drop_canvas') and self.drop_canvas:
+                try:
+                    # Update border color based on theme
+                    border_color = "#666666" if theme == "dark" else "#acb2bb"
+                    # Redraw the border with new color
+                    self._update_canvas_border_color(border_color)
+                except Exception:
+                    pass
+            
+            # Recursively update all child widgets
+            self._update_widget_colors(self.root, bg_frame, fg_text, text_bg, text_fg)
+            
+            logger.info(f"Applied theme: {theme}")
+            
+        except Exception as e:
+            logger.error(f"Error applying theme: {e}", exc_info=True)
+    
+    def _update_widget_colors(self, widget, bg_color, fg_color, text_bg, text_fg):
+        """Recursively update colors for all widgets"""
+        try:
+            widget_class = widget.winfo_class()
+            
+            # Update based on widget type
+            if widget_class == 'Text':
+                try:
+                    widget.configure(background=text_bg, foreground=text_fg)
+                except Exception:
+                    pass
+            elif widget_class == 'Label' and not isinstance(widget, ttk.Label):
+                try:
+                    # Don't update header labels (with RED_COLOR bg)
+                    current_bg = widget.cget('bg')
+                    if current_bg != RED_COLOR and current_bg not in ['#b62020']:
+                        widget.configure(background=bg_color, foreground=fg_color)
+                except Exception:
+                    pass
+            elif widget_class == 'Frame' and not isinstance(widget, ttk.Frame):
+                try:
+                    # Don't update header frame
+                    current_bg = widget.cget('bg')
+                    if current_bg != RED_COLOR and current_bg not in ['#b62020', '#e2e8f0']:
+                        widget.configure(background=bg_color)
+                except Exception:
+                    pass
+            
+            # Recursively update children
+            for child in widget.winfo_children():
+                self._update_widget_colors(child, bg_color, fg_color, text_bg, text_fg)
+                
+        except Exception:
+            pass
 
 
     def create_bottom_controls(self):
@@ -1235,9 +1615,9 @@ class SafePDFUI:
         pro_frame = ttk.Frame(center_frame, style="TFrame")
         pro_frame.pack(side='left')
         
-        # Pro status indicator with better styling
+        # Pro status indicator with modern styling
         status_color = "#00b386" if self.controller.is_pro_activated else "#888888"
-        status_text = "PRO Version" if self.controller.is_pro_activated else "FREE Version - Upgrade now!"
+        status_text = "✓ PRO Version" if self.controller.is_pro_activated else "FREE Version - Upgrade now!"
         
         self.pro_status_btn = tk.Button(
             pro_frame,
@@ -1247,8 +1627,8 @@ class SafePDFUI:
             fg="white",
             bg=status_color,
             bd=0,
-            padx=10,
-            pady=5,
+            padx=16,
+            pady=8,
             cursor="hand2",
             relief=tk.FLAT,
             highlightthickness=0
@@ -2448,7 +2828,7 @@ class SafePDFUI:
             ttk.Label(dlg, text="Theme:", font=(FONT, 10, "bold")).pack(anchor='w', padx=12, pady=(12, 4))
             theme_frame = ttk.Frame(dlg)
             theme_frame.pack(anchor='w', padx=12)
-            ttk.Radiobutton(theme_frame, text="System", variable=self.theme_var, value="system").pack(side='left', padx=6)
+            ttk.Radiobutton(theme_frame, text="System Default", variable=self.theme_var, value="system").pack(side='left', padx=6)
             ttk.Radiobutton(theme_frame, text="Light", variable=self.theme_var, value="light").pack(side='left', padx=6)
             ttk.Radiobutton(theme_frame, text="Dark", variable=self.theme_var, value="dark").pack(side='left', padx=6)
 
@@ -2891,28 +3271,6 @@ class SafePDFUI:
     def open_paypal_link(self):
         """Open the PayPal donation link"""
         open_url("https://www.paypal.com/donate/?hosted_button_id=QD5J7HPVUXW5G")
-    
-    def apply_theme(self, theme: str):
-        """Optimized theme application"""
-        try:
-            style = ttk.Style()
-            style.theme_use(theme)
-            # Apply minimal customizations only
-            try:
-                # Keep essential custom styles
-                style.configure("Accent.TButton", 
-                                background="#00b386", 
-                                foreground="#000000", 
-                                font=(FONT, 10, "bold"))
-                
-                # Keep brand colors for tabs
-                style.map("TNotebook.Tab", foreground=[("selected", RED_COLOR), ("active", RED_COLOR)])
-            except Exception:
-                logger.debug("Theme customization failed, continuing with defaults.", exc_info=True)
-                pass
-        except Exception:
-            logger.debug("Theme application failed, continuing with system theme.", exc_info=True)
-            pass
 
     def select_to_word(self):
         self.controller.select_operation("to_word")
