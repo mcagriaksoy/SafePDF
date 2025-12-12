@@ -7,10 +7,9 @@ import tkinter as tk
 from datetime import datetime
 from pathlib import Path
 from tkinter import messagebox, ttk
+from .common_elements import CommonElements
 
 # Constants (these will be passed from main UI)
-FONT = "Segoe UI"
-RED_COLOR = "#b62020"
 
 logger = logging.getLogger('SafePDF.SettingsUI')
 
@@ -18,7 +17,7 @@ logger = logging.getLogger('SafePDF.SettingsUI')
 class SettingsUI:
     """Handles all settings-related UI components"""
     
-    def __init__(self, root, controller, theme_var, language_var, log_file_path):
+    def __init__(self, root, controller, theme_var, language_var, log_file_path, font=CommonElements.FONT):
         """
         Initialize the Settings UI manager.
         
@@ -34,6 +33,7 @@ class SettingsUI:
         self.theme_var = theme_var
         self.language_var = language_var
         self.log_file_path = log_file_path
+        self.font = font
     
     def show_settings_dialog(self):
         """Show application settings (language, theme) in a modal dialog."""
@@ -53,13 +53,13 @@ class SettingsUI:
             dlg.overrideredirect(False)
 
             # Language selection
-            ttk.Label(dlg, text="Language:", font=(FONT, 10, "bold")).pack(anchor='w', padx=12, pady=(12, 4))
+            ttk.Label(dlg, text="Language:", font=(self.font, CommonElements.FONT_SIZE, "bold")).pack(anchor='w', padx=12, pady=(12, 4))
             lang_options = ["English"]
             lang_menu = ttk.OptionMenu(dlg, self.language_var, self.language_var.get(), *lang_options)
             lang_menu.pack(fill='x', padx=12)
 
             # Theme selection
-            ttk.Label(dlg, text="Theme:", font=(FONT, 10, "bold")).pack(anchor='w', padx=12, pady=(12, 4))
+            ttk.Label(dlg, text="Theme:", font=(self.font, CommonElements.FONT_SIZE, "bold")).pack(anchor='w', padx=12, pady=(12, 4))
             theme_frame = ttk.Frame(dlg)
             theme_frame.pack(anchor='w', padx=12)
             
@@ -72,7 +72,7 @@ class SettingsUI:
                            value="dark").pack(side='left', padx=6)
 
             # Log file section
-            ttk.Label(dlg, text="Error Log:", font=(FONT, 10, "bold")).pack(anchor='w', padx=12, pady=(12, 4))
+            ttk.Label(dlg, text="Error Log:", font=(self.font, CommonElements.FONT_SIZE, "bold")).pack(anchor='w', padx=12, pady=(12, 4))
             log_frame = ttk.Frame(dlg)
             log_frame.pack(fill='x', padx=12, pady=4)
             ttk.Button(log_frame, text="View Log File", command=self.view_log_file).pack(side='left', padx=(0, 6))
@@ -139,7 +139,7 @@ class SettingsUI:
             ttk.Label(
                 info_frame,
                 text=f"Log Location: {self.log_file_path}\nSize: {log_size:.1f} KB",
-                font=(FONT, 9)
+                font=(self.font, CommonElements.FONT_SIZE)
             ).pack(anchor='w')
             
             # Text widget with scrollbar
@@ -153,7 +153,7 @@ class SettingsUI:
                 text_frame,
                 wrap=tk.WORD,
                 yscrollcommand=scrollbar.set,
-                font=("Consolas", 9),
+                font=(self.font, CommonElements.FONT_SIZE),
                 bg="#f8f9fa",
                 fg="#333"
             )
@@ -247,13 +247,13 @@ class SettingsUI:
         main_frame.pack(fill='both', expand=True, padx=24, pady=24)
 
         # Language selection
-        ttk.Label(main_frame, text="Language:", font=(FONT, 10, "bold")).pack(anchor='w', pady=(12, 4))
+        ttk.Label(main_frame, text="Language:", font=(self.font, CommonElements.FONT_SIZE, "bold")).pack(anchor='w', pady=(12, 4))
         lang_options = ["English"]
         lang_menu = ttk.OptionMenu(main_frame, self.language_var, self.language_var.get(), *lang_options)
         lang_menu.pack(fill='x', pady=4)
 
         # Theme selection
-        ttk.Label(main_frame, text="Theme:", font=(FONT, 10, "bold")).pack(anchor='w', pady=(12, 4))
+        ttk.Label(main_frame, text="Theme:", font=(self.font, CommonElements.FONT_SIZE, "bold")).pack(anchor='w', pady=(12, 4))
         theme_frame = ttk.Frame(main_frame)
         theme_frame.pack(anchor='w', pady=4)
         
@@ -273,11 +273,11 @@ class SettingsUI:
         # Theme description
         theme_desc = ttk.Label(main_frame, 
                               text="Change the application's appearance. Restart may be required for full effect.", 
-                              font=(FONT, 9), foreground="#666")
+                              font=(self.font, CommonElements.FONT_SIZE), foreground="#666")
         theme_desc.pack(anchor='w', pady=(4, 0))
 
         # Log file section
-        ttk.Label(main_frame, text="Error Log:", font=(FONT, 10, "bold")).pack(anchor='w', pady=(12, 4))
+        ttk.Label(main_frame, text="Error Log:", font=(self.font, CommonElements.FONT_SIZE, "bold")).pack(anchor='w', pady=(12, 4))
         log_frame = ttk.Frame(main_frame)
         log_frame.pack(fill='x', pady=4)
         ttk.Button(log_frame, text="View Log File", command=self.view_log_file).pack(side='left', padx=(0, 6))

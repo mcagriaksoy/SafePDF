@@ -11,6 +11,7 @@ from tempfile import mkstemp as tmp_mkstemp
 from typing import List, Tuple
 
 from SafePDF.logger.logging_config import get_logger
+from SafePDF.ui.common_elements import CommonElements
 
 try:
     import tkinter as tk
@@ -948,11 +949,11 @@ class PDFOperations:
                     
                 except Exception:
                     # If gif loading fails, show text instead
-                    Label(popup, text="Compression Info", font=("Calibri", 16, "bold")).pack(pady=10)
+                    Label(popup, text="Compression Info", font=(CommonElements.FONT, 16, "bold")).pack(pady=10)
                     self.logger.error("Error loading compression error GIF", exc_info=True)
             else:
                 # If gif file doesn't exist, show icon
-                Label(popup, text="Compression Info", font=("Calibri", 16, "bold")).pack(pady=10)
+                Label(popup, text="Compression Info", font=(CommonElements.FONT, 16, "bold")).pack(pady=10)
             
             # Info message with better formatting
             info_text = (
@@ -964,11 +965,11 @@ class PDFOperations:
             )
             
             Label(popup, text=info_text, justify="center", wraplength=400, 
-                  font=("Calibri", 10), padx=20, pady=10).pack(pady=10)
+                  font=(CommonElements.FONT, 10), padx=20, pady=10).pack(pady=10)
             
             # OK button
             Button(popup, text="OK", command=popup.destroy, width=10, 
-                   font=("Calibri", 10)).pack(pady=15)
+                   font=(CommonElements.FONT, 10)).pack(pady=15)
             
             # Center the popup on screen
             popup.update_idletasks()

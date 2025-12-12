@@ -17,8 +17,14 @@ from tkinter import filedialog, messagebox, ttk
 from urllib.parse import urlparse
 from webbrowser import open as webbrowser_open
 
-SIZE_STR = "780x630"
-SIZE_LIST = 780, 630
+from .update_ui import UpdateUI  # Import the new UpdateUI class
+from .help_ui import HelpUI  # Delegated Help UI module
+from .settings_ui import SettingsUI  # Delegated Settings UI module
+from .common_elements import CommonElements  # Common UI elements
+from .common_elements import CommonElements
+
+SIZE_STR = CommonElements.SIZE_STR
+SIZE_LIST = CommonElements.SIZE_LIST
 
 # Setup logging configuration
 def setup_logging():
@@ -152,9 +158,6 @@ def _get_pil():
     except ImportError:
         return None, None
 
-FONT = "Calibri"
-RED_COLOR = "#b62020"
-
 
 class SafePDFUI:
     """Optimized UI class with minimal memory footprint"""
@@ -235,22 +238,29 @@ class SafePDFUI:
             completion_callback=self.operation_completed
         )
         
+        # Instantiate UpdateUI with root and controller
+        self.update_ui = UpdateUI(root, controller, CommonElements.FONT)
+
+        # Instantiate delegated UI helpers
+        self.help_ui = HelpUI(root, controller, CommonElements.FONT)
+        self.settings_ui = SettingsUI(root, controller, self.theme_var, self.language_var, LOG_FILE_PATH)
+
+        # Ensure theme callback propagates
+        try:
+            self.settings_ui.set_theme_callback(self.apply_theme)
+        except Exception:
+            pass
+        
         # Initialize UI
         self.setup_main_window()
         self.create_ui_components()
-        
-        # Set up theme change callback
-        self.theme_var.trace_add('write', self.apply_theme)
-        
-        # Schedule taskbar fix after UI is fully loaded
-        self.root.after(100, self._ensure_taskbar_visibility)
         
     def setup_main_window(self):
         """Configure the main application window with modern design and custom title bar"""
         self.root.title("SafePDF - A tool for PDF Manipulation")
         self.root.geometry(SIZE_STR)
         self.root.minsize(*SIZE_LIST)
-        self.root.configure(bg="#f4f6fb")
+        self.root.configure(bg=CommonElements.BG_MAIN)
         
         # IMPORTANT: First update the window to ensure it's created properly
         self.root.update_idletasks()
@@ -307,19 +317,19 @@ class SafePDFUI:
         style.configure("TNotebook.Tab", 
             background="#e9ecef", 
             padding=[15, 10],
-            font=(FONT, 10),
+            font=(CommonElements.FONT, CommonElements.FONT_SIZE),
             borderwidth=0,
             relief="flat"
         )
         style.map("TNotebook.Tab",
             background=[("selected", "#ffffff"), ("active", "#f8f9fa")],
-            foreground=[("selected", RED_COLOR), ("active", RED_COLOR)],
+            foreground=[("selected", CommonElements.RED_COLOR), ("active", CommonElements.RED_COLOR)],
             expand=[("selected", [1, 1, 1, 0])]
         )
         style.configure("TFrame", background="#ffffff")
-        style.configure("TLabel", background="#ffffff", font=(FONT, 10))
+        style.configure("TLabel", background="#ffffff", font=(CommonElements.FONT, CommonElements.FONT_SIZE))
         style.configure("TButton",
-            font=(FONT, 10),
+            font=(CommonElements.FONT, CommonElements.FONT_SIZE),
             padding=10,
             background="#e9ecef",
             foreground="#000000",
@@ -334,7 +344,7 @@ class SafePDFUI:
         style.configure("Accent.TButton", 
             background="#00b386", 
             foreground="#000000", 
-            font=(FONT, 10, "bold"), 
+            font=(CommonElements.FONT, 10, "bold"), 
             padding=12, 
             borderwidth=0, 
             relief="flat"
@@ -389,11 +399,6 @@ class SafePDFUI:
                 new_style = (style | WS_EX_APPWINDOW) & ~WS_EX_TOOLWINDOW
                 ctypes.windll.user32.SetWindowLongW(hwnd, GWL_EXSTYLE, new_style)
                 
-                # Hide and show window to refresh taskbar
-                ctypes.windll.user32.ShowWindow(hwnd, SW_HIDE)
-                self.root.update_idletasks()
-                ctypes.windll.user32.ShowWindow(hwnd, SW_SHOW)
-                
                 # Force window position update to refresh taskbar
                 SWP_FRAMECHANGED = 0x0020
                 SWP_NOMOVE = 0x0002
@@ -440,19 +445,19 @@ class SafePDFUI:
     
     def create_header(self):
         """Create the application header with custom title bar controls"""
-        self.header_frame = tk.Frame(self.root, bg=RED_COLOR, height=56)
+        self.header_frame = tk.Frame(self.root, bg=CommonElements.RED_COLOR, height=56)
         self.header_frame.pack(fill='x', side='top')
         self.header_frame.pack_propagate(False)
         
         # Left side - App title (draggable area)
-        self.title_frame = tk.Frame(self.header_frame, bg=RED_COLOR)
+        self.title_frame = tk.Frame(self.header_frame, bg=CommonElements.RED_COLOR)
         self.title_frame.pack(side='left', fill='both', expand=True)
         
         self.header_label = tk.Label(
             self.title_frame,
             text="SafePDF™",
-            font=(FONT, 18, "bold"),
-            bg=RED_COLOR,
+            font=(CommonElements.FONT, 18, "bold"),
+            bg=CommonElements.RED_COLOR,
             fg="#fff",
             pady=10
         )
@@ -465,7 +470,7 @@ class SafePDFUI:
         self.pro_badge_label = tk.Label(
             self.title_frame,
             text=pro_badge_text,
-            font=(FONT, 8, "bold"),
+            font=(CommonElements.FONT, 8, "bold"),
             bg=pro_badge_color,
             fg="white",
             padx=8,
@@ -483,15 +488,15 @@ class SafePDFUI:
         self.bind_drag_events(self.pro_badge_label)
         
         # Right side - Window controls
-        self.controls_frame = tk.Frame(self.header_frame, bg=RED_COLOR)
+        self.controls_frame = tk.Frame(self.header_frame, bg=CommonElements.RED_COLOR)
         self.controls_frame.pack(side='right', fill='y')
         
         # Minimize button
         self.minimize_btn = tk.Button(
             self.controls_frame,
             text="−",
-            font=(FONT, 16, "bold"),
-            bg=RED_COLOR,
+            font=(CommonElements.FONT, 16, "bold"),
+            bg=CommonElements.RED_COLOR,
             fg="#fff",
             bd=0,
             width=3,
@@ -508,8 +513,8 @@ class SafePDFUI:
         self.maximize_btn = tk.Button(
             self.controls_frame,
             text="□",
-            font=(FONT, 14, "bold"),
-            bg=RED_COLOR,
+            font=(CommonElements.FONT, 14, "bold"),
+            bg=CommonElements.RED_COLOR,
             fg="#fff",
             bd=0,
             width=3,
@@ -526,8 +531,8 @@ class SafePDFUI:
         self.close_btn = tk.Button(
             self.controls_frame,
             text="×",
-            font=(FONT, 20, "bold"),
-            bg=RED_COLOR,
+            font=(CommonElements.FONT, 20, "bold"),
+            bg=CommonElements.RED_COLOR,
             fg="#fff",
             bd=0,
             width=3,
@@ -575,19 +580,19 @@ class SafePDFUI:
             self.minimize_btn.config(bg="#a01818")
         
         def on_minimize_leave(event):
-            self.minimize_btn.config(bg=RED_COLOR)
+            self.minimize_btn.config(bg=CommonElements.RED_COLOR)
         
         def on_maximize_enter(event):
             self.maximize_btn.config(bg="#a01818")
         
         def on_maximize_leave(event):
-            self.maximize_btn.config(bg=RED_COLOR)
+            self.maximize_btn.config(bg=CommonElements.RED_COLOR)
         
         def on_close_enter(event):
             self.close_btn.config(bg="#d32f2f")
         
         def on_close_leave(event):
-            self.close_btn.config(bg=RED_COLOR)
+            self.close_btn.config(bg=CommonElements.RED_COLOR)
         
         self.minimize_btn.bind("<Enter>", on_minimize_enter)
         self.minimize_btn.bind("<Leave>", on_minimize_leave)
@@ -621,6 +626,7 @@ class SafePDFUI:
         try:
             self.taskbar_window = tk.Toplevel(self.root)
             self.taskbar_window.title("SafePDF")
+            self.taskbar_window.withdraw()  # Hide initially
             
             # Apply icon to taskbar window BEFORE iconifying
             if self.icon_path:
@@ -793,7 +799,7 @@ class SafePDFUI:
                 foreground="#ffffff",
                 relief=tk.FLAT,
                 bd=0,
-                font=(FONT, 9),
+                font=(CommonElements.FONT, 9),
                 padx=10,
                 pady=5
             )
@@ -867,7 +873,7 @@ class SafePDFUI:
             width=60, 
             height=15,
             state=tk.DISABLED,
-            font=(FONT, 10),
+            font=(CommonElements.FONT, CommonElements.FONT_SIZE),
             bg="#f8f9fa",
             fg="#333",
             borderwidth=0,
@@ -906,11 +912,11 @@ class SafePDFUI:
     def format_welcome_text(self, text_widget):
         """Apply formatting to the welcome text"""
         # Configure text tags for formatting
-        text_widget.tag_configure("title", foreground=RED_COLOR, font=(FONT, 14, "bold"), justify='center')
-        text_widget.tag_configure("step", foreground="#00b386", font=(FONT, 10, "bold"))
-        text_widget.tag_configure("link", foreground="#27bf73", underline=True, font=(FONT, 10, "bold"))
-        text_widget.tag_configure("info", foreground=RED_COLOR, font=(FONT, 11, "bold"))
-        text_widget.tag_configure("version", foreground="#00b386", font=(FONT, 10, "bold"))
+        text_widget.tag_configure("title", foreground=CommonElements.RED_COLOR, font=(CommonElements.FONT, 14, "bold"), justify='center')
+        text_widget.tag_configure("step", foreground="#00b386", font=(CommonElements.FONT, 10, "bold"))
+        text_widget.tag_configure("link", foreground="#27bf73", underline=True, font=(CommonElements.FONT, 10, "bold"))
+        text_widget.tag_configure("info", foreground=CommonElements.RED_COLOR, font=(CommonElements.FONT, 11, "bold"))
+        text_widget.tag_configure("version", foreground="#00b386", font=(CommonElements.FONT, 10, "bold"))
         
         # Apply formatting to specific parts
         content = text_widget.get('1.0', 'end-1c')
@@ -926,8 +932,8 @@ class SafePDFUI:
             start = content.find("🔗 Check for Updates")
             if start != -1:
                 text_widget.tag_add("link", f"1.0+{start}c", f"1.0+{start + len('🔗 Check for Updates')}c")
-                # Bind to check_for_updates which queries GitHub releases
-                text_widget.tag_bind("link", "<Button-1>", self.check_for_updates)
+                # Bind to the new UpdateUI method
+                text_widget.tag_bind("link", "<Button-1>", self.update_ui.check_for_updates)
                 text_widget.tag_bind("link", "<Enter>", lambda e: text_widget.config(cursor="hand2"))
                 text_widget.tag_bind("link", "<Leave>", lambda e: text_widget.config(cursor=""))
         
@@ -965,10 +971,10 @@ class SafePDFUI:
             relief=tk.FLAT,
             bd=0,
             bg="#f8f9fa",
-            font=(FONT, 13, "bold"),
+            font=(CommonElements.FONT, 13, "bold"),
             height=8,
             cursor="hand2",
-            fg=RED_COLOR
+            fg=CommonElements.RED_COLOR
         )
         
         # Bind click event to the label
@@ -1199,7 +1205,7 @@ class SafePDFUI:
                 title_label = tk.Label(
                     button_container,
                     text=text,
-                    font=(FONT, 12, "bold"),
+                    font=(CommonElements.FONT, 12, "bold"),
                     bg="#ffffff",
                     fg="#333333",
                     cursor="hand2"
@@ -1210,7 +1216,7 @@ class SafePDFUI:
                 desc_label = tk.Label(
                     button_container,
                     text=description,
-                    font=(FONT, 9),
+                    font=(CommonElements.FONT, 9),
                     bg="#ffffff",
                     fg="#666666",
                     cursor="hand2"
@@ -1236,7 +1242,7 @@ class SafePDFUI:
                     bd=0,
                     bg="#ffffff",
                     fg="#333333",
-                    font=(FONT, 11, "bold"),
+                    font=(CommonElements.FONT, 11, "bold"),
                     cursor="hand2",
                     padx=15,
                     pady=30,
@@ -1249,7 +1255,7 @@ class SafePDFUI:
             # Enhanced hover effects for the frame and all clickable elements
             def create_hover_effect(frame, widgets):
                 def on_enter(event):
-                    frame.config(relief=tk.FLAT, bg="#fff5f5", highlightbackground=RED_COLOR, highlightthickness=2)
+                    frame.config(relief=tk.FLAT, bg="#fff5f5", highlightbackground=CommonElements.RED_COLOR, highlightthickness=2)
                     for widget in widgets:
                         if hasattr(widget, 'config'):
                             try:
@@ -1298,8 +1304,8 @@ class SafePDFUI:
             main_frame,
             text="Select an operation first to see available settings",
             style="TLabel",
-            font=(FONT, 12, "bold"),
-            foreground=RED_COLOR
+            font=(CommonElements.FONT, 12, "bold"),
+            foreground=CommonElements.RED_COLOR
         )
         self.settings_label.pack(expand=True, pady=(0, 8))
 
@@ -1317,7 +1323,7 @@ class SafePDFUI:
             main_frame,
             wrap=tk.WORD,
             height=12,
-            font=(FONT, 10),
+            font=(CommonElements.FONT, CommonElements.FONT_SIZE),
             background="#f8f9fa",
             foreground="#222",
             borderwidth=1,
@@ -1342,89 +1348,29 @@ class SafePDFUI:
         self.start_new_btn.pack(pady=(10, 0))
     
     def create_help_tab(self):
-        """Create the help tab content"""
-        main_frame = ttk.Frame(self.help_frame, style="TFrame")
-        main_frame.pack(fill='both', expand=True, padx=24, pady=24)
+        """Delegate the help tab construction to HelpUI"""
+        try:
+            self.help_ui.build_help_tab(self.help_frame)
+        except Exception:
+            # Fallback: create very small placeholder content
+            main_frame = ttk.Frame(self.help_frame, style="TFrame")
+            main_frame.pack(fill='both', expand=True, padx=24, pady=24)
+            ttk.Label(main_frame, text="Help content is unavailable.", font=(CommonElements.FONT, CommonElements.FONT_SIZE)).pack(fill='both', expand=True)
 
-        # Load help text
-        lang = self.language_var.get() if hasattr(self, 'language_var') else 'en'
-        base_dir = Path(__file__).parent.parent
-        candidates = [
-            base_dir / "text" / f"help_content_{lang}.txt",
-            base_dir / "text" / "help_content.txt",
-            base_dir / f"help_content_{lang}.txt",
-            base_dir / "help_content.txt"
-        ]
-        help_text = None
-        for p in candidates:
+    def create_app_settings_tab(self):
+        """Delegate the app settings tab to SettingsUI"""
+        try:
+            # Replace the app settings tab content with the delegated implementation
+            self.settings_ui.create_settings_tab_content(self.app_settings_frame)
+            # Ensure the theme radio buttons trigger the main UI apply_theme callback
             try:
-                if p.exists():
-                    with open(str(p), 'r', encoding='utf-8') as f:
-                        help_text = f.read()
-                        break
+                self.settings_ui.set_theme_callback(self.apply_theme)
             except Exception:
                 pass
-        if not help_text:
-            help_text = (
-                "SafePDF™ Help\n\n"
-                "This application allows you to perform various PDF operations:\n\n"
-                "1. Select a PDF file using drag-and-drop or file browser\n"
-                "2. Choose the operation you want to perform\n"
-                "3. Adjust settings if needed\n"
-                "4. View and save results\n\n"
-                "For more information, visit our GitHub repository."
-            )
-
-        # Text widget with scrollbar
-        help_text_widget = tk.Text(
-            main_frame,
-            wrap=tk.WORD,
-            font=(FONT, 10),
-            bg="#f8f9fa",
-            fg="#222",
-            borderwidth=1,
-            relief=tk.FLAT
-        )
-        help_text_widget.insert('1.0', help_text)
-        help_text_widget.config(state=tk.DISABLED)
-
-        sb = ttk.Scrollbar(main_frame, orient='vertical', command=help_text_widget.yview)
-        help_text_widget['yscrollcommand'] = sb.set
-
-        help_text_widget.pack(side='left', fill='both', expand=True)
-        sb.pack(side='right', fill='y')
-    
-    def create_app_settings_tab(self):
-        """Create the application settings tab content"""
-        main_frame = ttk.Frame(self.app_settings_frame, style="TFrame")
-        main_frame.pack(fill='both', expand=True, padx=24, pady=24)
-
-        # Language selection
-        ttk.Label(main_frame, text="Language:", font=(FONT, 10, "bold")).pack(anchor='w', pady=(12, 4))
-        lang_options = ["English"]
-        lang_menu = ttk.OptionMenu(main_frame, self.language_var, self.language_var.get(), *lang_options)
-        lang_menu.pack(fill='x', pady=4)
-
-        # Theme selection
-        ttk.Label(main_frame, text="Theme:", font=(FONT, 10, "bold")).pack(anchor='w', pady=(12, 4))
-        theme_frame = ttk.Frame(main_frame)
-        theme_frame.pack(anchor='w', pady=4)
-        ttk.Radiobutton(theme_frame, text="System Default", variable=self.theme_var, value="system").pack(side='left', padx=6)
-        ttk.Radiobutton(theme_frame, text="Light", variable=self.theme_var, value="light").pack(side='left', padx=6)
-        ttk.Radiobutton(theme_frame, text="Dark", variable=self.theme_var, value="dark").pack(side='left', padx=6)
-        
-        # Theme description
-        theme_desc = ttk.Label(main_frame, text="Change the application's appearance. Restart may be required for full effect.", 
-                              font=(FONT, 9), foreground="#666")
-        theme_desc.pack(anchor='w', pady=(4, 0))
-
-        # Log file section
-        ttk.Label(main_frame, text="Error Log:", font=(FONT, 10, "bold")).pack(anchor='w', pady=(12, 4))
-        log_frame = ttk.Frame(main_frame)
-        log_frame.pack(fill='x', pady=4)
-        ttk.Button(log_frame, text="View Log File", command=self.view_log_file).pack(side='left', padx=(0, 6))
-        ttk.Button(log_frame, text="Clear Log", command=self.clear_log_file).pack(side='left', padx=6)
-        ttk.Button(log_frame, text="Open Log Folder", command=self.open_log_folder).pack(side='left', padx=6)
+        except Exception:
+            main_frame = ttk.Frame(self.app_settings_frame, style="TFrame")
+            main_frame.pack(fill='both', expand=True, padx=24, pady=24)
+            ttk.Label(main_frame, text="Settings are unavailable.", font=(CommonElements.FONT, CommonElements.FONT_SIZE)).pack(fill='both', expand=True)
     
     def apply_theme(self, *args):
         """Apply the selected theme to the application"""
@@ -1514,7 +1460,7 @@ class SafePDFUI:
             style.configure("TNotebook.Tab", background=tab_bg, foreground=fg_text)
             style.map("TNotebook.Tab",
                 background=[("selected", tab_selected), ("active", highlight_color)],
-                foreground=[("selected", RED_COLOR), ("active", RED_COLOR), ("!selected", fg_text)]
+                foreground=[("selected", CommonElements.RED_COLOR), ("active", CommonElements.RED_COLOR), ("!selected", fg_text)]
             )
             
             # Update button styles
@@ -1577,7 +1523,7 @@ class SafePDFUI:
                 try:
                     # Don't update header labels (with RED_COLOR bg)
                     current_bg = widget.cget('bg')
-                    if current_bg != RED_COLOR and current_bg not in ['#b62020']:
+                    if current_bg != CommonElements.RED_COLOR and current_bg not in [CommonElements.RED_COLOR]:
                         widget.configure(background=bg_color, foreground=fg_color)
                 except Exception:
                     pass
@@ -1585,7 +1531,7 @@ class SafePDFUI:
                 try:
                     # Don't update header frame
                     current_bg = widget.cget('bg')
-                    if current_bg != RED_COLOR and current_bg not in ['#b62020', '#e2e8f0']:
+                    if current_bg != CommonElements.RED_COLOR and current_bg not in [CommonElements.RED_COLOR, '#e2e8f0']:
                         widget.configure(background=bg_color)
                 except Exception:
                     pass
@@ -1623,7 +1569,7 @@ class SafePDFUI:
             pro_frame,
             text=status_text,
             command=self.show_pro_dialog,
-            font=(FONT, 9, "bold"),
+            font=(CommonElements.FONT, 9, "bold"),
             fg="white",
             bg=status_color,
             bd=0,
@@ -2015,10 +1961,10 @@ class SafePDFUI:
         self.compression_indicator = tk.Label(
             self.compression_visual_frame,
             text="📊 Compression Preview",
-            font=(FONT, 10, "bold"),
+            font=(CommonElements.FONT, 10, "bold"),
             bg="#ffffff",
-            fg=RED_COLOR,
-            pady=10
+            fg=CommonElements.RED_COLOR,
+            pady=CommonElements.PADDING
         )
         self.compression_indicator.pack(fill='both', expand=True)
         
@@ -2686,257 +2632,29 @@ class SafePDFUI:
         except Exception:
             return 0  # Invalid version format, treat as equal
 
-    def check_for_updates(self, event=None):
-        """Check GitHub releases for updates and notify the user if newer release exists."""
-        # Non-blocking: do a simple request but keep UI responsive by using after
-        self.root.after(10, self._do_check_for_updates)
-
-    def _do_check_for_updates(self):
-        current = self._read_current_version()
-        current_norm = self._normalize_tag(current)
-
-        api_url = 'https://api.github.com/repos/mcagriaksoy/SafePDF/releases/latest'
-        
-        # Validate URL scheme for security (only allow HTTPS)
-        try:
-            parsed_url = urlparse(api_url)
-            if parsed_url.scheme != 'https':
-                messagebox.showerror('Security Error', 'Update check failed: Invalid URL scheme')
-                return
-        except Exception:
-            messagebox.showerror('Security Error', 'Update check failed: Invalid URL')  # URL parsing failed
-            return
-        
-        try:
-            req = urllib.request.Request(api_url, headers={'User-Agent': 'SafePDF-Update-Checker'})
-            # Security: URL scheme validated above - only HTTPS allowed
-            with urllib.request.urlopen(req, timeout=6) as resp:  # nosec B310
-                data = json.load(resp)
-                tag = data.get('tag_name') or data.get('name') or ''
-                latest_norm = self._normalize_tag(tag)
-                cmp = self._compare_versions(current_norm, latest_norm)
-                if cmp == -1:
-                    # Newer release available
-                    release_url = data.get('html_url') or f'https://github.com/mcagriaksoy/SafePDF/releases/tag/{tag}'
-                    if messagebox.askyesno('Update Available', f'A new version {latest_norm} is available (current {current_norm}).\n\nOpen release page?'):
-                        open_url(release_url)
-                elif cmp == 0:
-                    messagebox.showinfo('No Update', f'You are running the latest version ({current_norm}).')
-                else:
-                    messagebox.showinfo('Version', f'You are running a newer version ({current_norm}) than latest release ({latest_norm}).')
-        except Exception as e:
-            # Fall back to opening the releases page if API fails
-            if messagebox.askyesno('Update Check Failed', f'Could not check for updates: {e}\n\nOpen releases page in browser?'):
-                open_url('https://github.com/mcagriaksoy/SafePDF/releases')
-        
     def show_help(self):
-        """Show help dialog by loading external help file (localization-ready)."""
-        # Determine default language code
-        lang = self.language_var.get() if hasattr(self, 'language_var') else 'en'
-
-        # Look for localized help file first, then fallback to default help_content.txt
-        base_dir = Path(__file__).parent.parent
-        # Help files were moved into text/ folder; check there first
-        candidates = [
-            base_dir / "text" / f"help_content_{lang}.txt",
-            base_dir / "text" / "help_content.txt",
-            base_dir / f"help_content_{lang}.txt",
-            base_dir / "help_content.txt"
-        ]
-
-        help_text = None
-        for p in candidates:
-            try:
-                if p.exists():
-                    with open(str(p), 'r', encoding='utf-8') as f:
-                        help_text = f.read()
-                        break
-            except Exception:
-                help_text = None
-
-        # Fallback inline help if no file found
-        if not help_text:
-            help_text = (
-                "SafePDF™ Help\n\n"
-                "This application allows you to perform various PDF operations:\n\n"
-                "1. Select a PDF file using drag-and-drop or file browser\n"
-                "2. Choose the operation you want to perform\n"
-                "3. Adjust settings if needed\n"
-                "4. View and save results\n\n"
-                "For more information, visit our GitHub repository."
-            )
-
-        # Create a modal dialog with scrollable text for help
+        """Delegate showing help dialog to HelpUI"""
         try:
-            dlg = tk.Toplevel(self.root)
-            dlg.title("SafePDF Help")
-            dlg.transient(self.root)
-            dlg.grab_set()
-            dlg.geometry("640x480")
-
-            dlg.overrideredirect(False)  # Ensure menu bar is hidden
-            dlg.resizable(False, False)
-            dlg.readonly = True
-
-            # Center the dialog
-            x = self.root.winfo_x() + (self.root.winfo_width() // 2) - (640 // 2)
-            y = self.root.winfo_y() + (self.root.winfo_height() // 2) - (480 // 2)
-            dlg.geometry(f"+{x}+{y}")
-
-            # Text widget with scrollbar
-            txt = tk.Text(dlg, wrap=tk.WORD, font=(FONT, 10), bg="#f8f9fa")
-            txt.insert('1.0', help_text)
-            txt.config(state=tk.DISABLED)
-
-            sb = ttk.Scrollbar(dlg, orient='vertical', command=txt.yview)
-            txt['yscrollcommand'] = sb.set
-
-            txt.pack(side='left', fill='both', expand=True, padx=(8,0), pady=8)
-            sb.pack(side='right', fill='y', pady=8)
-
-
-            dlg.wait_window()
-            
-        except Exception as e:
-            logger.error(f"Error creating help dialog: {e}", exc_info=True)
-            messagebox.showinfo("Help", help_text)
+            self.help_ui.show_help()
+        except Exception:
+            try:
+                messagebox.showinfo("Help", "Help content is unavailable.")
+            except Exception:
+                pass
 
     def show_settings(self):
-        """Show application settings (language, theme) in a modal dialog."""
+        """Delegate to SettingsUI.show_settings_dialog"""
         try:
-            dlg = tk.Toplevel(self.root)
-            dlg.title("Application Settings")
-            dlg.transient(self.root)
-            dlg.grab_set()
-            dlg.resizable(False, False)
-            dlg.geometry("365x320")  # Increased size for activation section
-            # Center the dialog
-            x = self.root.winfo_x() + (self.root.winfo_width() // 2) - (365 // 2)
-            y = self.root.winfo_y() + (self.root.winfo_height() // 2) - (320 // 2)
-            dlg.geometry(f"+{x}+{y}")
-            dlg.configure(bg="#ffffff")
-            # Hide the menu bar if any
-            dlg.overrideredirect(False)
-
-            # Language selection
-            ttk.Label(dlg, text="Language:", font=(FONT, 10, "bold")).pack(anchor='w', padx=12, pady=(12, 4))
-            lang_options = ["English"]
-            lang_menu = ttk.OptionMenu(dlg, self.language_var, self.language_var.get(), *lang_options)
-            lang_menu.pack(fill='x', padx=12)
-
-            # Theme selection
-            ttk.Label(dlg, text="Theme:", font=(FONT, 10, "bold")).pack(anchor='w', padx=12, pady=(12, 4))
-            theme_frame = ttk.Frame(dlg)
-            theme_frame.pack(anchor='w', padx=12)
-            ttk.Radiobutton(theme_frame, text="System Default", variable=self.theme_var, value="system").pack(side='left', padx=6)
-            ttk.Radiobutton(theme_frame, text="Light", variable=self.theme_var, value="light").pack(side='left', padx=6)
-            ttk.Radiobutton(theme_frame, text="Dark", variable=self.theme_var, value="dark").pack(side='left', padx=6)
-
-            # Log file section
-            ttk.Label(dlg, text="Error Log:", font=(FONT, 10, "bold")).pack(anchor='w', padx=12, pady=(12, 4))
-            log_frame = ttk.Frame(dlg)
-            log_frame.pack(fill='x', padx=12, pady=4)
-            ttk.Button(log_frame, text="View Log File", command=self.view_log_file).pack(side='left', padx=(0, 6))
-            ttk.Button(log_frame, text="Clear Log", command=self.clear_log_file).pack(side='left', padx=6)
-            ttk.Button(log_frame, text="Open Log Folder", command=self.open_log_folder).pack(side='left', padx=6)
-
-            # Buttons
-            btn_frame = ttk.Frame(dlg)
-            btn_frame.pack(fill='x', pady=18, padx=12)
-
-            def apply_settings():
-                settings = {"language": self.language_var.get(), "theme": self.theme_var.get()}
-                try:
-                    if hasattr(self.controller, "apply_settings"):
-                        self.controller.apply_settings(settings)
-                    elif hasattr(self.controller, "set_app_settings"):
-                        self.controller.set_app_settings(settings)
-                except Exception:
-                    logger.debug("Error applying settings from dialog", exc_info=True)
-                    pass
-
-            def on_ok():
-                apply_settings()
-                dlg.destroy()
-
-            def on_cancel():
-                dlg.destroy()
-
-            ttk.Button(btn_frame, text="OK", command=on_ok, style="Accent.TButton").pack(side='right', padx=6)
-            ttk.Button(btn_frame, text="Apply", command=apply_settings).pack(side='right', padx=6)
-            ttk.Button(btn_frame, text="Cancel", command=on_cancel).pack(side='right', padx=6)
-
-            dlg.wait_window()
-        except Exception as e:
-            messagebox.showerror("Settings Error", f"Could not open settings: {e}")
+            return self.settings_ui.show_settings_dialog()
+        except Exception:
+            messagebox.showerror("Settings Error", "Settings dialog not available.")
     
     def view_log_file(self):
-        """Open log file viewer dialog"""
+        """Delegate to SettingsUI.view_log_file"""
         try:
-            if not LOG_FILE_PATH.exists():
-                messagebox.showinfo("Log File", "No log file found yet.")
-                return
-            
-            # Create log viewer dialog
-            log_dlg = tk.Toplevel(self.root)
-            log_dlg.title("SafePDF Error Log")
-            log_dlg.geometry("700x500")
-            log_dlg.transient(self.root)
-            
-            # Center the dialog
-            x = self.root.winfo_x() + (self.root.winfo_width() // 2) - 350
-            y = self.root.winfo_y() + (self.root.winfo_height() // 2) - 250
-            log_dlg.geometry(f"+{x}+{y}")
-            
-            # Info frame
-            info_frame = ttk.Frame(log_dlg)
-            info_frame.pack(fill='x', padx=10, pady=5)
-            log_size = LOG_FILE_PATH.stat().st_size / 1024  # KB
-            ttk.Label(
-                info_frame,
-                text=f"Log Location: {LOG_FILE_PATH}\nSize: {log_size:.1f} KB",
-                font=(FONT, 9)
-            ).pack(anchor='w')
-            
-            # Text widget with scrollbar
-            text_frame = ttk.Frame(log_dlg)
-            text_frame.pack(fill='both', expand=True, padx=10, pady=5)
-            
-            scrollbar = ttk.Scrollbar(text_frame)
-            scrollbar.pack(side='right', fill='y')
-            
-            log_text = tk.Text(
-                text_frame,
-                wrap=tk.WORD,
-                yscrollcommand=scrollbar.set,
-                font=("Consolas", 9),
-                bg="#f8f9fa",
-                fg="#333"
-            )
-            log_text.pack(side='left', fill='both', expand=True)
-            scrollbar.config(command=log_text.yview)
-            
-            # Load log content
-            try:
-                with open(LOG_FILE_PATH, 'r', encoding='utf-8') as f:
-                    content = f.read()
-                    log_text.insert('1.0', content)
-                    # Auto-scroll to bottom
-                    log_text.see(tk.END)
-            except Exception as e:
-                log_text.insert('1.0', f"Error reading log file: {e}")
-            
-            log_text.config(state=tk.DISABLED)
-            
-            # Button frame
-            btn_frame = ttk.Frame(log_dlg)
-            btn_frame.pack(fill='x', padx=10, pady=10)
-            ttk.Button(btn_frame, text="Refresh", command=lambda: self.refresh_log_view(log_text)).pack(side='left', padx=5)
-            ttk.Button(btn_frame, text="Close", command=log_dlg.destroy).pack(side='right', padx=5)
-            
-        except Exception as e:
-            logger.error(f"Error opening log viewer: {e}", exc_info=True)
-            messagebox.showerror("Error", f"Could not open log viewer: {e}")
+            return self.settings_ui.view_log_file()
+        except Exception:
+            messagebox.showinfo("Log File", "Log viewer is unavailable.")
     
     def refresh_log_view(self, text_widget):
         """Refresh the log viewer content"""
@@ -2971,17 +2689,17 @@ class SafePDFUI:
                 
                 # Header
                 ttk.Label(dlg, text="🎉 Pro Version Active!", 
-                         font=(FONT, 14, "bold"), foreground="#00b386").pack(pady=(20, 10))
+                         font=(CommonElements.FONT, 14, "bold"), foreground="#00b386").pack(pady=(20, 10))
                 
                 ttk.Label(dlg, text="Thank you for supporting SafePDF!", 
-                         font=(FONT, 10)).pack(pady=(0, 20))
+                         font=(CommonElements.FONT, CommonElements.FONT_SIZE)).pack(pady=(0, 20))
                 
                 # Features list
                 features_frame = ttk.Frame(dlg)
                 features_frame.pack(fill='both', expand=True, padx=20, pady=(0, 10))
                 
                 ttk.Label(features_frame, text="✅ Enabled Pro Features:", 
-                         font=(FONT, 11, "bold")).pack(anchor='w', pady=(0, 10))
+                         font=(CommonElements.FONT, 11, "bold")).pack(anchor='w', pady=(0, 10))
                 
                 features = [
                     "• Ultra High Quality Compression (300 DPI, 95% JPEG)",
@@ -2991,7 +2709,7 @@ class SafePDFUI:
                 ]
                 
                 for feature in features:
-                    ttk.Label(features_frame, text=feature, font=(FONT, 9)).pack(anchor='w', pady=2)
+                    ttk.Label(features_frame, text=feature, font=(CommonElements.FONT, 9)).pack(anchor='w', pady=2)
                 
                 # Deactivation section
                 ttk.Separator(dlg, orient='horizontal').pack(fill='x', padx=20, pady=10)
@@ -3000,7 +2718,7 @@ class SafePDFUI:
                 deactivate_frame.pack(fill='x', padx=20, pady=(0, 10))
                 
                 ttk.Label(deactivate_frame, text="Switch back to Free Version:", 
-                         font=(FONT, 10, "bold")).pack(anchor='w', pady=(0, 5))
+                         font=(CommonElements.FONT, 10, "bold")).pack(anchor='w', pady=(0, 5))
                 
                 def deactivate_pro():
                     if messagebox.askyesno("Deactivate Pro", 
@@ -3029,24 +2747,24 @@ class SafePDFUI:
                 header_frame.pack(fill='x', padx=20, pady=(20, 10))
                 
                 ttk.Label(header_frame, text="🚀 Upgrade for a more powerful SafePDF", 
-                         font=(FONT, 16, "bold"), foreground="#b62020").pack(pady=(0, 5))
+                         font=(CommonElements.FONT, 16, "bold"), foreground="#b62020").pack(pady=(0, 5))
                 
                 ttk.Label(header_frame, text="Unlock premium features for the best PDF experience", 
-                         font=(FONT, 9), foreground="#666").pack()
+                         font=(CommonElements.FONT, 9), foreground="#666").pack()
                 
                 # Activation section
                 activation_frame = ttk.Frame(dlg)
                 activation_frame.pack(fill='x', padx=20, pady=(10, 15))
                 
-                ttk.Label(activation_frame, text="🔑 Have an activation key?", 
-                         font=(FONT, 11, "bold")).pack(anchor='w', pady=(0, 8))
+                ttk.Label(activation_frame, text="🔑 Have a signed activation key?", 
+                         font=(CommonElements.FONT, 11, "bold")).pack(anchor='w', pady=(0, 8))
                 
                 key_frame = ttk.Frame(activation_frame)
                 key_frame.pack(fill='x', pady=(0, 5))
                 
                 activation_var = tk.StringVar()
                 key_entry = ttk.Entry(key_frame, textvariable=activation_var, 
-                                    font=(FONT, 10), show="*")
+                                    font=(CommonElements.FONT, CommonElements.FONT_SIZE), show="*")
                 key_entry.pack(side='left', fill='x', expand=True)
                 key_entry.focus()
                 
@@ -3061,9 +2779,9 @@ class SafePDFUI:
                         dlg.destroy()
                         self.update_pro_features()
                     else:
-                        messagebox.showerror("❌ Activation Failed", message)
-                
-                activate_btn = ttk.Button(key_frame, text="Activate Pro", command=activate_pro)
+                        messagebox.showerror("Activation Failed", message)
+
+                activate_btn = ttk.Button(key_frame, text="Activate with Signed Key", command=activate_pro)
                 activate_btn.pack(side='left', padx=(10, 0))
                 
                 # Separator
@@ -3074,19 +2792,21 @@ class SafePDFUI:
                 features_frame.pack(fill='both', expand=True, padx=20, pady=(0, 10))
                 
                 ttk.Label(features_frame, text="💎 Pro Features Include:", 
-                         font=(FONT, 12, "bold")).pack(anchor='w', pady=(0, 10))
+                         font=(CommonElements.FONT, 12, "bold")).pack(anchor='w', pady=(0, 10))
                 
                 features = [
                     "• Ultra High Quality Compression (300 DPI, 95% JPEG quality)",
                     "• Lossless compression for maximum quality preservation",
                     "• Priority customer support and faster response times",
                     "• Regular updates with new features and improvements",
+                    "• Automatic update checking with signed verification",
+                    "• GPG-signed activation keys for security",
                     "• Batch processing for multiple files at once",
                     "• Premium user experience with advanced options"
                 ]
                 
                 for feature in features:
-                    ttk.Label(features_frame, text=feature, font=(FONT, 9)).pack(anchor='w', pady=1)
+                    ttk.Label(features_frame, text=feature, font=(CommonElements.FONT, 9)).pack(anchor='w', pady=1)
                 
                 # Call-to-action section
                 cta_frame = ttk.Frame(dlg)
@@ -3104,7 +2824,7 @@ class SafePDFUI:
                     cta_frame,
                     text="🌐 Get Pro Version Now",
                     command=open_website,
-                    font=(FONT, 11, "bold"),
+                    font=(CommonElements.FONT, 11, "bold"),
                     fg="white",
                     bg="#00b386",  # Use app's green accent color
                     bd=0,
@@ -3120,36 +2840,18 @@ class SafePDFUI:
             messagebox.showerror("Error", f"Could not open dialog: {e}")
     
     def clear_log_file(self):
-        """Clear the log file after confirmation"""
+        """Delegate to SettingsUI.clear_log_file"""
         try:
-            if not LOG_FILE_PATH.exists():
-                messagebox.showinfo("Log File", "No log file to clear.")
-                return
-            
-            response = messagebox.askyesno(
-                "Clear Log",
-                "Are you sure you want to clear the error log?\nThis action cannot be undone."
-            )
-            
-            if response:
-                # Clear the log file
-                with open(LOG_FILE_PATH, 'w', encoding='utf-8') as f:
-                    f.write(f"Log cleared by user at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-                logger.info("Log file cleared by user")
-                messagebox.showinfo("Success", "Log file has been cleared.")
-        except Exception as e:
-            logger.error(f"Error clearing log file: {e}", exc_info=True)
-            messagebox.showerror("Error", f"Could not clear log file: {e}")
+            return self.settings_ui.clear_log_file()
+        except Exception:
+            messagebox.showerror("Error", "Could not clear the log file.")
     
     def open_log_folder(self):
-        """Open the folder containing the log file"""
+        """Delegate to SettingsUI.open_log_folder"""
         try:
-            log_dir = LOG_FILE_PATH.parent
-            if not safe_open_file_or_folder(log_dir):
-                messagebox.showerror("Error", "Could not open log folder.")
-        except Exception as e:
-            logger.error(f"Error opening log folder: {e}", exc_info=True)
-            messagebox.showerror("Error", f"Could not open log folder: {e}")
+            return self.settings_ui.open_log_folder()
+        except Exception:
+            messagebox.showerror("Error", "Could not open log folder.")
     
     def cancel_operation(self):
         """Cancel current operation with confirmation"""

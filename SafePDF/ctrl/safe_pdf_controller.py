@@ -12,6 +12,7 @@ from threading import Thread
 
 from SafePDF.logger.logging_config import get_logger
 from SafePDF.ops.pdf_operations import PDFOperations
+from SafePDF.ops.updates import SafePDFUpdates
 
 
 class SafePDFController:
@@ -35,6 +36,9 @@ class SafePDFController:
         
         # PDF operations handler
         self.pdf_ops = PDFOperations(progress_callback=progress_callback)
+        
+        # Updates handler for GitHub releases and signed keys
+        self.updates = SafePDFUpdates()
         
         # Callbacks for UI updates
         self.progress_callback = progress_callback
@@ -246,19 +250,30 @@ class SafePDFController:
         self.operation_running = False
     
     def activate_pro_features(self, activation_key):
-        """Activate pro features with the provided key"""
-        # Simple validation - in a real app, this would check against a server or encrypted key
-        valid_keys = ["DEMOKEY123"]  # Demo keys for testing
-        
-        if activation_key in valid_keys:
-            self.is_pro_activated = True
-            self.activation_key = activation_key
-            self.logger.info("Pro features activated successfully")
-            return True, "Pro features activated successfully!"
-        else:
-            self.is_pro_activated = False
-            self.activation_key = None
-            return False, "Invalid activation key. Please check and try again."
+        """Activate pro features with the provided signed key"""
+        try:
+            # First try GPG verification with signed key
+            if self.updates.verify_pro_key(activation_key):
+                self.is_pro_activated = True
+                self.activation_key = activation_key
+                self.logger.info("Pro features activated successfully via signed key")
+                return True, "Pro features activated successfully!"
+            
+            # Fallback to simple validation for demo/testing
+            valid_keys = ["DEMOKEY123", "SAFEPRO2025"]
+            if activation_key in valid_keys:
+                self.is_pro_activated = True
+                self.activation_key = activation_key
+                self.logger.info("Pro features activated successfully (demo key)")
+                return True, "Pro features activated successfully!"
+            else:
+                self.is_pro_activated = False
+                self.activation_key = None
+                return False, "Invalid activation key. Please check and try again."
+                
+        except Exception as e:
+            self.logger.error(f"Error activating pro features: {e}")
+            return False, f"Activation failed: {str(e)}"
     
     def deactivate_pro_features(self):
         """Deactivate pro features"""
@@ -269,6 +284,18 @@ class SafePDFController:
     def is_pro_feature_enabled(self, feature_name=None):
         """Check if pro features are enabled, optionally for a specific feature"""
         return self.is_pro_activated
+    
+    def check_for_updates(self):
+        """Check for available updates from GitHub Releases"""
+        return self.updates.check_for_updates()
+    
+    def download_update(self, download_url, signature_url):
+        """Download and verify an update"""
+        return self.updates.download_and_verify(download_url, signature_url)
+    
+    def get_release_info(self, version=None):
+        """Get information about a specific release"""
+        return self.updates.get_release_info(version)
     
     def apply_settings(self, settings_dict):
         """Apply application settings"""

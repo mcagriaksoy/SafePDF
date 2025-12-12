@@ -104,14 +104,6 @@ def main():
     except Exception:
         root = tk.Tk()  # Fallback if tkinterdnd2 is not available
 
-    try:
-        root.title("SafePDF™")
-        root.state("normal")
-        root.lift()
-        root.focus_force()
-    except Exception:
-        pass
-
     SafePDFApp(root)
     root.mainloop()
 
