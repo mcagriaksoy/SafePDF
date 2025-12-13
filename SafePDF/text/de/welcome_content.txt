@@ -1,0 +1,21 @@
+Willkommen
+
+Klicken Sie auf „Weiter“, um den Prozess zu starten und Ihre gewünschte Aktion auszuwählen.
+
+📋 Prozessschritte:
+
+(1) Startseite dieser Anwendung
+(2) Quelldatei auswählen
+(3) Gewünschte Aktion auswählen
+(4) Zusätzliche Einstellungen vornehmen
+(5) Ergebnisse ansehen und Änderungen speichern
+
+Keine Sorge, Ihre Dateien verlassen Ihren Computer nicht.
+
+💻 Softwareinformationen
+
+Version: v1.0.9
+🔗 Nach Updates suchen
+👨‍💻 von mcagriaksoy – 2025
+
+Weitere Informationen und Updates finden Sie in unserem GitHub-Repository.

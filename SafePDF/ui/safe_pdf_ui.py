@@ -211,7 +211,7 @@ class SafePDFUI:
         self.output_selection_is_directory = False
         self.output_frame = None
         # Application-level settings
-        self.language_var = tk.StringVar(value="English")
+        self.language_var = tk.StringVar(value="en")
         self.theme_var = tk.StringVar(value="system")  # options: system, light, dark
         
         # Theme colors (will be set by apply_theme)
@@ -244,6 +244,12 @@ class SafePDFUI:
         # Instantiate delegated UI helpers
         self.help_ui = HelpUI(root, controller, CommonElements.FONT)
         self.settings_ui = SettingsUI(root, controller, self.theme_var, self.language_var, LOG_FILE_PATH)
+
+        # Ensure language changes update UI (language_var stores language code, e.g. 'en')
+        try:
+            self.language_var.trace('w', lambda *args: self._on_language_change())
+        except Exception:
+            pass
 
         # Ensure theme callback propagates
         try:
@@ -857,11 +863,36 @@ class SafePDFUI:
 
             html_widget.config(state="disabled")
             
-            # Load the HTML file from the moved `text/` folder
-            welcome_html_path = resource_path("text/welcome_content.html")
-            with open(str(welcome_html_path), 'r', encoding='utf-8') as f:
-                html_content = f.read()
-            html_widget.set_html(html_content)
+            # Load the HTML file from the moved `text/` folder, prefer localized version
+            lang_code = CommonElements.SELECTED_LANGUAGE or 'en'
+            try:
+                # Allow controller override if it exposes a language_var with a code-like value
+                lang_var = getattr(self.controller, 'language_var', None)
+                if lang_var and hasattr(lang_var, 'get'):
+                    v = lang_var.get()
+                    if v and isinstance(v, str) and len(v) <= 5:
+                        lang_code = v
+            except Exception:
+                lang_code = CommonElements.SELECTED_LANGUAGE or 'en'
+
+            candidates = [
+                resource_path(f"text/{lang_code}/welcome_content.html"),
+                resource_path("text/welcome_content.html")
+            ]
+            html_content = None
+            for p in candidates:
+                try:
+                    if p.exists():
+                        with open(str(p), 'r', encoding='utf-8') as f:
+                            html_content = f.read()
+                            break
+                except Exception:
+                    html_content = None
+
+            if html_content:
+                html_widget.set_html(html_content)
+            else:
+                raise FileNotFoundError("No welcome HTML content available")
             
         except ImportError:
             # Fallback to text-based content if HTML widget is not available
@@ -900,11 +931,29 @@ class SafePDFUI:
     def load_welcome_content(self):
         """Load welcome content from text file or use fallback"""
         try:
-            # First try to load from moved text folder
-            welcome_txt_path = resource_path("text/welcome_content.txt")
-            if welcome_txt_path.exists():
-                with open(str(welcome_txt_path), 'r', encoding='utf-8') as f:
-                    return f.read()
+            # Prefer localized welcome text under text/<lang>/welcome_content.txt
+            lang_code = CommonElements.SELECTED_LANGUAGE or 'en'
+            try:
+                lang_var = getattr(self.controller, 'language_var', None)
+                if lang_var and hasattr(lang_var, 'get'):
+                    v = lang_var.get()
+                    if v and isinstance(v, str) and len(v) <= 5:
+                        lang_code = v
+            except Exception:
+                lang_code = CommonElements.SELECTED_LANGUAGE or 'en'
+
+            candidates = [
+                resource_path(f"text/{lang_code}/welcome_content.txt"),
+                resource_path("text/welcome_content.txt")
+            ]
+            for welcome_txt_path in candidates:
+                try:
+                    if welcome_txt_path.exists():
+                        with open(str(welcome_txt_path), 'r', encoding='utf-8') as f:
+                            return f.read()
+                except Exception:
+                    logger.debug(f"Error reading welcome file {welcome_txt_path}", exc_info=True)
+                    continue
         except Exception:
             logger.debug("Error loading welcome content from file", exc_info=True)
             pass  # File not found, use fallback
@@ -1506,6 +1555,65 @@ class SafePDFUI:
             
         except Exception as e:
             logger.error(f"Error applying theme: {e}", exc_info=True)
+
+    def _on_language_change(self):
+        """Internal trace callback when `language_var` changes."""
+        try:
+            code = str(self.language_var.get())
+            CommonElements.SELECTED_LANGUAGE = code
+            self.apply_language()
+        except Exception:
+            logger.debug("Error handling language change", exc_info=True)
+
+    def apply_language(self):
+        """Refresh UI parts that depend on language selection.
+
+        This will recreate localized content in welcome/help/settings tabs.
+        """
+        try:
+            # Recreate welcome content
+            if getattr(self, 'welcome_frame', None):
+                for w in self.welcome_frame.winfo_children():
+                    try:
+                        w.destroy()
+                    except Exception:
+                        pass
+                try:
+                    self.create_welcome_tab()
+                except Exception:
+                    pass
+
+            # Recreate help content
+            if getattr(self, 'help_frame', None):
+                for w in self.help_frame.winfo_children():
+                    try:
+                        w.destroy()
+                    except Exception:
+                        pass
+                try:
+                    self.create_help_tab()
+                except Exception:
+                    pass
+
+            # Recreate app settings tab content
+            if getattr(self, 'app_settings_frame', None):
+                for w in self.app_settings_frame.winfo_children():
+                    try:
+                        w.destroy()
+                    except Exception:
+                        pass
+                try:
+                    self.create_app_settings_tab()
+                except Exception:
+                    pass
+
+            # Let UpdateUI refresh any localized strings it manages
+            try:
+                self.update_ui.update_pro_ui(self)
+            except Exception:
+                pass
+        except Exception:
+            logger.debug("Error applying language to UI", exc_info=True)
     
     def _update_widget_colors(self, widget, bg_color, fg_color, text_bg, text_fg):
         """Recursively update colors for all widgets"""
@@ -2578,14 +2686,33 @@ class SafePDFUI:
         """Read current packaged version from welcome_content.txt or version.txt"""
         # Try welcome_content.txt first (it contains 'Version: vX.Y.Z')
         try:
-            # welcome_content.txt moved into the text/ folder
-            welcome_path = Path(__file__).parent.parent / "text" / "welcome_content.txt"
-            if welcome_path.exists():
-                with open(str(welcome_path), 'r', encoding='utf-8') as f:
-                    for line in f:
-                        if line.strip().lower().startswith('version:'):
-                            v = line.split(':', 1)[1].strip()
-                            return v
+            # Prefer localized version of welcome_content.txt
+            lang_code = CommonElements.SELECTED_LANGUAGE or 'en'
+            try:
+                lang_var = getattr(self.controller, 'language_var', None)
+                if lang_var and hasattr(lang_var, 'get'):
+                    v = lang_var.get()
+                    if v and isinstance(v, str) and len(v) <= 5:
+                        lang_code = v
+            except Exception:
+                lang_code = CommonElements.SELECTED_LANGUAGE or 'en'
+
+            candidates = [
+                Path(__file__).parent.parent / "text" / lang_code / "welcome_content.txt",
+                Path(__file__).parent.parent / "text" / "welcome_content.txt",
+                Path(__file__).parent.parent / "version.txt"
+            ]
+            for welcome_path in candidates:
+                try:
+                    if welcome_path.exists():
+                        with open(str(welcome_path), 'r', encoding='utf-8') as f:
+                            for line in f:
+                                if line.strip().lower().startswith('version:'):
+                                    v = line.split(':', 1)[1].strip()
+                                    return v
+                except Exception:
+                    logger.debug(f"Error reading version from {welcome_path}", exc_info=True)
+                    continue
         except Exception:
             logger.debug("Error loading welcome content from file", exc_info=True)
             pass  # File may not exist or be readable, continue to fallback

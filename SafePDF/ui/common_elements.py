@@ -29,6 +29,10 @@ class CommonElements:
     SIZE_LIST = (780, 640)
     PADDING = 10
 
+    # Default Language
+    DEFAULT_LANGUAGE = "en"
+    SELECTED_LANGUAGE = "en"
+
     @staticmethod
     def style_button(button):
         button.configure(
