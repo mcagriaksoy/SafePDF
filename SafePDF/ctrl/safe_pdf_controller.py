@@ -1,20 +1,28 @@
 """
-SafePDF Controller - Core Business Logic
-v1.0.0 by mcagriaksoy - 2025
+SafePDF Controller - Core Logic
+by mcagriaksoy - 2025
 
 This module handles the core application logic, state management,
 and coordination of PDF operations.
 """
-from os import path as os_path
+
 from os import makedirs
+from os import path as os_path
 from threading import Thread
-from pdf_operations import PDFOperations
+import json
+from datetime import datetime, timedelta
+
+from SafePDF.logger.logging_config import get_logger
+from SafePDF.ops.pdf_operations import PDFOperations
+from SafePDF.ops.updates import SafePDFUpdates
+
 
 class SafePDFController:
-    """Controller class that manages application state and business logic"""
+    """Controller class that manages application state and logic"""
     
     def __init__(self, progress_callback=None):
         # Application state
+        self.selected_files = []
         self.selected_file = None
         self.selected_operation = None
         self.current_tab = 0
@@ -24,8 +32,22 @@ class SafePDFController:
         self.output_dir = None
         self.current_output = None
         
+        # Activation state
+        self.is_pro_activated = False
+        self.activation_key = None
+        self.pro_expiry_date = None
+        
+        # Module logger (needed for _load_pro_status)
+        self.logger = get_logger('SafePDF.Controller')
+        
+        # Load saved pro status
+        self._load_pro_status()
+        
         # PDF operations handler
         self.pdf_ops = PDFOperations(progress_callback=progress_callback)
+        
+        # Updates handler for GitHub releases and signed keys
+        self.updates = SafePDFUpdates()
         
         # Callbacks for UI updates
         self.progress_callback = progress_callback
@@ -38,15 +60,23 @@ class SafePDFController:
         self.completion_callback = completion_callback
     
     def select_file(self, file_path):
-        """Select and validate a PDF file"""
-        if not os_path.exists(file_path):
-            return False, "File does not exist"
+        """Select and validate PDF file(s)"""
+        if isinstance(file_path, list):
+            self.selected_files = file_path
+        else:
+            self.selected_files = [file_path]
         
-        if not file_path.lower().endswith('.pdf'):
-            return False, "Please select a PDF file. Only .pdf files are supported."
+        self.selected_file = self.selected_files[0] if self.selected_files else None
         
-        self.selected_file = file_path
-        return True, f"Selected: {os_path.basename(file_path)}"
+        # Validate all files
+        for f in self.selected_files:
+            if not os_path.exists(f):
+                return False, f"File does not exist: {f}"
+            if not f.lower().endswith('.pdf'):
+                return False, f"Please select PDF files only. Invalid: {os_path.basename(f)}"
+        
+        filenames = [os_path.basename(f) for f in self.selected_files]
+        return True, f"Selected: {', '.join(filenames)}"
     
     def get_pdf_info(self):
         """Get information about the selected PDF file"""
@@ -69,14 +99,14 @@ class SafePDFController:
     
     def can_proceed_to_tab(self, tab_index):
         """Check if the user can proceed to a specific tab"""
-        if tab_index == 2:  # File selection tab
-            if not self.selected_file:
-                return False, "Please select a PDF file first!"
-        elif tab_index == 3:  # Operation selection tab
+        if tab_index == 3:  # File selection tab
             if not self.selected_operation:
                 return False, "Please select an operation first!"
         elif tab_index == 4:  # Settings tab - no additional validation needed
-            pass
+            if not self.selected_file:
+                return False, "Please select a file first!"
+            if self.selected_operation == 'merge' and len(self.selected_files) < 2:
+                return False, "Merge requires at least two files. Please select more files."
         
         return True, ""
     
@@ -89,7 +119,7 @@ class SafePDFController:
                 return custom_output_path, None
         
         # Default paths with minimal processing
-        if self.selected_operation in ["compress", "rotate", "repair", "to_word", "to_txt", "extract_info"]:
+        if self.selected_operation in ["compress", "rotate", "repair", "to_word", "to_txt", "extract_info", "merge"]:
             base_name = os_path.splitext(self.selected_file)[0]
             if self.selected_operation == "to_word":
                 return f"{base_name}.docx", None
@@ -97,6 +127,8 @@ class SafePDFController:
                 return f"{base_name}.txt", None
             elif self.selected_operation == "extract_info":
                 return f"{base_name}_info.txt", None
+            elif self.selected_operation == "merge":
+                return f"{base_name}_merged.pdf", None
             else:
                 return f"{base_name}_{self.selected_operation}.pdf", None
         else:
@@ -152,29 +184,16 @@ class SafePDFController:
                 success, message = self.pdf_ops.pdf_to_jpg(self.selected_file, output_dir, dpi)
                 
             elif self.selected_operation == "merge":
-                # Merge operation: expect primary selected_file and a second file provided in settings
-                second_file = self.operation_settings.get('second_file')
-                merge_order = self.operation_settings.get('merge_order', 'end')
-
-                if not second_file:
+                # Merge operation: use all selected files
+                if len(self.selected_files) < 2:
                     success = False
-                    message = "Merge requires a second PDF file to be selected."
-                elif not os_path.exists(second_file):
-                    success = False
-                    message = f"Second file not found: {second_file}"
+                    message = "Merge requires at least 2 PDF files to be selected."
                 else:
-                    # Determine input order
-                    if merge_order == 'beginning':
-                        input_paths = [second_file, self.selected_file]
-                    else:
-                        input_paths = [self.selected_file, second_file]
+                    # Use all selected files in order
+                    input_paths = self.selected_files
 
                     # Prepare output file path (single file)
                     output_path, _ = self.prepare_output_paths(custom_output_path=None, use_default=True)
-                    # If prepare_output_paths returned None for output_path (for split-like ops), construct default
-                    if not output_path:
-                        base_name = os_path.splitext(self.selected_file)[0]
-                        output_path = f"{base_name}_merged.pdf"
 
                     try:
                         success, message = self.pdf_ops.merge_pdfs(input_paths, output_path)
@@ -223,6 +242,7 @@ class SafePDFController:
             if hasattr(self.pdf_ops, 'request_cancel'):
                 self.pdf_ops.request_cancel()
         except Exception:
+            self.logger.debug("Error requesting operation cancellation", exc_info=True)
             pass
 
         # Wait briefly for operation to observe cancel request
@@ -236,12 +256,84 @@ class SafePDFController:
         # Force-clear running flag as last resort
         self.operation_running = False
     
+    def activate_pro_features(self, license_file_path):
+        """Activate pro features with the provided license file"""
+        try:
+            # First try GPG verification with license file
+            if self.updates.verify_license_file(license_file_path):
+                self.is_pro_activated = True
+                self.activation_key = license_file_path  # Store the file path
+                self.pro_expiry_date = datetime.now() + timedelta(days=30)  # 30 days trial
+                self._save_pro_status()  # Save the status
+                self.logger.info("Pro features activated successfully via license file")
+                return True, "Pro features activated successfully!"
+            
+            # Fallback to simple validation for demo/testing
+            # For demo, check if file exists and looks like a PGP signature
+            if os_path.exists(license_file_path):
+                try:
+                    with open(license_file_path, 'r') as f:
+                        content = f.read().strip()
+                    # Check if it contains PGP signature markers
+                    if "-----BEGIN PGP SIGNATURE-----" in content and "-----END PGP SIGNATURE-----" in content:
+                        self.is_pro_activated = True
+                        self.activation_key = license_file_path
+                        self.pro_expiry_date = datetime.now() + timedelta(days=30)  # 30 days trial
+                        self._save_pro_status()  # Save the status
+                        self.logger.info("Pro features activated successfully (demo license)")
+                        return True, "Pro features activated successfully!"
+                except Exception:
+                    pass
+            
+            self.is_pro_activated = False
+            self.activation_key = None
+            return False, "Invalid license file. Please check and try again."
+                
+        except Exception as e:
+            self.logger.error(f"Error activating pro features: {e}")
+            return False, f"Activation failed: {str(e)}"
+    
+    def deactivate_pro_features(self):
+        """Deactivate pro features"""
+        self.is_pro_activated = False
+        self.activation_key = None
+        self.pro_expiry_date = None
+        self._save_pro_status()  # Save the status
+        self.logger.info("Pro features deactivated")
+    
+    def is_pro_feature_enabled(self, feature_name=None):
+        """Check if pro features are enabled, optionally for a specific feature"""
+        return self.is_pro_activated
+    
+    def check_for_updates(self):
+        """Check for available updates from GitHub Releases"""
+        return self.updates.check_for_updates()
+    
+    def download_update(self, download_url, signature_url):
+        """Download and verify an update"""
+        return self.updates.download_and_verify(download_url, signature_url)
+    
+    def get_release_info(self, version=None):
+        """Get information about a specific release"""
+        return self.updates.get_release_info(version)
+    
+    def apply_settings(self, settings_dict):
+        """Apply application settings"""
+        # Store settings for persistence (could save to file)
+        self.app_settings = settings_dict
+        self.logger.debug(f"Applied settings: {settings_dict}")
+    
+    def set_app_settings(self, settings_dict):
+        """Set application settings (alias for apply_settings)"""
+        self.apply_settings(settings_dict)
+    
     def reset_state(self):
         """Reset the application state completely"""
         # Cancel any running operation first
         self.cancel_operation()
         
         # Reset all state variables
+        self.selected_files = []
         self.selected_file = None
         self.selected_operation = None
         self.operation_settings = {}
@@ -254,13 +346,14 @@ class SafePDFController:
         
         # Reset PDF operations handler (clears any cached data)
         if hasattr(self.pdf_ops, '_fitz'):
-            self.pdf_ops._fitz = None
+            setattr(self.pdf_ops, '_fitz', None)
         if hasattr(self.pdf_ops, '_imagetk'):
-            self.pdf_ops._imagetk = None
+            setattr(self.pdf_ops, '_imagetk', None)
     
     def get_state_summary(self):
         """Get a summary of the current application state"""
         return {
+            'selected_files': self.selected_files,
             'selected_file': self.selected_file,
             'selected_operation': self.selected_operation,
             'current_tab': self.current_tab,
@@ -268,3 +361,63 @@ class SafePDFController:
             'has_output': bool(self.current_output),
             'output_location': self.current_output
         }
+
+    def _load_pro_status(self):
+        """Load pro activation status from file"""
+        try:
+            config_dir = os_path.join(os_path.expanduser("~"), ".safepdf")
+            makedirs(config_dir, exist_ok=True)
+            config_file = os_path.join(config_dir, "pro_status.json")
+            
+            if os_path.exists(config_file):
+                with open(config_file, 'r', encoding='utf-8-sig') as f:  # utf-8-sig handles BOM
+                    data = json.load(f)
+                
+                self.is_pro_activated = data.get('activated', False)
+                expiry_str = data.get('expiry_date')
+                if expiry_str:
+                    self.pro_expiry_date = datetime.fromisoformat(expiry_str)
+                    # Check if pro has expired
+                    if datetime.now() > self.pro_expiry_date:
+                        self.is_pro_activated = False
+                        self.pro_expiry_date = None
+                        self._save_pro_status()  # Update saved status
+                else:
+                    self.pro_expiry_date = None
+                    
+                self.activation_key = data.get('activation_key')
+                self.logger.info(f"Loaded pro status: activated={self.is_pro_activated}")
+        except Exception as e:
+            self.logger.error(f"Error loading pro status: {e}")
+            # Reset to defaults on error
+            self.is_pro_activated = False
+            self.pro_expiry_date = None
+            self.activation_key = None
+
+    def _save_pro_status(self):
+        """Save pro activation status to file"""
+        try:
+            config_dir = os_path.join(os_path.expanduser("~"), ".safepdf")
+            makedirs(config_dir, exist_ok=True)
+            config_file = os_path.join(config_dir, "pro_status.json")
+            
+            data = {
+                'activated': self.is_pro_activated,
+                'activation_key': self.activation_key,
+                'expiry_date': self.pro_expiry_date.isoformat() if self.pro_expiry_date else None
+            }
+            
+            with open(config_file, 'w') as f:
+                json.dump(data, f, indent=2)
+                
+            self.logger.info(f"Saved pro status: activated={self.is_pro_activated}")
+        except Exception as e:
+            self.logger.error(f"Error saving pro status: {e}")
+
+    def get_pro_remaining_days(self):
+        """Get remaining days for pro license"""
+        if not self.is_pro_activated or not self.pro_expiry_date:
+            return 0
+        
+        remaining = self.pro_expiry_date - datetime.now()
+        return max(0, remaining.days)

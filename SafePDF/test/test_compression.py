@@ -3,9 +3,9 @@
 Test script for PDF compression functionality
 """
 import os
-import sys
-from pdf_operations import PDFOperations
-import tempfile
+
+from SafePDF.ops.pdf_operations import PDFOperations
+
 
 def test_compression():
     """Test PDF compression with a sample file"""

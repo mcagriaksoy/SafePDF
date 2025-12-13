@@ -15,6 +15,13 @@ tkinterdnd2>=0.3.0
 # For PDF to Word conversion
 python-docx>=0.8.11
 
+# For GitHub API access and updates
+requests>=2.25.0
+PyGitHub>=1.55.0
+
+# For GPG signature verification
+python-gnupg>=0.4.8
+
 # Notes:
 # - `tkinter` is part of the Python standard library (ensure your Python build includes Tk)
 # - The codebase attempts to import `PyPDF2` first then `pypdf` as a fallback; include either one in your environment.

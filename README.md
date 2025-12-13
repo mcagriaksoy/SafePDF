@@ -6,7 +6,11 @@
 [![License](https://img.shields.io/badge/License-GPL--3.0--1-red)](#license)
 [![issues - SafePDF](https://img.shields.io/github/issues/mcagriaksoy/SafePDF)](https://github.com/mcagriaksoy/SafePDF/issues)
 
-SafePDF is a powerful, privacy-focused PDF manipulation tool designed to handle your documents entirely offline. Whether you're compressing large files, splitting pages, merging multiple PDFs, converting to images, rotating pages, or repairing corrupted documents—SafePDF does it all locally, ensuring your sensitive data never leaves your device.
+<a href="https://www.producthunt.com/products/safepdf-privacy-first-pdf-toolkit?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-safepdf&#0045;privacy&#0045;first&#0045;pdf&#0045;toolkit" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1041419&theme=dark&t=1763928044526" alt="SafePDF&#0058;&#0032;Privacy‑First&#0032;PDF&#0032;Toolkit - It&#0032;is&#0032;a&#0032;privacy&#0045;focused&#0032;offline&#0032;tool&#0032;for&#0032;PDF&#0032;manipulation&#0046; | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
+
+SafePDF is a powerful, privacy-focused PDF manipulation tool designed to handle your documents entirely offline. Whether you're compressing large files, splitting pages, merging multiple PDFs, converting to images, rotating pages, or repairing corrupted documents SafePDF does it all locally, ensuring your sensitive data never leaves your device.
+
+![Banner](img/SafePDF_Ad.avif)
 
 ## Why SafePDF?
 
@@ -27,8 +31,12 @@ Medium article: https://medium.com/dev-genius/the-untold-security-concerns-of-on
 - **Progress Tracking**: Real-time progress indication for operations
 - **User-friendly Interface**: Intuitive tabbed interface similar to the Qt version
 
-![Main Window](img/UI_v1.jpg)
-![Operations Window](img/UI_v1_p2.jpg)
+![Main Window](img/UI_v1.avif)
+![Operations Window](img/UI_v1_p2.avif)
+
+### How to use?
+
+![How to Use?](img/HowToUse.gif)
 
 ## Download URL
 <a href="https://github.com/mcagriaksoy/SafePDF/releases/" download>
@@ -50,10 +58,19 @@ Released under [GPL-3.0-1](/LICENSE) by [@mcagriaksoy](https://github.com/mcagri
 
 ## Installation
 
+You can use the executable directly or download the source-code and run given instructions.
+
 ### Prerequisites
 
 - Python 3.7 or higher
 - pip (Python package installer)
+- PyPDF2>=3.0.0
+- Pillow>=9.0.0
+- PyMuPDF>=1.20.0
+- tkinterdnd2>=0.3.0
+- python-docx>=0.8.11
+  
+Note: If you encounter issues with `tkinterdnd2`, the application will still work without drag-and-drop functionality.
 
 ### Install Dependencies
 
@@ -61,22 +78,21 @@ Released under [GPL-3.0-1](/LICENSE) by [@mcagriaksoy](https://github.com/mcagri
 pip install -r requirements.txt
 ```
 
-### Required Packages
-
-- `PyPDF2` or `pypdf`: Core PDF manipulation
-- `Pillow`: Image processing
-- `PyMuPDF`: High-quality PDF to image conversion
-- `tkinterdnd2`: Drag and drop support (optional)
-
-If you encounter issues with `tkinterdnd2`, the application will still work without drag-and-drop functionality.
-
 ## Usage
 
 ### Running the Application
 
+You can use the executable or download the source-code and run below:
+
 ```bash
-# Run the main application
+# Run the main application (from project root)
+python run_safe_pdf.py
+
+# Or run the main application directly (from SafePDF/ directory)
 python safe_pdf_app.py
+
+# Or run as a module (from project root)
+python -m SafePDF.safe_pdf_app
 
 # Or run the test/demo script
 python test_demo.py
@@ -126,11 +142,29 @@ python test_demo.py --test-only
 ## File Structure
 
 ```
-SafePDF/Tk/
-├── safe_pdf_app.py      # Main application file
-├── pdf_operations.py    # PDF operations backend
+SafePDF/
+├── run_safe_pdf.py      # Launcher script (run from project root)
+├── SafePDF/             # Main package
+│   ├── __init__.py      # Package initializer
+│   ├── safe_pdf_app.py  # Main application file
+│   ├── ctrl/
+│   │   └── safe_pdf_controller.py
+│   ├── ui/
+│   │   ├── __init__.py
+│   │   └── safe_pdf_ui.py
+│   ├── logger/
+│   │   └── logging_config.py
+│   ├── ops/
+│   │   └── pdf_operations.py
+│   ├── test/
+│   │   ├── test_demo.py
+│   │   └── test_compression.py
+│   ├── assets/
+│   ├── text/
+│   └── version.txt
 ├── requirements.txt     # Python dependencies
-└── README.md           # This file
+├── README.md           # This file
+└── LICENSE
 ```
 
 ## Navigation Controls
@@ -203,15 +237,6 @@ Feel free to contribute by:
 - Suggesting new features
 - Submitting pull requests
 - Improving documentation
-
-
-## Comparison with Qt Version
-
-This Tkinter version provides the same functionality as the Qt form.ui with these advantages:
-- Pure Python implementation
-- No external UI framework dependencies
-- Cross-platform compatibility
-- Lightweight and fast startup
 - Easy to modify and extend
 
 For more information, visit: https://github.com/mcagriaksoy/SafePDF
