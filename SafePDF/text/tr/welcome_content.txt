@@ -1,0 +1,23 @@
+Hoş geldiniz
+
+İşleme başlamak ve ne yapmak istediğinizi seçmek için İleri'ye tıklayın.
+
+📋 İşlem Adımları:
+
+(1) Bu uygulamanın başlangıç ​​sayfası
+(2) Kaynak dosyanın seçimi
+(3) Yapmak istediğiniz işlemin seçimi
+(4) Ek ayarlar yapın
+(5) Sonuçları görün ve değişiklikleri kaydedin
+
+Endişelenmeyin, dosyalarınız bilgisayarınızdan asla ayrılmaz.
+
+💻 Yazılım Bilgileri
+
+Sürüm: v1.0.9
+🔗 Güncellemeleri Kontrol Et
+👨‍💻 mcagriaksoy tarafından - 2025
+
+Daha fazla bilgi ve güncellemeler için GitHub depomuzu ziyaret edin.
+Send feedback
+Translation results available

@@ -1,0 +1,9 @@
+• Ultrahochwertige Komprimierung (300 DPI, 95 % JPEG-Qualität)
+
+• Verlustfreie Komprimierung für maximale Qualitätserhaltung
+• Priorisierter Kundensupport und schnellere Reaktionszeiten
+• Regelmäßige Updates mit neuen Funktionen und Verbesserungen
+• Automatische Update-Prüfung mit signierter Verifizierung
+• GPG-signierte Aktivierungsschlüssel für maximale Sicherheit
+• Stapelverarbeitung mehrerer Dateien gleichzeitig
+• Premium-Benutzererfahrung mit erweiterten Optionen

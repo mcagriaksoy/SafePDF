@@ -21,11 +21,30 @@ class UpdateUI:
     def load_pro_features(self):
         """Load pro features list from pro_features.txt or return fallback list"""
         try:
-            pro_features_path = Path(__file__).parent.parent / "text" / "pro_features.txt"
-            if pro_features_path.exists():
-                with open(str(pro_features_path), 'r', encoding='utf-8') as f:
-                    features = [line.strip() for line in f if line.strip()]
-                    return features
+            # Prefer localized pro_features under text/<lang>/pro_features.txt
+            lang_code = CommonElements.SELECTED_LANGUAGE or 'en'
+            try:
+                lang_var = getattr(self.controller, 'language_var', None)
+                if lang_var and hasattr(lang_var, 'get'):
+                    v = lang_var.get()
+                    if v and isinstance(v, str) and len(v) <= 5:
+                        lang_code = v
+            except Exception:
+                lang_code = CommonElements.SELECTED_LANGUAGE or 'en'
+
+            candidates = [
+                Path(__file__).parent.parent / "text" / lang_code / "pro_features.txt",
+                Path(__file__).parent.parent / "text" / "pro_features.txt"
+            ]
+            for pro_features_path in candidates:
+                try:
+                    if pro_features_path.exists():
+                        with open(str(pro_features_path), 'r', encoding='utf-8') as f:
+                            features = [line.strip() for line in f if line.strip()]
+                            return features
+                except Exception:
+                    logger.debug(f"Error reading pro features from {pro_features_path}", exc_info=True)
+                    continue
         except Exception:
             logger.debug("Error loading pro features from file", exc_info=True)
             pass

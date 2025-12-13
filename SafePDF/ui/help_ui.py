@@ -15,21 +15,21 @@ class HelpUI:
 
     def _load_help_text(self):
         """Load help text from text/ folder with localization fallback"""
-        lang = getattr(self.controller, 'language_var', None)
-        lang_code = 'en'
+        # Prefer the selected language from common elements; allow controller override
+        lang_code = CommonElements.SELECTED_LANGUAGE or 'en'
         try:
+            lang = getattr(self.controller, 'language_var', None)
             # If controller exposes language_var (tk.StringVar), try to read its value
             if lang and hasattr(lang, 'get'):
-                lang_code = lang.get()
+                val = lang.get()
+                if val:
+                    lang_code = val
         except Exception:
-            lang_code = 'en'
+            lang_code = CommonElements.SELECTED_LANGUAGE or 'en'
 
         base_dir = Path(__file__).parent.parent
         candidates = [
-            base_dir / "text" / f"help_content_{lang_code}.txt",
-            base_dir / "text" / "help_content.txt",
-            base_dir / f"help_content_{lang_code}.txt",
-            base_dir / "help_content.txt"
+            base_dir / "text" / lang_code / "help_content.txt"
         ]
         help_text = None
         for p in candidates:
@@ -40,17 +40,6 @@ class HelpUI:
                         break
             except Exception:
                 help_text = None
-
-        if not help_text:
-            help_text = (
-                "SafePDF™ Help\n\n"
-                "This application allows you to perform various PDF operations:\n\n"
-                "1. Select a PDF file using drag-and-drop or file browser\n"
-                "2. Choose the operation you want to perform\n"
-                "3. Adjust settings if needed\n"
-                "4. View and save results\n\n"
-                "For more information, visit our GitHub repository."
-            )
 
         return help_text
 
