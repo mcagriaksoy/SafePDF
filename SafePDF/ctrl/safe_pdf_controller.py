@@ -9,6 +9,8 @@ and coordination of PDF operations.
 from os import makedirs
 from os import path as os_path
 from threading import Thread
+import json
+from datetime import datetime, timedelta
 
 from SafePDF.logger.logging_config import get_logger
 from SafePDF.ops.pdf_operations import PDFOperations
@@ -33,6 +35,13 @@ class SafePDFController:
         # Activation state
         self.is_pro_activated = False
         self.activation_key = None
+        self.pro_expiry_date = None
+        
+        # Module logger (needed for _load_pro_status)
+        self.logger = get_logger('SafePDF.Controller')
+        
+        # Load saved pro status
+        self._load_pro_status()
         
         # PDF operations handler
         self.pdf_ops = PDFOperations(progress_callback=progress_callback)
@@ -44,8 +53,6 @@ class SafePDFController:
         self.progress_callback = progress_callback
         self.update_ui_callback = None
         self.completion_callback = None
-        # Module logger
-        self.logger = get_logger('SafePDF.Controller')
     
     def set_ui_callbacks(self, update_ui_callback=None, completion_callback=None):
         """Set callback functions for UI updates"""
@@ -249,27 +256,38 @@ class SafePDFController:
         # Force-clear running flag as last resort
         self.operation_running = False
     
-    def activate_pro_features(self, activation_key):
-        """Activate pro features with the provided signed key"""
+    def activate_pro_features(self, license_file_path):
+        """Activate pro features with the provided license file"""
         try:
-            # First try GPG verification with signed key
-            if self.updates.verify_pro_key(activation_key):
+            # First try GPG verification with license file
+            if self.updates.verify_license_file(license_file_path):
                 self.is_pro_activated = True
-                self.activation_key = activation_key
-                self.logger.info("Pro features activated successfully via signed key")
+                self.activation_key = license_file_path  # Store the file path
+                self.pro_expiry_date = datetime.now() + timedelta(days=30)  # 30 days trial
+                self._save_pro_status()  # Save the status
+                self.logger.info("Pro features activated successfully via license file")
                 return True, "Pro features activated successfully!"
             
             # Fallback to simple validation for demo/testing
-            valid_keys = ["DEMOKEY123", "SAFEPRO2025"]
-            if activation_key in valid_keys:
-                self.is_pro_activated = True
-                self.activation_key = activation_key
-                self.logger.info("Pro features activated successfully (demo key)")
-                return True, "Pro features activated successfully!"
-            else:
-                self.is_pro_activated = False
-                self.activation_key = None
-                return False, "Invalid activation key. Please check and try again."
+            # For demo, check if file exists and looks like a PGP signature
+            if os_path.exists(license_file_path):
+                try:
+                    with open(license_file_path, 'r') as f:
+                        content = f.read().strip()
+                    # Check if it contains PGP signature markers
+                    if "-----BEGIN PGP SIGNATURE-----" in content and "-----END PGP SIGNATURE-----" in content:
+                        self.is_pro_activated = True
+                        self.activation_key = license_file_path
+                        self.pro_expiry_date = datetime.now() + timedelta(days=30)  # 30 days trial
+                        self._save_pro_status()  # Save the status
+                        self.logger.info("Pro features activated successfully (demo license)")
+                        return True, "Pro features activated successfully!"
+                except Exception:
+                    pass
+            
+            self.is_pro_activated = False
+            self.activation_key = None
+            return False, "Invalid license file. Please check and try again."
                 
         except Exception as e:
             self.logger.error(f"Error activating pro features: {e}")
@@ -279,6 +297,8 @@ class SafePDFController:
         """Deactivate pro features"""
         self.is_pro_activated = False
         self.activation_key = None
+        self.pro_expiry_date = None
+        self._save_pro_status()  # Save the status
         self.logger.info("Pro features deactivated")
     
     def is_pro_feature_enabled(self, feature_name=None):
@@ -341,3 +361,63 @@ class SafePDFController:
             'has_output': bool(self.current_output),
             'output_location': self.current_output
         }
+
+    def _load_pro_status(self):
+        """Load pro activation status from file"""
+        try:
+            config_dir = os_path.join(os_path.expanduser("~"), ".safepdf")
+            makedirs(config_dir, exist_ok=True)
+            config_file = os_path.join(config_dir, "pro_status.json")
+            
+            if os_path.exists(config_file):
+                with open(config_file, 'r', encoding='utf-8-sig') as f:  # utf-8-sig handles BOM
+                    data = json.load(f)
+                
+                self.is_pro_activated = data.get('activated', False)
+                expiry_str = data.get('expiry_date')
+                if expiry_str:
+                    self.pro_expiry_date = datetime.fromisoformat(expiry_str)
+                    # Check if pro has expired
+                    if datetime.now() > self.pro_expiry_date:
+                        self.is_pro_activated = False
+                        self.pro_expiry_date = None
+                        self._save_pro_status()  # Update saved status
+                else:
+                    self.pro_expiry_date = None
+                    
+                self.activation_key = data.get('activation_key')
+                self.logger.info(f"Loaded pro status: activated={self.is_pro_activated}")
+        except Exception as e:
+            self.logger.error(f"Error loading pro status: {e}")
+            # Reset to defaults on error
+            self.is_pro_activated = False
+            self.pro_expiry_date = None
+            self.activation_key = None
+
+    def _save_pro_status(self):
+        """Save pro activation status to file"""
+        try:
+            config_dir = os_path.join(os_path.expanduser("~"), ".safepdf")
+            makedirs(config_dir, exist_ok=True)
+            config_file = os_path.join(config_dir, "pro_status.json")
+            
+            data = {
+                'activated': self.is_pro_activated,
+                'activation_key': self.activation_key,
+                'expiry_date': self.pro_expiry_date.isoformat() if self.pro_expiry_date else None
+            }
+            
+            with open(config_file, 'w') as f:
+                json.dump(data, f, indent=2)
+                
+            self.logger.info(f"Saved pro status: activated={self.is_pro_activated}")
+        except Exception as e:
+            self.logger.error(f"Error saving pro status: {e}")
+
+    def get_pro_remaining_days(self):
+        """Get remaining days for pro license"""
+        if not self.is_pro_activated or not self.pro_expiry_date:
+            return 0
+        
+        remaining = self.pro_expiry_date - datetime.now()
+        return max(0, remaining.days)

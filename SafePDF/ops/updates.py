@@ -212,16 +212,16 @@ class SafePDFUpdates:
             # Running as script
             return Path(__file__).parent.parent / "SafePDF_new.py"
 
-    def verify_pro_key(self, activation_key, public_key=None):
+    def verify_license_file(self, license_file_path, public_key=None):
         """
-        Verify a pro activation key using GPG signature
+        Verify a pro license file using GPG signature
 
         Args:
-            activation_key: The activation key to verify
+            license_file_path: Path to the .license file
             public_key: ASCII-armored public key
 
         Returns:
-            bool: True if key is valid and verified
+            bool: True if license file is valid and verified
         """
         if not self.gpg_available:
             self.logger.warning("GPG not available - falling back to simple validation")
@@ -237,20 +237,46 @@ class SafePDFUpdates:
             if not import_result.fingerprints:
                 return False
 
-            # The activation key should be a signed message
-            # For simplicity, we'll assume the key contains the signature
-            verified = self.gpg.verify(activation_key)
+            # For detached signature verification, we need the signed data
+            # Assume the signed data is "SafePDF-Pro-License" 
+            signed_data = b"SafePDF-Pro-License"
+            
+            # Verify the detached signature
+            with open(license_file_path, 'rb') as f:
+                signature_data = f.read()
+
+            verified = self.gpg.verify_data(signature_data, signed_data)
 
             return verified.valid
 
         except Exception as e:
-            self.logger.error(f"Error verifying pro key: {e}")
+            self.logger.error(f"Error verifying license file: {e}")
             return False
 
     def _get_default_public_key(self):
         """Get the default public key for verification"""
-        # In a real implementation, this would be embedded or fetched securely
-        # For demo purposes, return a placeholder
+        key_dir = Path(__file__).parent.parent / "key"
+        
+        # Try PGP key files first
+        for ext in ['.asc', '.pgp', '.gpg']:
+            key_file = key_dir / f"public{ext}"
+            if key_file.exists():
+                try:
+                    with open(key_file, 'r') as f:
+                        return f.read().strip()
+                except Exception as e:
+                    self.logger.error(f"Error reading PGP key file {key_file}: {e}")
+        
+        # Fall back to PEM file
+        pem_file = key_dir / "public.pem"
+        if pem_file.exists():
+            try:
+                with open(pem_file, 'r') as f:
+                    return f.read().strip()
+            except Exception as e:
+                self.logger.error(f"Error reading PEM key file: {e}")
+        
+        # Fallback to placeholder if no key files found
         return """
 -----BEGIN PGP PUBLIC KEY BLOCK-----
 # This is a placeholder - replace with actual public key

@@ -11,15 +11,13 @@ Click on Next to start the process and choose what you want to do.
 (5) See the results and save the changes
 
 
-
-👨‍💻 Don’t worry, your files never left your computer.
+Don’t worry, your files never left your computer.
 
 💻 Software Information
 
-Version: v1.0.8
+Version: v1.0.9
 🔗 Check for Updates
 👨‍💻 by mcagriaksoy - 2025
-
 
 
 For more information and updates, visit our GitHub repository.

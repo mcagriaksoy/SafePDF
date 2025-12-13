@@ -21,7 +21,7 @@ class CommonElements:
     ENTRY_FG = "#000000"
     
     # Font
-    FONT = "Satoshi"
+    FONT = "Century Gothic"
     FONT_SIZE = 10
     
     # Sizes

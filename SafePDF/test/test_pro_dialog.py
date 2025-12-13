@@ -19,10 +19,18 @@ try:
     print("✓ Controller created successfully")
     print(f"✓ Initial pro status: {c.is_pro_activated}")
 
-    # Test activation with valid key
-    success, msg = c.activate_pro_features('SAFEPRO2025')
+    # Test activation with valid license file
+    import tempfile
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.license', delete=False) as f:
+        f.write('SAFEPRO2025')
+        temp_license = f.name
+    
+    success, msg = c.activate_pro_features(temp_license)
     print(f"✓ Activation result: {success} - {msg}")
     print(f"✓ Pro status after activation: {c.is_pro_activated}")
+    
+    # Clean up
+    os.unlink(temp_license)
 
     print("\n🎉 Controller functionality verified!")
     print("The pro dialog should now work correctly in the UI.")
