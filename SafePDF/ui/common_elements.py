@@ -29,24 +29,10 @@ class CommonElements:
     SIZE_LIST = (800, 640)
     PADDING = 10
 
+    PRO_POPUP_SIZE = "550x550"
+    PRO_POPUP_SIZE_LIST = (550, 550)
+
+
     # Default Language
     DEFAULT_LANGUAGE = "en"
     SELECTED_LANGUAGE = "en"
-
-    @staticmethod
-    def style_button(button):
-        button.configure(
-            bg=CommonElements.BUTTON_BG,
-            fg=CommonElements.BUTTON_FG,
-            font=(CommonElements.FONT, CommonElements.FONT_SIZE),
-            padx=CommonElements.PADDING,
-            pady=CommonElements.PADDING // 2
-        )
-
-    @staticmethod
-    def style_label(label):
-        label.configure(
-            bg=CommonElements.BG_COLOR,
-            fg=CommonElements.FG_COLOR,
-            font=(CommonElements.FONT, CommonElements.FONT_SIZE)
-        )

@@ -5,6 +5,7 @@ Supports language switching without restart by reloading language data.
 
 from pathlib import Path
 import json
+import sys
 from typing import Optional
 
 
@@ -17,7 +18,15 @@ class LanguageManager:
     """
 
     def __init__(self, lang: str = "en"):
-        self.base = Path(__file__).parent.parent / "text"
+        # Get the base directory - handle both Python and PyInstaller executables
+        if getattr(sys, 'frozen', False):
+            # Running in PyInstaller bundle
+            base_dir = Path(sys._MEIPASS)
+        else:
+            # Running as Python script
+            base_dir = Path(__file__).parent.parent
+        
+        self.base = base_dir / "text"
         self.lang = lang or "en"
         self.ui_strings = {}
         self.load(self.lang)

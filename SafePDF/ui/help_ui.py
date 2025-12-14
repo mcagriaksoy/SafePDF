@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from pathlib import Path
+import sys
 from .common_elements import CommonElements
 from .language_elements import LanguageElements
 
@@ -28,9 +29,15 @@ class HelpUI:
         except Exception:
             lang_code = CommonElements.SELECTED_LANGUAGE or 'en'
 
-        base_dir = Path(__file__).parent.parent
+        # Get base directory - handle both Python and PyInstaller
+        if getattr(sys, 'frozen', False):
+            base_dir = Path(sys._MEIPASS)
+        else:
+            base_dir = Path(__file__).parent.parent
+        
         candidates = [
-            base_dir / "text" / lang_code / "help_content.txt"
+            base_dir / "text" / lang_code / "help_content.txt",
+            base_dir / "text" / "en" / "help_content.txt"  # Fallback to English
         ]
         help_text = None
         for p in candidates:
@@ -40,7 +47,7 @@ class HelpUI:
                         help_text = f.read()
                         break
             except Exception:
-                help_text = None
+                continue
 
         return help_text
 
@@ -68,7 +75,7 @@ class HelpUI:
                 borderwidth=1,
                 relief=tk.FLAT
             )
-            help_text_widget.insert('1.0', help_text)
+            help_text_widget.insert('1.0', help_text or "Help content unavailable.")
             help_text_widget.config(state=tk.DISABLED)
 
             sb = ttk.Scrollbar(main_frame, orient='vertical', command=help_text_widget.yview)
@@ -104,7 +111,7 @@ class HelpUI:
                 pass
 
             txt = tk.Text(dlg, wrap=tk.WORD, font=(self.font, 10), bg="#f8f9fa")
-            txt.insert('1.0', help_text)
+            txt.insert('1.0', help_text or "Help content unavailable.")
             txt.config(state=tk.DISABLED)
 
             sb = ttk.Scrollbar(dlg, orient='vertical', command=txt.yview)

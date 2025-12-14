@@ -2746,10 +2746,16 @@ class SafePDFUI:
             except Exception:
                 lang_code = CommonElements.SELECTED_LANGUAGE or 'en'
 
+            # Get base directory - handle both Python and PyInstaller
+            if getattr(sys, 'frozen', False):
+                base_path = Path(sys._MEIPASS)
+            else:
+                base_path = Path(__file__).parent.parent
+            
             candidates = [
-                Path(__file__).parent.parent / "text" / lang_code / "welcome_content.txt",
-                Path(__file__).parent.parent / "text" / "welcome_content.txt",
-                Path(__file__).parent.parent / "version.txt"
+                base_path / "text" / lang_code / "welcome_content.txt",
+                base_path / "text" / "welcome_content.txt",
+                base_path / "version.txt"
             ]
             for welcome_path in candidates:
                 try:
@@ -2816,9 +2822,10 @@ class SafePDFUI:
         """Delegate showing help dialog to HelpUI"""
         try:
             self.help_ui.show_help()
-        except Exception:
+        except Exception as e:
+            logger.error(f"Error showing help dialog: {e}", exc_info=True)
             try:
-                messagebox.showinfo("Help", "Help content is unavailable.")
+                messagebox.showinfo("Help", "Help content is unavailable. Please check your installation.")
             except Exception:
                 pass
 

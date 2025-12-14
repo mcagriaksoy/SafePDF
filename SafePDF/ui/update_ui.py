@@ -8,6 +8,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 import logging
+import sys
 from .common_elements import CommonElements
 
 logger = logging.getLogger('SafePDF.UI.Update')
@@ -32,9 +33,15 @@ class UpdateUI:
             except Exception:
                 lang_code = CommonElements.SELECTED_LANGUAGE or 'en'
 
+            # Get base directory - handle both Python and PyInstaller
+            if getattr(sys, 'frozen', False):
+                base_dir = Path(sys._MEIPASS)
+            else:
+                base_dir = Path(__file__).parent.parent
+
             candidates = [
-                Path(__file__).parent.parent / "text" / lang_code / "pro_features.txt",
-                Path(__file__).parent.parent / "text" / "pro_features.txt"
+                base_dir / "text" / lang_code / "pro_features.txt",
+                base_dir / "text" / "pro_features.txt"
             ]
             for pro_features_path in candidates:
                 try:
@@ -121,13 +128,13 @@ class UpdateUI:
             dlg.grab_set()
             dlg.resizable(False, False)
 
-            if self.controller.is_pro_activated:
-                dlg.geometry("550x500")
-                x = self.root.winfo_x() + (self.root.winfo_width() // 2) - (550 // 2)
-                y = self.root.winfo_y() + (self.root.winfo_height() // 2) - (500 // 2)
-                dlg.geometry(f"+{x}+{y}")
-                dlg.configure(bg="#ffffff")
+            dlg.geometry(CommonElements.PRO_POPUP_SIZE)
+            x = self.root.winfo_x() + (self.root.winfo_width() // 2) - (CommonElements.PRO_POPUP_SIZE_LIST[0] // 2)
+            y = self.root.winfo_y() + (self.root.winfo_height() // 2) - (CommonElements.PRO_POPUP_SIZE_LIST[1] // 2)
+            dlg.geometry(f"+{x}+{y}")
+            dlg.configure(bg="#ffffff")
 
+            if self.controller.is_pro_activated:
                 ttk.Label(dlg, text="🎉 Pro Version Active!",
                          font=(CommonElements.FONT, 14, "bold"), foreground="#00b386").pack(pady=(20, 10))
 
@@ -163,12 +170,6 @@ class UpdateUI:
                 ttk.Label(renewal_frame, text="Upload a new license file to extend your Pro access",
                          font=(CommonElements.FONT, 9), foreground="#666").pack(anchor='w', pady=(0, 5))
             else:
-                dlg.geometry("500x500")
-                x = self.root.winfo_x() + (self.root.winfo_width() // 2) - (500 // 2)
-                y = self.root.winfo_y() + (self.root.winfo_height() // 2) - (500 // 2)
-                dlg.geometry(f"+{x}+{y}")
-                dlg.configure(bg="#ffffff")
-
                 header_frame = ttk.Frame(dlg, style="TFrame")
                 header_frame.pack(fill='x', padx=20, pady=(20, 10))
 
@@ -198,7 +199,7 @@ class UpdateUI:
             def browse_license():
                 file_path = filedialog.askopenfilename(
                     title="Select License File",
-                    filetypes=[("License files", "*.license"), ("All files", "*.*")]
+                    filetypes=[("License files", "*.lic"), ("All files", "*.*")]
                 )
                 if file_path:
                     license_var.set(file_path)

@@ -28,6 +28,7 @@ pyinstaller --noconfirm --onefile --windowed ^
     --add-data "%ROOT%\ctrl;ctrl/" ^
     --add-data "%ROOT%\logger;logger/" ^
     --add-data "%ROOT%\text;text/" ^
+    --add-data "%ROOT%\keys;keys/" ^
     "%ROOT%\safe_pdf_app.py"
 
 if errorlevel 1 (
