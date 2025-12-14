@@ -1,0 +1,60 @@
+SafePDF-Hilfe
+
+LIZENZ: GPL-v3.0
+
+Übersicht: SafePDF ist eine schlanke Desktop-Anwendung, mit der Sie gängige PDF-Operationen lokal auf Ihrem Computer durchführen können, ohne Dateien an einen Server zu senden.
+
+Unterstützte Operationen:
+
+- Komprimieren: Reduziert die PDF-Dateigröße durch Neukodierung von Bildern und Optimierung der Inhaltsströme.
+
+- Teilen: Teilt eine PDF-Datei in einzelne Seiten oder bestimmte Seitenbereiche auf.
+
+- Zusammenführen: Kombiniert mehrere PDF-Dateien zu einer einzigen (Unterstützung für das Zusammenführen mehrerer Dateien ist geplant).
+
+- PDF zu JPG: Konvertiert jede PDF-Seite in ein JPEG-Bild.
+
+- Drehen: Dreht Seiten um 90, 180 oder 270 Grad.
+
+- Reparieren: Versucht, lesbare Seiten aus einer beschädigten PDF-Datei wiederherzustellen.
+
+Anwendung:
+1) PDF-Datei auswählen: Ziehen Sie die Datei per Drag & Drop in den Hauptbereich oder klicken Sie auf „Datei von Datenträger laden“.
+
+2) Operation auswählen: Wählen Sie die gewünschte Operation im Fenster „Operationen“ aus.
+
+3) Einstellungen anpassen: Optimieren Sie Optionen wie Komprimierungsqualität, Ausgabespeicherort, DPI für Bilder oder Seitenbereiche.
+
+4) Ausführen: Klicken Sie im Einstellungsfenster auf „Ausführen“ und verfolgen Sie den Fortschritt.
+
+5) Ergebnisse speichern: Speichern Sie die Ausgabedatei oder den Ordner mit „Speichern“ an einem anderen Ort.
+
+Tipps & Empfehlungen:
+
+- Für optimale Komprimierungsergebnisse verwenden Sie die Qualitätsstufe „Hoch“ nur, wenn eine hohe Bildqualität erforderlich ist; „Mittel“ wird empfohlen.
+
+- Sehr kleine PDFs oder bereits optimierte Dateien lassen sich möglicherweise nicht weiter komprimieren.
+
+- Verwenden Sie die Option „Microsoft Print to PDF“ für eine alternative Neukodierung unter Windows, falls die Komprimierung fehlschlägt.
+
+Vorgänge abbrechen:
+
+- Klicken Sie während eines Vorgangs auf die Schaltfläche „Abbrechen“. Eine doppelte Bestätigung ist erforderlich, um versehentliche Abbrüche zu vermeiden.
+
+Fehlerbehebung:
+
+- Falls ein Vorgang nicht startet, überprüfen Sie, ob PyPDF2/pypdf und PyMuPDF/Pillow installiert sind.
+
+- Für die PDF-zu-Bild-Konvertierung bietet PyMuPDF (PyMuPDF/Fitz) eine bessere Qualität und höhere Geschwindigkeit. Falls PyMuPDF nicht installiert ist, wird nach Möglichkeit Pillow verwendet.
+
+- Sollte die Benutzeroberfläche einfrieren, schließen Sie die Anwendung und starten Sie sie neu. Melden Sie reproduzierbare Probleme, wenn möglich inklusive Beispieldateien.
+
+Lokalisierung:
+- Dieser Hilfetext befindet sich in der Datei `help_content.txt` und kann durch Texte in anderen Sprachen ersetzt werden. Platzieren Sie lokalisierte Dateien wie `help_content_tr.txt` im selben Verzeichnis wie diese Datei. Die Anwendung kann diese dann entsprechend der Benutzersprache laden.
+
+Support & Feedback:
+- Melden Sie Probleme und Funktionswünsche im GitHub-Repository: https://github.com/mcagriaksoy/SafePDF
+
+Datenschutz & Offline-Nutzung:
+
+- SafePDF führt alle Operationen lokal aus und sendet Ihre Dateien standardmäßig nicht an externe Server.

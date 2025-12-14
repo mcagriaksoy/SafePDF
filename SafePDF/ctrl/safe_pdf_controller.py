@@ -6,15 +6,18 @@ This module handles the core application logic, state management,
 and coordination of PDF operations.
 """
 
-from os import makedirs
+from os import makedirs, listdir, remove
 from os import path as os_path
+import os
 from threading import Thread
 import json
+import shutil
 from datetime import datetime, timedelta
 
 from SafePDF.logger.logging_config import get_logger
 from SafePDF.ops.pdf_operations import PDFOperations
 from SafePDF.ops.updates import SafePDFUpdates
+from SafePDF.ops.license_manager import LicenseManager
 
 
 class SafePDFController:
@@ -39,6 +42,9 @@ class SafePDFController:
         
         # Module logger (needed for _load_pro_status)
         self.logger = get_logger('SafePDF.Controller')
+        
+        # License manager for verification (must be initialized BEFORE _load_pro_status)
+        self.license_manager = LicenseManager(logger=self.logger)
         
         # Load saved pro status
         self._load_pro_status()
@@ -257,48 +263,63 @@ class SafePDFController:
         self.operation_running = False
     
     def activate_pro_features(self, license_file_path):
-        """Activate pro features with the provided license file"""
+        """Activate pro features by verifying and copying the license file"""
         try:
-            # First try GPG verification with license file
-            if self.updates.verify_license_file(license_file_path):
-                self.is_pro_activated = True
-                self.activation_key = license_file_path  # Store the file path
-                self.pro_expiry_date = datetime.now() + timedelta(days=30)  # 30 days trial
-                self._save_pro_status()  # Save the status
-                self.logger.info("Pro features activated successfully via license file")
-                return True, "Pro features activated successfully!"
+            if not os_path.exists(license_file_path):
+                return False, "License file not found."
             
-            # Fallback to simple validation for demo/testing
-            # For demo, check if file exists and looks like a PGP signature
-            if os_path.exists(license_file_path):
-                try:
-                    with open(license_file_path, 'r') as f:
-                        content = f.read().strip()
-                    # Check if it contains PGP signature markers
-                    if "-----BEGIN PGP SIGNATURE-----" in content and "-----END PGP SIGNATURE-----" in content:
-                        self.is_pro_activated = True
-                        self.activation_key = license_file_path
-                        self.pro_expiry_date = datetime.now() + timedelta(days=30)  # 30 days trial
-                        self._save_pro_status()  # Save the status
-                        self.logger.info("Pro features activated successfully (demo license)")
-                        return True, "Pro features activated successfully!"
-                except Exception:
-                    pass
+            # Verify the license file using license manager
+            success, message, license_data = self.license_manager.verify_license(license_file_path)
             
-            self.is_pro_activated = False
-            self.activation_key = None
-            return False, "Invalid license file. Please check and try again."
+            if not success:
+                self.logger.warning(f"License verification failed: {message}")
+                return False, f"License verification failed: {message}"
+            
+            # Setup config directory
+            config_dir = os_path.join(os_path.expanduser("~"), ".safepdf")
+            makedirs(config_dir, exist_ok=True)
+            
+            # Copy verified license file to config directory
+            license_filename = os_path.basename(license_file_path)
+            dest_license_path = os_path.join(config_dir, license_filename)
+            
+            self.logger.debug(f"Copying verified license from {license_file_path} to {dest_license_path}")
+            shutil.copy2(license_file_path, dest_license_path)
+            
+            # Verify the copy was successful
+            if not os_path.exists(dest_license_path):
+                self.logger.error(f"License file copy failed: {dest_license_path} does not exist")
+                return False, "Failed to copy license file to config directory."
+            
+            # Extract expiry date from license data
+            try:
+                expiry_date = datetime.strptime(license_data['expires'], '%Y-%m-%d')
+            except (ValueError, KeyError):
+                expiry_date = datetime.now() + timedelta(days=365)  # Fallback to 1 year
+            
+            self.is_pro_activated = True
+            self.activation_key = dest_license_path
+            self.pro_expiry_date = expiry_date
+            self.logger.info(f"✓ Pro features activated successfully: {dest_license_path}")
+            return True, "Pro features activated successfully!"
                 
         except Exception as e:
-            self.logger.error(f"Error activating pro features: {e}")
+            self.logger.error(f"Error activating pro features: {e}", exc_info=True)
             return False, f"Activation failed: {str(e)}"
     
     def deactivate_pro_features(self):
-        """Deactivate pro features"""
+        """Deactivate pro features by deleting the license file"""
+        try:
+            # Delete license file from config directory
+            if self.activation_key and os_path.exists(self.activation_key):
+                os.remove(self.activation_key)
+                self.logger.info(f"License file deleted: {self.activation_key}")
+        except Exception as e:
+            self.logger.error(f"Error deleting license file: {e}")
+        
         self.is_pro_activated = False
         self.activation_key = None
         self.pro_expiry_date = None
-        self._save_pro_status()  # Save the status
         self.logger.info("Pro features deactivated")
     
     def is_pro_feature_enabled(self, feature_name=None):
@@ -363,56 +384,70 @@ class SafePDFController:
         }
 
     def _load_pro_status(self):
-        """Load pro activation status from file"""
+        """Load and verify pro activation status on startup"""
         try:
             config_dir = os_path.join(os_path.expanduser("~"), ".safepdf")
             makedirs(config_dir, exist_ok=True)
-            config_file = os_path.join(config_dir, "pro_status.json")
             
-            if os_path.exists(config_file):
-                with open(config_file, 'r', encoding='utf-8-sig') as f:  # utf-8-sig handles BOM
-                    data = json.load(f)
+            self.logger.info(f"[STARTUP] Checking for license files in: {config_dir}")
+            
+            # Look for license files (.lic extension only)
+            license_files = []
+            
+            if os_path.exists(config_dir):
+                for filename in os.listdir(config_dir):
+                    _, ext = os_path.splitext(filename)
+                    if ext.lower() == '.lic':
+                        license_files.append(os_path.join(config_dir, filename))
+            
+            if license_files:
+                self.logger.info(f"[STARTUP] Found {len(license_files)} license file(s)")
                 
-                self.is_pro_activated = data.get('activated', False)
-                expiry_str = data.get('expiry_date')
-                if expiry_str:
-                    self.pro_expiry_date = datetime.fromisoformat(expiry_str)
-                    # Check if pro has expired
-                    if datetime.now() > self.pro_expiry_date:
-                        self.is_pro_activated = False
-                        self.pro_expiry_date = None
-                        self._save_pro_status()  # Update saved status
-                else:
-                    self.pro_expiry_date = None
+                # Verify each license file found
+                for idx, license_file_path in enumerate(license_files, 1):
+                    self.logger.info(f"[STARTUP] Verifying license {idx}/{len(license_files)}: {os_path.basename(license_file_path)}")
                     
-                self.activation_key = data.get('activation_key')
-                self.logger.info(f"Loaded pro status: activated={self.is_pro_activated}")
+                    # Verify the license file using license manager
+                    success, message, license_data = self.license_manager.verify_license(license_file_path)
+                    
+                    if success:
+                        # Extract expiry date from verified license
+                        try:
+                            expiry_date = datetime.strptime(license_data['expires'], '%Y-%m-%d')
+                            remaining_days = (expiry_date - datetime.now()).days
+                        except (ValueError, KeyError):
+                            expiry_date = datetime.now() + timedelta(days=365)
+                            remaining_days = 365
+                        
+                        self.is_pro_activated = True
+                        self.activation_key = license_file_path
+                        self.pro_expiry_date = expiry_date
+                        self.logger.info(f"[STARTUP] ✓ License verified successfully!")
+                        self.logger.info(f"[STARTUP] ✓ User: {license_data.get('user', 'N/A')}")
+                        self.logger.info(f"[STARTUP] ✓ Type: {license_data.get('type', 'N/A')}")
+                        self.logger.info(f"[STARTUP] ✓ Expires: {license_data.get('expires', 'N/A')}")
+                        self.logger.info(f"[STARTUP] ✓ Remaining: {remaining_days} days")
+                        self.logger.info(f"[STARTUP] ✓ Pro features ACTIVATED")
+                        return
+                    else:
+                        self.logger.warning(f"[STARTUP] ✗ License verification failed: {message}")
+                        self.logger.warning(f"[STARTUP]   License file: {license_file_path}")
+            else:
+                self.logger.info(f"[STARTUP] No license files found in {config_dir}")
+            
+            # No valid license file found - reset pro status
+            self.logger.info(f"[STARTUP] Running in FREE mode")
+            self.is_pro_activated = False
+            self.activation_key = None
+            self.pro_expiry_date = None
+                    
         except Exception as e:
-            self.logger.error(f"Error loading pro status: {e}")
+            self.logger.error(f"[STARTUP] Error loading pro status: {e}", exc_info=True)
             # Reset to defaults on error
             self.is_pro_activated = False
             self.pro_expiry_date = None
             self.activation_key = None
-
-    def _save_pro_status(self):
-        """Save pro activation status to file"""
-        try:
-            config_dir = os_path.join(os_path.expanduser("~"), ".safepdf")
-            makedirs(config_dir, exist_ok=True)
-            config_file = os_path.join(config_dir, "pro_status.json")
-            
-            data = {
-                'activated': self.is_pro_activated,
-                'activation_key': self.activation_key,
-                'expiry_date': self.pro_expiry_date.isoformat() if self.pro_expiry_date else None
-            }
-            
-            with open(config_file, 'w') as f:
-                json.dump(data, f, indent=2)
-                
-            self.logger.info(f"Saved pro status: activated={self.is_pro_activated}")
-        except Exception as e:
-            self.logger.error(f"Error saving pro status: {e}")
+            self.logger.info(f"[STARTUP] Running in FREE mode (error occurred)")
 
     def get_pro_remaining_days(self):
         """Get remaining days for pro license"""

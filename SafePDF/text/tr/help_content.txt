@@ -1,0 +1,56 @@
+SafePDF Yardım
+
+LİSANS: GPL-v3.0
+
+Genel Bakış:
+SafePDF, dosyaları herhangi bir sunucuya göndermeden, bilgisayarınızda yerel olarak yaygın PDF işlemlerini gerçekleştirmek için kullanılan hafif bir masaüstü uygulamasıdır.
+
+Desteklenen işlemler:
+- Sıkıştırma: Görüntüleri yeniden kodlayarak ve içerik akışlarını optimize ederek PDF dosya boyutunu küçültün.
+
+- Bölme: Bir PDF dosyasını tek sayfalık PDF'lere veya belirtilen sayfa aralıklarına bölün.
+
+- Birleştirme: Birden fazla PDF dosyasını tek bir dosyada birleştirin (çoklu dosya birleştirme desteği planlanmaktadır).
+
+- PDF'den JPG'ye: Her PDF sayfasını bir JPEG görüntüsüne dönüştürün.
+
+- Döndürme: Sayfaları 90, 180 veya 270 derece döndürün.
+
+- Onarım: Bozuk bir PDF'den okunabilir sayfaları kurtarmaya çalışın.
+
+Nasıl kullanılır:
+1) Bir PDF dosyası seçin: Ana alana Sürükle ve Bırak yöntemini kullanın veya "Diskten Dosya Yükle" seçeneğine tıklayın.
+
+2) İşlem seçin: İşlemler ekranından işlemi seçin.
+
+3) Ayarları düzenleyin: Sıkıştırma kalitesi, çıktı konumu, resimler için DPI veya sayfa aralıkları gibi seçenekleri ince ayar yapın.
+
+4) Çalıştırın: Ayarlar ekranında Çalıştır'ı tıklayın ve ilerlemeyi izleyin.
+
+5) Sonuçları kaydedin: Çıktı dosyasını veya klasörünü başka bir konuma kaydetmek için Kaydet'i kullanın.
+
+İpuçları ve en iyi uygulamalar:
+- En iyi sıkıştırma sonuçları için, yalnızca iyi görüntü kalitesine ihtiyaç duyduğunuzda "Yüksek" kaliteyi kullanın; "Orta" önerilir.
+
+- Çok küçük PDF'ler veya zaten optimize edilmiş dosyalar daha fazla sıkıştırılamayabilir.
+
+- Sıkıştırma başarısız olursa, Windows'ta alternatif yeniden kodlama için "Microsoft Print to PDF" seçeneğini kullanın.
+
+İşlemleri iptal etme:
+- Bir işlemi iptal etmek için işlem sırasında İptal düğmesine tıklayın. Yanlışlıkla durdurmaları önlemek için çift onay gereklidir.
+
+Sorun giderme:
+- Bir işlem başlamazsa, PyPDF2/pypdf ve PyMuPDF/Pillow'un yüklü olduğundan emin olun.
+
+- PDF'den Görüntüye dönüştürme için PyMuPDF (PyMuPDF/Fitz) daha iyi kalite ve hız sağlar. Yüklü değilse, dönüştürme mümkün olduğunca Pillow'u kullanmaya çalışacaktır.
+
+- Kullanıcı arayüzü donarsa, uygulamayı kapatıp tekrar çalıştırmayı deneyin. Mümkünse örnek dosyalar da dahil olmak üzere tekrarlanabilir sorunları bildirin.
+
+Yerelleştirme:
+- Bu yardım içeriği `help_content.txt` dosyasında saklanır ve diğer dillerle değiştirilmeye hazırdır. `help_content_tr.txt` gibi yerelleştirilmiş dosyaları bu dosyanın yanına yerleştirin ve uygulama, kullanıcının diline göre bunları yükleyecek şekilde uyarlanabilir.
+
+Destek ve geri bildirim:
+- Sorunları bildirin ve özellik taleplerinizi GitHub deposunda iletin: https://github.com/mcagriaksoy/SafePDF
+
+Gizlilik ve çevrimdışı kullanım:
+- SafePDF, varsayılan olarak tüm işlemleri yerel olarak gerçekleştirir ve dosyalarınızı harici sunuculara göndermez.

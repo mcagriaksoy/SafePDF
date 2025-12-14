@@ -1,7 +1,9 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from pathlib import Path
+import sys
 from .common_elements import CommonElements
+from .language_elements import LanguageElements
 
 class HelpUI:
     """
@@ -15,21 +17,27 @@ class HelpUI:
 
     def _load_help_text(self):
         """Load help text from text/ folder with localization fallback"""
-        lang = getattr(self.controller, 'language_var', None)
-        lang_code = 'en'
+        # Prefer the selected language from common elements; allow controller override
+        lang_code = CommonElements.SELECTED_LANGUAGE or 'en'
         try:
+            lang = getattr(self.controller, 'language_var', None)
             # If controller exposes language_var (tk.StringVar), try to read its value
             if lang and hasattr(lang, 'get'):
-                lang_code = lang.get()
+                val = lang.get()
+                if val:
+                    lang_code = val
         except Exception:
-            lang_code = 'en'
+            lang_code = CommonElements.SELECTED_LANGUAGE or 'en'
 
-        base_dir = Path(__file__).parent.parent
+        # Get base directory - handle both Python and PyInstaller
+        if getattr(sys, 'frozen', False):
+            base_dir = Path(sys._MEIPASS)
+        else:
+            base_dir = Path(__file__).parent.parent
+        
         candidates = [
-            base_dir / "text" / f"help_content_{lang_code}.txt",
-            base_dir / "text" / "help_content.txt",
-            base_dir / f"help_content_{lang_code}.txt",
-            base_dir / "help_content.txt"
+            base_dir / "text" / lang_code / "help_content.txt",
+            base_dir / "text" / "en" / "help_content.txt"  # Fallback to English
         ]
         help_text = None
         for p in candidates:
@@ -39,18 +47,7 @@ class HelpUI:
                         help_text = f.read()
                         break
             except Exception:
-                help_text = None
-
-        if not help_text:
-            help_text = (
-                "SafePDF™ Help\n\n"
-                "This application allows you to perform various PDF operations:\n\n"
-                "1. Select a PDF file using drag-and-drop or file browser\n"
-                "2. Choose the operation you want to perform\n"
-                "3. Adjust settings if needed\n"
-                "4. View and save results\n\n"
-                "For more information, visit our GitHub repository."
-            )
+                continue
 
         return help_text
 
@@ -78,7 +75,7 @@ class HelpUI:
                 borderwidth=1,
                 relief=tk.FLAT
             )
-            help_text_widget.insert('1.0', help_text)
+            help_text_widget.insert('1.0', help_text or "Help content unavailable.")
             help_text_widget.config(state=tk.DISABLED)
 
             sb = ttk.Scrollbar(main_frame, orient='vertical', command=help_text_widget.yview)
@@ -89,7 +86,7 @@ class HelpUI:
         except Exception as e:
             # If we cannot build the tab, show minimal content
             try:
-                lbl = ttk.Label(parent_frame, text="Help content is unavailable.", font=(self.font, 10))
+                lbl = ttk.Label(parent_frame, text=LanguageElements.HELP_UNAVAILABLE, font=(self.font, 12))
                 lbl.pack(fill='both', expand=True, padx=24, pady=24)
             except Exception:
                 pass
@@ -114,7 +111,7 @@ class HelpUI:
                 pass
 
             txt = tk.Text(dlg, wrap=tk.WORD, font=(self.font, 10), bg="#f8f9fa")
-            txt.insert('1.0', help_text)
+            txt.insert('1.0', help_text or "Help content unavailable.")
             txt.config(state=tk.DISABLED)
 
             sb = ttk.Scrollbar(dlg, orient='vertical', command=txt.yview)
@@ -127,6 +124,6 @@ class HelpUI:
         except Exception as e:
             # Fallback: show a messagebox with the help text
             try:
-                messagebox.showinfo("Help", help_text)
+                messagebox.showinfo(LanguageElements.HELP_TITLE, help_text or LanguageElements.HELP_UNAVAILABLE)
             except Exception:
                 pass

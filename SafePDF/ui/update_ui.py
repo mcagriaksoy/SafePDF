@@ -8,6 +8,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 import logging
+import sys
 from .common_elements import CommonElements
 
 logger = logging.getLogger('SafePDF.UI.Update')
@@ -21,11 +22,36 @@ class UpdateUI:
     def load_pro_features(self):
         """Load pro features list from pro_features.txt or return fallback list"""
         try:
-            pro_features_path = Path(__file__).parent.parent / "text" / "pro_features.txt"
-            if pro_features_path.exists():
-                with open(str(pro_features_path), 'r', encoding='utf-8') as f:
-                    features = [line.strip() for line in f if line.strip()]
-                    return features
+            # Prefer localized pro_features under text/<lang>/pro_features.txt
+            lang_code = CommonElements.SELECTED_LANGUAGE or 'en'
+            try:
+                lang_var = getattr(self.controller, 'language_var', None)
+                if lang_var and hasattr(lang_var, 'get'):
+                    v = lang_var.get()
+                    if v and isinstance(v, str) and len(v) <= 5:
+                        lang_code = v
+            except Exception:
+                lang_code = CommonElements.SELECTED_LANGUAGE or 'en'
+
+            # Get base directory - handle both Python and PyInstaller
+            if getattr(sys, 'frozen', False):
+                base_dir = Path(sys._MEIPASS)
+            else:
+                base_dir = Path(__file__).parent.parent
+
+            candidates = [
+                base_dir / "text" / lang_code / "pro_features.txt",
+                base_dir / "text" / "pro_features.txt"
+            ]
+            for pro_features_path in candidates:
+                try:
+                    if pro_features_path.exists():
+                        with open(str(pro_features_path), 'r', encoding='utf-8') as f:
+                            features = [line.strip() for line in f if line.strip()]
+                            return features
+                except Exception:
+                    logger.debug(f"Error reading pro features from {pro_features_path}", exc_info=True)
+                    continue
         except Exception:
             logger.debug("Error loading pro features from file", exc_info=True)
             pass
@@ -102,13 +128,13 @@ class UpdateUI:
             dlg.grab_set()
             dlg.resizable(False, False)
 
-            if self.controller.is_pro_activated:
-                dlg.geometry("550x500")
-                x = self.root.winfo_x() + (self.root.winfo_width() // 2) - (550 // 2)
-                y = self.root.winfo_y() + (self.root.winfo_height() // 2) - (500 // 2)
-                dlg.geometry(f"+{x}+{y}")
-                dlg.configure(bg="#ffffff")
+            dlg.geometry(CommonElements.PRO_POPUP_SIZE)
+            x = self.root.winfo_x() + (self.root.winfo_width() // 2) - (CommonElements.PRO_POPUP_SIZE_LIST[0] // 2)
+            y = self.root.winfo_y() + (self.root.winfo_height() // 2) - (CommonElements.PRO_POPUP_SIZE_LIST[1] // 2)
+            dlg.geometry(f"+{x}+{y}")
+            dlg.configure(bg="#ffffff")
 
+            if self.controller.is_pro_activated:
                 ttk.Label(dlg, text="🎉 Pro Version Active!",
                          font=(CommonElements.FONT, 14, "bold"), foreground="#00b386").pack(pady=(20, 10))
 
@@ -144,12 +170,6 @@ class UpdateUI:
                 ttk.Label(renewal_frame, text="Upload a new license file to extend your Pro access",
                          font=(CommonElements.FONT, 9), foreground="#666").pack(anchor='w', pady=(0, 5))
             else:
-                dlg.geometry("500x500")
-                x = self.root.winfo_x() + (self.root.winfo_width() // 2) - (500 // 2)
-                y = self.root.winfo_y() + (self.root.winfo_height() // 2) - (500 // 2)
-                dlg.geometry(f"+{x}+{y}")
-                dlg.configure(bg="#ffffff")
-
                 header_frame = ttk.Frame(dlg, style="TFrame")
                 header_frame.pack(fill='x', padx=20, pady=(20, 10))
 
@@ -179,7 +199,7 @@ class UpdateUI:
             def browse_license():
                 file_path = filedialog.askopenfilename(
                     title="Select License File",
-                    filetypes=[("License files", "*.license"), ("All files", "*.*")]
+                    filetypes=[("License files", "*.lic"), ("All files", "*.*")]
                 )
                 if file_path:
                     license_var.set(file_path)
