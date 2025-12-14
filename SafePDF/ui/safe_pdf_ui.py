@@ -22,6 +22,7 @@ from .help_ui import HelpUI  # Delegated Help UI module
 from .settings_ui import SettingsUI  # Delegated Settings UI module
 from .common_elements import CommonElements  # Common UI elements
 from .common_elements import CommonElements
+from SafePDF.ctrl.language_manager import LanguageManager
 
 SIZE_STR = CommonElements.SIZE_STR
 SIZE_LIST = CommonElements.SIZE_LIST
@@ -213,6 +214,8 @@ class SafePDFUI:
         # Application-level settings
         self.language_var = tk.StringVar(value="en")
         self.theme_var = tk.StringVar(value="system")  # options: system, light, dark
+        # Language manager to provide localized UI strings and content
+        self.lang_manager = LanguageManager(str(self.language_var.get()))
         
         # Theme colors (will be set by apply_theme)
         self.current_theme_colors = {}
@@ -243,7 +246,7 @@ class SafePDFUI:
 
         # Instantiate delegated UI helpers
         self.help_ui = HelpUI(root, controller, CommonElements.FONT)
-        self.settings_ui = SettingsUI(root, controller, self.theme_var, self.language_var, LOG_FILE_PATH)
+        self.settings_ui = SettingsUI(root, controller, self.theme_var, self.language_var, LOG_FILE_PATH, language_manager=self.lang_manager)
 
         # Ensure language changes update UI (language_var stores language code, e.g. 'en')
         try:
@@ -464,7 +467,7 @@ class SafePDFUI:
         
         self.header_label = tk.Label(
             self.title_frame,
-            text="SafePDF™",
+            text=self.lang_manager.get('app_title', "SafePDF™"),
             font=(CommonElements.FONT, 18, "bold"),
             bg=CommonElements.RED_COLOR,
             fg="#fff",
@@ -474,7 +477,7 @@ class SafePDFUI:
         
         # Pro status badge in title bar with rounded appearance
         pro_badge_color = "#00b386" if self.controller.is_pro_activated else "#888888"
-        pro_badge_text = "PRO" if self.controller.is_pro_activated else "FREE"
+        pro_badge_text = self.lang_manager.get('pro_badge_pro', 'PRO') if self.controller.is_pro_activated else self.lang_manager.get('pro_badge_free', 'FREE')
         
         self.pro_badge_label = tk.Label(
             self.title_frame,
@@ -734,37 +737,37 @@ class SafePDFUI:
         """Create all application tabs with tooltips"""
         # Tab 1: Welcome
         self.welcome_frame = ttk.Frame(self.notebook)
-        self.notebook.add(self.welcome_frame, text="1. Welcome")
+        self.notebook.add(self.welcome_frame, text=self.lang_manager.get('tab_welcome', "1. Welcome"))
         self.create_welcome_tab()
         
         # Tab 2: Select Operation
         self.operation_frame = ttk.Frame(self.notebook)
-        self.notebook.add(self.operation_frame, text="2. Select Operation")
+        self.notebook.add(self.operation_frame, text=self.lang_manager.get('tab_operation', "2. Select Operation"))
         self.create_operation_tab()
         
         # Tab 3: Select File
         self.file_frame = ttk.Frame(self.notebook)
-        self.notebook.add(self.file_frame, text="3. Select File")
+        self.notebook.add(self.file_frame, text=self.lang_manager.get('tab_file', "3. Select File"))
         self.create_file_tab()
         
         # Tab 4: Adjust Settings
         self.settings_frame = ttk.Frame(self.notebook)
-        self.notebook.add(self.settings_frame, text="4. Adjust Settings")
+        self.notebook.add(self.settings_frame, text=self.lang_manager.get('tab_settings', "4. Adjust Settings"))
         self.create_settings_tab()
         
         # Tab 5: Results
         self.results_frame = ttk.Frame(self.notebook)
-        self.notebook.add(self.results_frame, text="5. Results")
+        self.notebook.add(self.results_frame, text=self.lang_manager.get('tab_results', "5. Results"))
         self.create_results_tab()
         
         # Settings
         self.app_settings_frame = ttk.Frame(self.notebook)
-        self.notebook.add(self.app_settings_frame, text="Settings")
+        self.notebook.add(self.app_settings_frame, text=self.lang_manager.get('tab_app_settings', "Settings"))
         self.create_app_settings_tab()
 
         # Help
         self.help_frame = ttk.Frame(self.notebook)
-        self.notebook.add(self.help_frame, text="Help")
+        self.notebook.add(self.help_frame, text=self.lang_manager.get('tab_help', "Help"))
         self.create_help_tab()
         
         # Disable workflow tabs that require prerequisites
@@ -1561,6 +1564,11 @@ class SafePDFUI:
         try:
             code = str(self.language_var.get())
             CommonElements.SELECTED_LANGUAGE = code
+            try:
+                if hasattr(self, 'lang_manager') and self.lang_manager:
+                    self.lang_manager.load(code)
+            except Exception:
+                pass
             self.apply_language()
         except Exception:
             logger.debug("Error handling language change", exc_info=True)
@@ -1610,6 +1618,47 @@ class SafePDFUI:
             # Let UpdateUI refresh any localized strings it manages
             try:
                 self.update_ui.update_pro_ui(self)
+            except Exception:
+                pass
+
+            # Update header and top-level UI elements
+            try:
+                if hasattr(self, 'header_label') and self.header_label:
+                    self.header_label.config(text=self.lang_manager.get('app_title', "SafePDF™"))
+            except Exception:
+                pass
+
+            # Update tab labels
+            try:
+                self.notebook.tab(self.welcome_frame, text=self.lang_manager.get('tab_welcome', "1. Welcome"))
+                self.notebook.tab(self.operation_frame, text=self.lang_manager.get('tab_operation', "2. Select Operation"))
+                self.notebook.tab(self.file_frame, text=self.lang_manager.get('tab_file', "3. Select File"))
+                self.notebook.tab(self.settings_frame, text=self.lang_manager.get('tab_settings', "4. Adjust Settings"))
+                self.notebook.tab(self.results_frame, text=self.lang_manager.get('tab_results', "5. Results"))
+                self.notebook.tab(self.app_settings_frame, text=self.lang_manager.get('tab_app_settings', "Settings"))
+                self.notebook.tab(self.help_frame, text=self.lang_manager.get('tab_help', "Help"))
+            except Exception:
+                pass
+
+            # Update pro badge and status button
+            try:
+                if hasattr(self, 'pro_badge_label') and self.pro_badge_label:
+                    badge_text = self.lang_manager.get('pro_badge_pro', 'PRO') if self.controller.is_pro_activated else self.lang_manager.get('pro_badge_free', 'FREE')
+                    self.pro_badge_label.config(text=badge_text)
+                if hasattr(self, 'pro_status_btn') and self.pro_status_btn:
+                    status_text = self.lang_manager.get('status_pro', "✓ PRO Version") if self.controller.is_pro_activated else self.lang_manager.get('status_free', "FREE Version - Upgrade now!")
+                    self.pro_status_btn.config(text=status_text)
+            except Exception:
+                pass
+
+            # Update navigation buttons
+            try:
+                if hasattr(self, 'back_btn') and self.back_btn:
+                    self.back_btn.config(text=self.lang_manager.get('nav_back', "← Back"))
+                if hasattr(self, 'next_btn') and self.next_btn:
+                    self.next_btn.config(text=self.lang_manager.get('nav_next', "Next →"))
+                if hasattr(self, 'cancel_btn') and self.cancel_btn:
+                    self.cancel_btn.config(text=self.lang_manager.get('nav_cancel', "Cancel"))
             except Exception:
                 pass
         except Exception:
@@ -1670,7 +1719,7 @@ class SafePDFUI:
         
         # Pro status indicator with modern styling
         status_color = "#00b386" if self.controller.is_pro_activated else "#888888"
-        status_text = "✓ PRO Version" if self.controller.is_pro_activated else "FREE Version - Upgrade now!"
+        status_text = self.lang_manager.get('status_pro', "✓ PRO Version") if self.controller.is_pro_activated else self.lang_manager.get('status_free', "FREE Version - Upgrade now!")
         
         self.pro_status_btn = tk.Button(
             pro_frame,
@@ -1725,13 +1774,13 @@ class SafePDFUI:
         nav_frame = ttk.Frame(right_frame)
         nav_frame.pack(side='left')
         
-        self.back_btn = ttk.Button(nav_frame, text="← Back", command=self.previous_tab, width=10, state='disabled')
+        self.back_btn = ttk.Button(nav_frame, text=self.lang_manager.get('nav_back', "← Back"), command=self.previous_tab, width=10, state='disabled')
         self.back_btn.pack(side='left', padx=(0, 2))
         
-        self.next_btn = ttk.Button(nav_frame, text="Next →", command=self.next_tab, width=10)
+        self.next_btn = ttk.Button(nav_frame, text=self.lang_manager.get('nav_next', "Next →"), command=self.next_tab, width=10)
         self.next_btn.pack(side='left', padx=2)
         
-        self.cancel_btn = ttk.Button(right_frame, text="Cancel", command=self.cancel_operation, width=10)
+        self.cancel_btn = ttk.Button(right_frame, text=self.lang_manager.get('nav_cancel', "Cancel"), command=self.cancel_operation, width=10)
         self.cancel_btn.pack(side='left', padx=(10, 0))
         
         # Initialize previous tab tracker and update button states

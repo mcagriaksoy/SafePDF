@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from pathlib import Path
 from .common_elements import CommonElements
+from .language_elements import LanguageElements
 
 class HelpUI:
     """
@@ -78,7 +79,7 @@ class HelpUI:
         except Exception as e:
             # If we cannot build the tab, show minimal content
             try:
-                lbl = ttk.Label(parent_frame, text="Help content is unavailable.", font=(self.font, 10))
+                lbl = ttk.Label(parent_frame, text=LanguageElements.HELP_UNAVAILABLE, font=(self.font, 12))
                 lbl.pack(fill='both', expand=True, padx=24, pady=24)
             except Exception:
                 pass
@@ -116,6 +117,6 @@ class HelpUI:
         except Exception as e:
             # Fallback: show a messagebox with the help text
             try:
-                messagebox.showinfo("Help", help_text)
+                messagebox.showinfo(LanguageElements.HELP_TITLE, help_text or LanguageElements.HELP_UNAVAILABLE)
             except Exception:
                 pass

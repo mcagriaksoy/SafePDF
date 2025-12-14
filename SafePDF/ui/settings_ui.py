@@ -17,36 +17,47 @@ logger = logging.getLogger('SafePDF.SettingsUI')
 class SettingsUI:
     """Handles settings UI: language, theme and log actions."""
 
-    def __init__(self, root, controller, theme_var, language_var, log_file_path, font=CommonElements.FONT):
+    def __init__(self, root, controller, theme_var, language_var, log_file_path, font=CommonElements.FONT, language_manager=None):
         self.root = root
         self.controller = controller
         self.theme_var = theme_var
         self.language_var = language_var
         self.log_file_path = Path(log_file_path)
         self.font = font
+        self.language_manager = language_manager
 
     def _create_theme_controls(self, parent):
-        ttk.Label(parent, text="Theme:", font=(self.font, CommonElements.FONT_SIZE, "bold")).pack(anchor='w', pady=(12, 4))
+        theme_label_text = self.language_manager.get('settings_theme_label', "Theme:") if self.language_manager else "Theme:"
+        ttk.Label(parent, text=theme_label_text, font=(self.font, CommonElements.FONT_SIZE, "bold")).pack(anchor='w', pady=(12, 4))
         theme_frame = ttk.Frame(parent)
         theme_frame.pack(anchor='w', pady=4)
-        for text, val in (("System Default", "system"), ("Light", "light"), ("Dark", "dark")):
+        theme_system = self.language_manager.get('theme_system', 'System Default') if self.language_manager else 'System Default'
+        theme_light = self.language_manager.get('theme_light', 'Light') if self.language_manager else 'Light'
+        theme_dark = self.language_manager.get('theme_dark', 'Dark') if self.language_manager else 'Dark'
+        for text, val in ((theme_system, "system"), (theme_light, "light"), (theme_dark, "dark")):
             ttk.Radiobutton(theme_frame, text=text, variable=self.theme_var, value=val).pack(side='left', padx=6)
-        ttk.Label(parent, text="Change the application's appearance. Restart may be required for full effect.",
+        theme_hint = self.language_manager.get('settings_theme_hint', "Change the application's appearance. Restart may be required for full effect.") if self.language_manager else "Change the application's appearance. Restart may be required for full effect."
+        ttk.Label(parent, text=theme_hint,
                     font=(self.font, CommonElements.FONT_SIZE), foreground="#666").pack(anchor='w', pady=(4, 0))
 
     def _create_log_controls(self, parent):
-        ttk.Label(parent, text="Error Log:", font=(self.font, CommonElements.FONT_SIZE, "bold")).pack(anchor='w', pady=(12, 4))
+        log_label_text = self.language_manager.get('settings_error_log', "Error Log:") if self.language_manager else "Error Log:"
+        ttk.Label(parent, text=log_label_text, font=(self.font, CommonElements.FONT_SIZE, "bold")).pack(anchor='w', pady=(12, 4))
         log_frame = ttk.Frame(parent)
         log_frame.pack(fill='x', pady=4)
-        ttk.Button(log_frame, text="View Log File", command=self.view_log_file).pack(side='left', padx=(0, 6))
-        ttk.Button(log_frame, text="Clear Log", command=self.clear_log_file).pack(side='left', padx=6)
-        ttk.Button(log_frame, text="Open Log Folder", command=self.open_log_folder).pack(side='left', padx=6)
+        btn_view = self.language_manager.get('btn_view_log', "View Log File") if self.language_manager else "View Log File"
+        btn_clear = self.language_manager.get('btn_clear_log', "Clear Log") if self.language_manager else "Clear Log"
+        btn_open = self.language_manager.get('btn_open_log_folder', "Open Log Folder") if self.language_manager else "Open Log Folder"
+        ttk.Button(log_frame, text=btn_view, command=self.view_log_file).pack(side='left', padx=(0, 6))
+        ttk.Button(log_frame, text=btn_clear, command=self.clear_log_file).pack(side='left', padx=6)
+        ttk.Button(log_frame, text=btn_open, command=self.open_log_folder).pack(side='left', padx=6)
 
     def show_settings_dialog(self):
         """Modal settings dialog with language, theme and log actions."""
         try:
             dlg = tk.Toplevel(self.root)
-            dlg.title("Application Settings")
+            dialog_title = self.language_manager.get('settings_title', "Application Settings") if self.language_manager else "Application Settings"
+            dlg.title(dialog_title)
             dlg.transient(self.root)
             dlg.grab_set()
             dlg.resizable(False, False)
@@ -60,12 +71,16 @@ class SettingsUI:
             content.pack(fill='both', expand=True, padx=12, pady=12)
 
             # Language selection: map display names to codes
-            lang_map = {"English": "en", "German": "de", "Turkish": "tr"}
-            ttk.Label(content, text="Language:", font=(self.font, CommonElements.FONT_SIZE, "bold")).pack(anchor='w', pady=(6, 4))
+            lang_en = self.language_manager.get('lang_english', 'English') if self.language_manager else 'English'
+            lang_de = self.language_manager.get('lang_german', 'German') if self.language_manager else 'German'
+            lang_tr = self.language_manager.get('lang_turkish', 'Turkish') if self.language_manager else 'Turkish'
+            lang_map = {lang_en: "en", lang_de: "de", lang_tr: "tr"}
+            lang_label = self.language_manager.get('settings_language_label', "Language:") if self.language_manager else "Language:"
+            ttk.Label(content, text=lang_label, font=(self.font, CommonElements.FONT_SIZE, "bold")).pack(anchor='w', pady=(6, 4))
             combo = ttk.Combobox(content, values=list(lang_map.keys()), state='readonly')
             cur = str(self.language_var.get())
             display = next((k for k, v in lang_map.items() if v == cur or k.lower() == cur.lower()), None)
-            combo.set(display or "English")
+            combo.set(display or lang_en)
 
             def on_lang_change(event=None):
                 sel = combo.get()
@@ -93,13 +108,17 @@ class SettingsUI:
                 on_lang_change()
                 dlg.destroy()
 
-            ttk.Button(btn_frame, text="OK", command=on_ok, style="Accent.TButton").pack(side='right', padx=6)
-            ttk.Button(btn_frame, text="Apply", command=on_lang_change).pack(side='right', padx=6)
-            ttk.Button(btn_frame, text="Cancel", command=dlg.destroy).pack(side='right', padx=6)
+            btn_ok = self.language_manager.get('btn_ok', "OK") if self.language_manager else "OK"
+            btn_apply = self.language_manager.get('btn_apply', "Apply") if self.language_manager else "Apply"
+            btn_cancel = self.language_manager.get('btn_cancel', "Cancel") if self.language_manager else "Cancel"
+            ttk.Button(btn_frame, text=btn_ok, command=on_ok, style="Accent.TButton").pack(side='right', padx=6)
+            ttk.Button(btn_frame, text=btn_apply, command=on_lang_change).pack(side='right', padx=6)
+            ttk.Button(btn_frame, text=btn_cancel, command=dlg.destroy).pack(side='right', padx=6)
 
             dlg.wait_window()
         except Exception as e:
-            messagebox.showerror("Settings Error", f"Could not open settings: {e}")
+            error_msg = self.language_manager.get('settings_error', "Settings Error") if self.language_manager else "Settings Error"
+            messagebox.showerror(error_msg, f"Could not open settings: {e}")
 
     def view_log_file(self):
         """Open log file viewer dialog"""

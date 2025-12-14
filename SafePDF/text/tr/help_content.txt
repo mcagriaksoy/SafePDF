@@ -1,4 +1,4 @@
-SafePDF Yardım (İngilizce)
+SafePDF Yardım
 
 LİSANS: GPL-v3.0
 

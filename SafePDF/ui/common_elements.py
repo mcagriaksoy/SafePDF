@@ -25,8 +25,8 @@ class CommonElements:
     FONT_SIZE = 10
     
     # Sizes
-    SIZE_STR = "780x640"
-    SIZE_LIST = (780, 640)
+    SIZE_STR = "800x640"
+    SIZE_LIST = (800, 640)
     PADDING = 10
 
     # Default Language

@@ -1,4 +1,4 @@
-SafePDF Help (English)
+SafePDF Help
 
 LICENSE: GPL-v3.0
 
