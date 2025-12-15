@@ -1,26 +1,33 @@
 :root{
-  --bg:#ffffff; --card:#f8fafc; --accent:#e11d48; --muted:#64748b; --surface:#ffffff;
-  --max-width:1100px;
+  --bg:#f6f9fb;
+  --card:#ffffff;
+  --accent:#2563eb; /* professional blue accent */
+  --muted:#6b7280;
+  --surface:#ffffff;
+  --max-width:1200px;
 }
 *{box-sizing:border-box}
-.navbar{background:#ffffff;border-bottom:1px solid rgba(0,0,0,0.1);position:sticky;top:0;z-index:1000}
-.navbar .container{display:flex;justify-content:space-between;align-items:center;padding:16px 24px}
-.nav-brand{color:#1e293b;text-decoration:none;font-weight:700;font-size:1.5em}
-.nav-links{display:flex;list-style:none;margin:0;padding:0;gap:24px}
-.nav-links a{color:#64748b;text-decoration:none;transition:color 0.2s}
-.nav-links a:hover{color:#1e293b}
+.navbar{background:transparent;backdrop-filter: blur(6px);border-bottom:1px solid rgba(16,24,40,0.06);position:sticky;top:0;z-index:1000}
+.navbar .container{display:flex;justify-content:space-between;align-items:center;padding:14px 24px}
+.nav-brand{color:#0f1724;text-decoration:none;font-weight:700;font-size:1.25rem;display:flex;align-items:center;gap:10px}
+.nav-brand .logo{width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#0ea5a4);display:inline-block}
+.nav-links{display:flex;list-style:none;margin:0;padding:0;gap:20px}
+.nav-links a{color:var(--muted);text-decoration:none;padding:8px 10px;border-radius:8px;transition:background 0.18s,color 0.18s}
+.nav-links a:hover{background:rgba(37,99,235,0.06);color:var(--accent)}
 
-body{margin:0;font-family:'Inter', system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:#ffffff;color:#1e293b;line-height:1.4}
-.container{max-width:var(--max-width);margin:0 auto;padding:24px}
-.hero{padding:64px 0;text-align:center;background:linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);position:relative;overflow:hidden}
-.hero::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="%23000000" opacity="0.02"/><circle cx="75" cy="75" r="1" fill="%23000000" opacity="0.02"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');pointer-events:none}
-.hero h1{margin:0;font-size:clamp(32px,6vw,52px);letter-spacing:-0.5px;background:linear-gradient(45deg, #1e293b, #475569);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.tagline{color:#64748b;margin-top:16px;font-size:1.1em;max-width:600px;margin-left:auto;margin-right:auto}
-.badges{margin-top:24px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-.btn{display:inline-block;padding:12px 18px;border-radius:10px;background:transparent;color:#1e293b;text-decoration:none;border:1px solid rgba(0,0,0,0.1);transition:background 0.2s, transform 0.2s}
-.btn:hover{background:rgba(0,0,0,0.05);transform:translateY(-2px)}
+.body, body{margin:0;font-family:'Inter', system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:var(--bg);color:#0f1724;line-height:1.5}
+.container{max-width:var(--max-width);margin:0 auto;padding:28px}
+.hero{padding:64px 0;position:relative;overflow:hidden}
+.hero-inner{display:flex;gap:28px;align-items:center;justify-content:space-between}
+.hero-text{flex:1;max-width:680px}
+.hero-media{flex:1;display:flex;justify-content:center}
+.hero h1{margin:0;font-size:clamp(30px,5vw,48px);letter-spacing:-0.5px;color:#0f1724}
+.lead{color:var(--muted);margin-top:14px;font-size:1.05rem}
+.badges{margin-top:22px;display:flex;gap:12px;flex-wrap:wrap}
+.btn{display:inline-block;padding:10px 18px;border-radius:999px;background:transparent;color:#0f1724;text-decoration:none;border:1px solid rgba(15,23,36,0.06);transition:all 0.16s ease}
+.btn:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(15,23,36,0.06)}
 .btn.primary{background:var(--accent);border-color:transparent;color:white}
-.btn.primary:hover{background:#d11b46}
+.btn.primary:hover{background:#1e4ed8}
 
 .product-hunt-section{text-align:center;margin:48px 0;padding:32px 0;background:linear-gradient(135deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.005) 100%);border-radius:16px;border:1px solid rgba(0,0,0,0.05)}
 .product-hunt-section h3{color:#1e293b;margin-bottom:16px}
@@ -28,19 +35,19 @@ body{margin:0;font-family:'Inter', system-ui,-apple-system,Segoe UI,Roboto,"Helv
 .features{margin-top:40px}
 .features h2{color:#1e293b;margin-bottom:24px;text-align:center}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-top:12px}
-.card{background:linear-gradient(135deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.01) 100%);padding:20px;border-radius:12px;color:#334155;font-weight:600;text-align:center;border:1px solid rgba(0,0,0,0.08);transition:transform 0.2s, box-shadow 0.2s}
-.card:hover{transform:translateY(-4px);box-shadow:0 8px 25px rgba(0,0,0,0.1)}
+.card{background:var(--card);padding:20px;border-radius:12px;color:#0f1724;font-weight:600;text-align:center;border:1px solid rgba(15,23,36,0.04);transition:transform 0.18s,box-shadow 0.18s}
+.card:hover{transform:translateY(-6px);box-shadow:0 14px 40px rgba(2,6,23,0.08)}
 
 .screenshots{margin-top:40px}
 .shot-row{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
-.shot-row img{max-width:380px;border-radius:12px;border:1px solid rgba(0,0,0,0.06);background:#ffffff;transition:transform 0.2s}
-.shot-row img:hover{transform:scale(1.02)}
+.shot-row img{max-width:420px;border-radius:12px;border:1px solid rgba(15,23,36,0.04);background:var(--card);transition:transform 0.18s}
+.shot-row img:hover{transform:translateY(-6px);box-shadow:0 16px 40px rgba(2,6,23,0.06)}
 
 .operations{margin-top:40px}
 .operations h2{text-align:center;color:#1e293b;margin-bottom:24px}
 .op-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px}
-.op-card{background:linear-gradient(135deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.005) 100%);padding:24px;border-radius:16px;border:1px solid rgba(0,0,0,0.06);transition:transform 0.2s, box-shadow 0.2s}
-.op-card:hover{transform:translateY(-6px);box-shadow:0 12px 30px rgba(0,0,0,0.1)}
+.op-card{background:var(--card);padding:22px;border-radius:14px;border:1px solid rgba(15,23,36,0.04);transition:transform 0.18s,box-shadow 0.18s}
+.op-card:hover{transform:translateY(-8px);box-shadow:0 18px 45px rgba(2,6,23,0.06)}
 .op-card h3{color:#1e293b;margin-top:0;margin-bottom:12px}
 .op-card p{color:#64748b;margin-bottom:16px}
 .op-card ul{list-style:none;padding:0;margin:0 0 16px 0}
@@ -66,18 +73,17 @@ body{margin:0;font-family:'Inter', system-ui,-apple-system,Segoe UI,Roboto,"Helv
 .shortcut-item span{color:#334155;font-weight:500}
 
 .site-footer {
-  padding: 32px 0;
-  margin-top: 48px;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
-  text-align: center;
+  padding: 40px 0 28px;
+  margin-top: 64px;
+  border-top: 1px solid rgba(15,23,36,0.04);
   color: var(--muted);
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%);
+  background: transparent;
 }
 
 .footer-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  gap: 28px;
   text-align: left;
 }
 
@@ -116,9 +122,9 @@ body{margin:0;font-family:'Inter', system-ui,-apple-system,Segoe UI,Roboto,"Helv
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 20px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(0, 0, 0, 0.02);
+  margin-top: 28px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(15,23,36,0.03);
 }
 
 .footer-bottom p {
@@ -141,13 +147,13 @@ body{margin:0;font-family:'Inter', system-ui,-apple-system,Segoe UI,Roboto,"Helv
 .hero-banner{
   display:block;
   width:100%;
-  max-width:720px;   /* limit width on large screens */
+  max-width:720px;
   height:auto;
-  max-height:220px;  /* limit vertical space */
-  object-fit:cover;  /* crop safely if aspect ratio differs */
-  border-radius:10px;
-  border:1px solid rgba(0,0,0,0.04);
-  margin:8px auto;
+  object-fit:cover;
+  border-radius:12px;
+  border:1px solid rgba(15,23,36,0.04);
+  margin:8px 0;
+  box-shadow:0 12px 36px rgba(2,6,23,0.06);
 }
 
 /* smaller banner on narrow screens */
@@ -156,7 +162,6 @@ body{margin:0;font-family:'Inter', system-ui,-apple-system,Segoe UI,Roboto,"Helv
   /* ...existing code... */
 }
 
-/* Modal styles */
 .modal {
   display: none;
   position: fixed;
@@ -165,8 +170,11 @@ body{margin:0;font-family:'Inter', system-ui,-apple-system,Segoe UI,Roboto,"Helv
   top: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0,0,0,0.5);
+  background-color: rgba(2,6,23,0.5);
 }
+
+/* Modal styles */
+
 
 .modal-content {
   background-color: var(--card);
@@ -357,4 +365,19 @@ body{margin:0;font-family:'Inter', system-ui,-apple-system,Segoe UI,Roboto,"Helv
   .contact-btn {
     text-align: center;
   }
+}
+
+/* Cookie banner */
+#cookie-banner{position:fixed;left:12px;right:12px;bottom:18px;background:var(--card);border:1px solid rgba(15,23,36,0.06);box-shadow:0 18px 40px rgba(2,6,23,0.06);border-radius:12px;padding:14px;display:none;z-index:1200}
+#cookie-banner .cookie-inner{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#cookie-banner .cookie-inner p{margin:0}
+.cookie-actions{display:flex;gap:10px;align-items:center}
+
+/* Cookie modal reuses existing modal styles but slightly wider */
+#cookie-modal .modal-content{max-width:560px}
+#cookie-form label{display:block;margin:12px 0;color:var(--muted)}
+
+@media (max-width:640px){
+  #cookie-banner .cookie-inner{flex-direction:column;align-items:flex-start}
+  .cookie-actions{width:100%;justify-content:flex-end}
 }
