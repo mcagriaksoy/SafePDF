@@ -7,9 +7,30 @@
 
 <url>
   <loc>https://mcagriaksoy.github.io/SafePDF/</loc>
-  <lastmod>2025-11-29T11:57:08+00:00</lastmod>
+  <lastmod>2025-12-15T00:00:00+00:00</lastmod>
   <changefreq>monthly</changefreq>
   <priority>1.0</priority>
+</url>
+
+<url>
+  <loc>https://mcagriaksoy.github.io/SafePDF/terms.html</loc>
+  <lastmod>2025-12-15T00:00:00+00:00</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.6</priority>
+</url>
+
+<url>
+  <loc>https://mcagriaksoy.github.io/SafePDF/privacy.html</loc>
+  <lastmod>2025-12-15T00:00:00+00:00</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.6</priority>
+</url>
+
+<url>
+  <loc>https://mcagriaksoy.github.io/SafePDF/cookie-policy.html</loc>
+  <lastmod>2025-12-15T00:00:00+00:00</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.5</priority>
 </url>
 
 

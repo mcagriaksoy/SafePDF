@@ -1,0 +1,9 @@
+/style.20251215.css
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.avif
+  Cache-Control: public, max-age=31536000, immutable
+
+# HTML files should be fresh but can be cached for short time
+/*.html
+  Cache-Control: public, max-age=600
