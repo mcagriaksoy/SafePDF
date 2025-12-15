@@ -6,10 +6,15 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>SafePDF: A Privacy-First PDF Toolkit</title>
     <link rel="stylesheet" href="style.20251215.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link id="deferred-google-fonts"
+        data-href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
     <meta name="description"
-        content="SafePDF — finally a privacy focused offline PDF compression, split, merge, convert, rotate and repair. Data never leaves your device.">
+        content="SafePDF : finally a privacy focused offline PDF compression, split, merge, convert, rotate and repair. Data never leaves your device.">
     <link rel="canonical" href="https://mcagriaksoy.github.io/SafePDF/">
+    <!-- Alternate language versions -->
+    <link rel="alternate" hreflang="en" href="https://mcagriaksoy.github.io/SafePDF/">
+    <link rel="alternate" hreflang="tr" href="https://mcagriaksoy.github.io/SafePDF/?lang=tr">
+    <link rel="alternate" hreflang="de" href="https://mcagriaksoy.github.io/SafePDF/?lang=de">
     <meta name="keywords"
         content="SafePDF, PDF, compress, split, merge, convert, rotate, repair, offline, privacy, safe pdf operations, privacy-focused, local pdf tool, pdf toolkit, pdf editor, pdf compressor">
     <meta name="author" content="mcagriaksoy">
@@ -22,7 +27,7 @@
     <meta name="google-site-verification" content="mQnGPoNx88KSBPyDdHNruiZHFH4WV-oMpTWV8IbjlQA" />
 
     <!-- Open Graph -->
-    <meta property="og:title" content="SafePDF — Privacy‑First PDF Toolkit">
+    <meta property="og:title" content="SafePDF : Privacy‑First PDF Toolkit">
     <meta property="og:description"
         content="Offline PDF toolkit: compress, split, merge, convert, rotate and repair locally on your device.">
     <meta property="og:type" content="website">
@@ -32,7 +37,7 @@
 
     <!-- Twitter card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="SafePDF — Privacy‑First PDF Toolkit">
+    <meta name="twitter:title" content="SafePDF : Privacy‑First PDF Toolkit">
     <meta name="twitter:description"
         content="Offline PDF toolkit: compress, split, merge, convert, rotate and repair locally on your device.">
     <meta name="twitter:image" content="https://github.com/mcagriaksoy/SafePDF/raw/main/img/SafePDF_Ad.avif">
@@ -78,30 +83,38 @@
                 <li><a href="#operations">Operations</a></li>
                 <li><a href="#" id="nav-contact-btn">Contact</a></li>
             </ul>
+            <div class="lang-selector">
+                <label for="language-select" style="display:none">Language</label>
+                <select class="language-select" aria-label="Language">
+                    <option value="en">English</option>
+                    <option value="tr">Türkçe</option>
+                    <option value="de">Deutsch</option>
+                </select>
+            </div>
         </div>
     </nav>
 
     <header class="hero" id="hero">
 
-            <div class="container hero-inner">
-                <div class="hero-text">
-                    <h1>SafePDF — Privacy‑First PDF Toolkit</h1>
-                    <p class="lead">Merge, compress, split, convert and repair PDFs locally — no internet required. Your
-                        documents stay on your device.</p>
+        <div class="container hero-inner">
+            <div class="hero-text">
+                <h1>SafePDF : Privacy‑First PDF Toolkit</h1>
+                <p class="lead">Merge, compress, split, convert and repair PDFs locally, no internet required. Your
+                    documents stay on your device. 100% Safe</p>
 
-                    <div class="badges">
-                        <a class="btn primary" href="https://github.com/mcagriaksoy/SafePDF/releases">Download</a>
-                        <a class="btn" href="https://github.com/mcagriaksoy/SafePDF/blob/main/LICENSE">License</a>
-                        <a class="btn" href="#" id="contact-btn">Contact</a>
-                    </div>
-                </div>
-
-                <div class="hero-media">
-                    <img class="hero-banner" src="https://github.com/mcagriaksoy/SafePDF/raw/main/img/SafePDF_Ad.avif"
-                        fetchpriority="high"
-                        alt="SafePDF application banner showcasing privacy-focused PDF operations interface" />
+                <div class="badges">
+                    <a class="btn primary" href="https://github.com/mcagriaksoy/SafePDF/releases">Download</a>
+                    <a class="btn" href="https://github.com/mcagriaksoy/SafePDF/blob/main/LICENSE">License</a>
+                    <a class="btn" href="#" id="contact-btn">Contact</a>
                 </div>
             </div>
+
+            <div class="hero-media">
+                <img class="hero-banner" src="https://github.com/mcagriaksoy/SafePDF/raw/main/img/SafePDF_Ad.avif"
+                    fetchpriority="high"
+                    alt="SafePDF application banner showcasing privacy-focused PDF operations interface" />
+            </div>
+        </div>
     </header>
 
     <main class="container">
@@ -147,7 +160,8 @@
                 <div class="feature-card">
                     <div class="feature-icon">🖼️</div>
                     <h3 class="feature-title">Export Images</h3>
-                    <p class="feature-desc">Export pages as high‑quality AVIF/JPG images for previews and processing.</p>
+                    <p class="feature-desc">Export pages as high‑quality AVIF/JPG images for previews and processing.
+                    </p>
                 </div>
 
                 <div class="feature-card">
@@ -185,11 +199,11 @@
 
         <section class="screenshots" id="screenshots">
             <h2>Screenshots</h2>
-            <div class="shot-row">
+            <div class="shot-row" style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;align-items:flex-start;">
                 <img src="https://github.com/mcagriaksoy/SafePDF/raw/main/img/UI_v1.avif"
-                    alt="SafePDF main application window showing PDF operation options" />
+                    alt="SafePDF main application window showing PDF operation options" style="width:48%;max-width:720px;height:auto;object-fit:contain;" />
                 <img src="https://github.com/mcagriaksoy/SafePDF/raw/main/img/UI_v1_p2.avif"
-                    alt="SafePDF operations interface displaying file selection and processing controls" />
+                    alt="SafePDF operations interface displaying file selection and processing controls" style="width:48%;max-width:720px;height:auto;object-fit:contain;" />
             </div>
         </section>
 
@@ -207,8 +221,6 @@
                         <li>Adjust images DPI and JPEG quality</li>
                         <li>Output: new compressed PDF</li>
                     </ul>
-                    <p class="small">CLI-style example: python pdf_operations.py compress --input file.pdf --quality
-                        medium</p>
                 </article>
 
                 <article class="op-card">
@@ -228,7 +240,6 @@
                         <li>Drag & drop multiple files</li>
                         <li>Reorder pages/files before merging</li>
                     </ul>
-                    <p class="small">CLI-style example: python pdf_operations.py merge out.pdf in1.pdf in2.pdf</p>
                 </article>
 
                 <article class="op-card">
@@ -276,8 +287,8 @@
     <footer class="site-footer" id="contact">
         <div class="container footer-grid">
             <div class="footer-col">
-                <h4>SafePDF</h4>
-                <p class="muted">Privacy-first PDF toolkit. All operations run locally, no cloud upload.</p>
+                <p class="muted">SafePDF is a privacy-focused offline tool for PDF manipulation. Merge, compress, split,
+                    and organize your PDF files securely: No internet required, your documents stay local and safe.</p>
                 <p class="small">Released under <a
                         href="https://github.com/mcagriaksoy/SafePDF/blob/main/LICENSE">GPL‑3.0</a></p>
             </div>
@@ -297,36 +308,35 @@
             <div class="footer-col">
                 <h4>Community</h4>
                 <ul class="footer-links">
-                    <li><a href="https://github.com/mcagriaksoy/SafePDF">GitHub Repository</a></li>
-                    <li><a href="https://github.com/mcagriaksoy/SafePDF/releases">Latest Release</a></li>
+                    <li><a href="https://github.com/mcagriaksoy/SafePDF">Source Code</a></li>
+                    <li><a href="https://github.com/mcagriaksoy/SafePDF/releases">Download Latest Release</a></li>
                 </ul>
             </div>
 
             <div class="footer-col">
                 <h4>Contact & Support</h4>
                 <p class="muted">Need help or have feedback?</p>
-                <p class="small"><a href="#" id="contact-btn-footer">Contact Me</a></p>
+                <p class="small"><a href="#" id="contact-btn-footer">Contact Us</a></p>
                 <p class="small"><a href="#" id="cookie-settings-footer">Cookie Settings</a></p>
-                <p class="small">Version: <strong>v1.0.9</strong></p>
             </div>
         </div>
         <div class="container footer-bottom">
-            <p class="muted">© <span id="copy-year"></span> mcagriaksoy • <a
+            <p class="muted">© <span id="copy-year"></span> SafePDF • Finally, a safe solution. <a
                     href="https://github.com/mcagriaksoy/SafePDF">Repository</a>
             </p>
             <button id="back-to-top" title="Back to top"
                 style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">↑</button>
-                        <a href="https://www.checkdomain.de/unternehmen/garantie/ssl/popup/"
-            onclick="window.open(this.href + '?host=' + window.location.host,'','height=600,width=560,scrollbars=yes'); return false;"><img
-                src="https://www.checkdomain.de/assets/bundles/web/app/widget/seal/img/ssl_certificate/de/150x150.png?20251209-101640"
-                alt="SSL-Zertifikat" /></a>
+            <a href="https://www.checkdomain.de/unternehmen/garantie/ssl/popup/"
+                onclick="window.open(this.href + '?host=' + window.location.host,'','height=600,width=560,scrollbars=yes'); return false;"><img
+                    src="https://www.checkdomain.de/assets/bundles/web/app/widget/seal/img/ssl_certificate/de/150x150.png?20251209-101640"
+                    alt="SSL-Zertifikat" /></a>
         </div>
 
-    
+
 
     </footer>
 
-
+    <script src="translate.js"></script>
 
     <!-- Contact Modal -->
     <div id="contact-modal" class="modal">
@@ -399,37 +409,40 @@
         </div>
     </div>
 
-            <!-- Cookie Settings Modal -->
-            <div id="cookie-modal" class="modal">
-                <div class="modal-content">
-                    <span class="cookie-close close">&times;</span>
-                    <h2>Cookie Preferences</h2>
-                    <p class="muted">Manage which categories of cookies you allow. You can change these at any time.</p>
-                    <form id="cookie-form">
-                        <label><input type="checkbox" name="necessary" checked disabled> Necessary (required)</label>
-                        <label><input type="checkbox" name="analytics"> Analytics (improves product)</label>
-                        <label><input type="checkbox" name="marketing"> Marketing (third‑party)</label>
-                        <div style="margin-top:16px;text-align:right;">
-                            <button type="button" class="contact-btn secondary" onclick="rejectAllCookies()">Reject All</button>
-                            <button type="button" class="contact-btn primary" onclick="saveCookiePreferences()">Save Preferences</button>
-                        </div>
-                    </form>
+    <!-- Cookie Settings Modal -->
+    <div id="cookie-modal" class="modal">
+        <div class="modal-content">
+            <span class="cookie-close close">&times;</span>
+            <h2>Cookie Preferences</h2>
+            <p class="muted">Manage which categories of cookies you allow. You can change these at any time.</p>
+            <form id="cookie-form">
+                <label><input type="checkbox" name="necessary" checked disabled> Necessary (required)</label>
+                <label><input type="checkbox" name="preferences"> Preferences (UI/customization)</label>
+                <label><input type="checkbox" name="analytics"> Analytics (improves product)</label>
+                <label><input type="checkbox" name="marketing"> Marketing (third‑party)</label>
+                <div style="margin-top:16px;text-align:right;">
+                    <button type="button" class="contact-btn secondary" onclick="rejectAllCookies()">Reject All</button>
+                    <button type="button" class="contact-btn primary" onclick="saveCookiePreferences()">Save
+                        Preferences</button>
                 </div>
-            </div>
+            </form>
+        </div>
+    </div>
 
-            <!-- Cookie Banner -->
-            <div id="cookie-banner" aria-live="polite">
-                <div class="container cookie-inner">
-                    <div>
-                        <p class="muted">We use essential cookies to make the site work, and optional cookies to improve the experience. You can manage preferences.</p>
-                    </div>
-                    <div class="cookie-actions">
-                        <button class="btn" onclick="openCookieModal()">Cookie Settings</button>
-                        <button class="btn" onclick="rejectAllCookies()">Reject All</button>
-                        <button class="btn primary" onclick="acceptAllCookies()">Accept All</button>
-                    </div>
-                </div>
+    <!-- Cookie Banner -->
+    <div id="cookie-banner" aria-live="polite">
+        <div class="container cookie-inner">
+            <div>
+                <p class="muted">We use essential cookies to make the site work, and optional cookies to improve the
+                    experience. You can manage preferences.</p>
             </div>
+            <div class="cookie-actions">
+                <button class="btn" onclick="openCookieModal()">Cookie Settings</button>
+                <button class="btn" onclick="rejectAllCookies()">Reject All</button>
+                <button class="btn primary" onclick="acceptAllCookies()">Accept All</button>
+            </div>
+        </div>
+    </div>
 
     <!-- small scripts for footer -->
     <script>
@@ -520,94 +533,9 @@
             }
         }
 
-        // Cookie consent and settings
-        var cookieBanner = document.getElementById('cookie-banner');
-        var cookieModal = document.getElementById('cookie-modal');
-        var cookieClose = document.getElementsByClassName('cookie-close')[0];
-
-        function getCookiePrefs() {
-            try { return JSON.parse(localStorage.getItem('safepdf_cookie_prefs') || 'null'); } catch (e) { return null; }
-        }
-
-        function savePrefs(prefs) {
-            localStorage.setItem('safepdf_cookie_prefs', JSON.stringify(prefs));
-            applyCookiePreferences(prefs);
-        }
-
-        function applyCookiePreferences(prefs) {
-            // Placeholder for toggling analytics/marketing scripts.
-            // Example: if (!prefs.analytics) { disableAnalytics(); }
-            // Currently SafePDF runs locally, so nothing to disable by default.
-        }
-
-        function showCookieBanner() {
-            if (cookieBanner) cookieBanner.style.display = 'block';
-        }
-
-        function hideCookieBanner() {
-            if (cookieBanner) cookieBanner.style.display = 'none';
-        }
-
-        function openCookieModal() {
-            if (cookieModal) cookieModal.style.display = 'flex';
-            // populate form with saved prefs
-            var prefs = getCookiePrefs() || { necessary: true, analytics: false, marketing: false };
-            var form = document.getElementById('cookie-form');
-            if (form) {
-                form.analytics.checked = !!prefs.analytics;
-                form.marketing.checked = !!prefs.marketing;
-            }
-        }
-
-        function closeCookieModal() {
-            if (cookieModal) cookieModal.style.display = 'none';
-        }
-
-        function acceptAllCookies() {
-            var prefs = { necessary: true, analytics: true, marketing: true };
-            savePrefs(prefs);
-            hideCookieBanner();
-        }
-
-        function rejectAllCookies() {
-            var prefs = { necessary: true, analytics: false, marketing: false };
-            savePrefs(prefs);
-            hideCookieBanner();
-            closeCookieModal();
-        }
-
-        function saveCookiePreferences() {
-            var form = document.getElementById('cookie-form');
-            if (!form) return;
-            var prefs = {
-                necessary: true,
-                analytics: !!form.analytics.checked,
-                marketing: !!form.marketing.checked
-            };
-            savePrefs(prefs);
-            hideCookieBanner();
-            closeCookieModal();
-        }
-
-        // Banner logic on load
-        (function () {
-            var prefs = getCookiePrefs();
-            if (!prefs) {
-                // show banner after small delay
-                setTimeout(showCookieBanner, 600);
-            } else {
-                applyCookiePreferences(prefs);
-            }
-        })();
-
-        // cookie modal controls
-        cookieClose && (cookieClose.onclick = closeCookieModal);
-        window.addEventListener('click', function (e) { if (e.target == cookieModal) closeCookieModal(); });
-
-        // footer cookie settings link
-        var cookieFooterBtn = document.getElementById('cookie-settings-footer');
-        cookieFooterBtn && cookieFooterBtn.addEventListener('click', function (e) { e.preventDefault(); openCookieModal(); });
+        // Cookie consent is handled by cookie-consent.js
     </script>
+    <script src="cookie-consent.js"></script>
 </body>
 
 </html>

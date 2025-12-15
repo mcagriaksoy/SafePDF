@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Crawl-delay can be added if needed. Keep sensitive pages out of index with explicit Disallow rules.
+Sitemap: https://safepdf.de/sitemap.xml
