@@ -15,6 +15,12 @@
 .nav-links a{color:var(--muted);text-decoration:none;padding:8px 10px;border-radius:8px;transition:background 0.18s,color 0.18s}
 .nav-links a:hover{background:rgba(37,99,235,0.06);color:var(--accent)}
 
+/* Language selector (top-right) */
+.lang-selector{display:flex;align-items:center;margin-left:12px}
+.lang-selector select{appearance:none;padding:8px 10px;border-radius:8px;border:1px solid rgba(15,23,36,0.08);background:var(--card);color:#0f1724;font-weight:600;cursor:pointer}
+.lang-selector select:focus{outline:2px solid rgba(37,99,235,0.12)}
+
+
 .body, body{margin:0;font-family:'Inter', system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:var(--bg);color:#0f1724;line-height:1.5}
 .container{max-width:var(--max-width);margin:0 auto;padding:28px}
 .hero{padding:64px 0;position:relative;overflow:hidden}
