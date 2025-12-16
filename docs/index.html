@@ -323,6 +323,92 @@
 
     </main>
 
+    <!-- Buy Pro Section -->
+    <section class="buy-pro container" id="buy-pro">
+        <h2>Upgrade to SafePDF Pro</h2>
+        <p class="lead">Unlock advanced features, priority support, and an ad-free experience.</p>
+
+        <div class="buy-features" style="display:flex;gap:18px;flex-wrap:wrap;margin-top:8px;">
+            <ul style="flex:1;min-width:220px;margin:0;padding-left:18px;">
+                <li>Ultra high quality compression (300 DPI, 95% JPEG)</li>
+                <li>Lossless mode for maximum preservation</li>
+                <li>Batch processing for multiple files</li>
+            </ul>
+            <ul style="flex:1;min-width:220px;margin:0;padding-left:18px;">
+                <li>Priority customer support</li>
+                <li>Automatic signed update checks</li>
+                <li>GPG‑signed activation keys</li>
+            </ul>
+        </div>
+        <div class="plans-grid">
+            <article class="plan-card" data-price="4.99" data-discount="33">
+                <div class="discount-badge">-33%</div>
+                <h3>30 Days</h3>
+                <p class="price"><span class="price-old">€4.99</span> <span class="price-new">€3.34</span></p>
+                <ul>
+                    <li>Full Pro features for 30 days</li>
+                </ul>
+                <a class="btn primary buy-btn" href="https://www.shopier.com/safepdf/42232954" role="button" data-plan="30">Buy 30 Days</a>
+            </article>
+
+            <article class="plan-card" data-price="11.99" data-discount="45">
+                <div class="discount-badge">-45%</div>
+                <h3>90 Days</h3>
+                <p class="price"><span class="price-old">€11.99</span> <span class="price-new">€6.59</span></p>
+                <ul>
+                    <li>Full Pro features for 90 days</li>
+                    <li>Priority support &amp; discounted renewals</li>
+                </ul>
+                <a class="btn primary buy-btn" href="#" role="button" data-plan="90">Buy 90 Days</a>
+            </article>
+
+            <article class="plan-card recommended" data-price="29.99" data-discount="60">
+                <div class="discount-badge">-60%</div>
+                <h3>Yearly</h3>
+                <p class="price"><span class="price-old">€29.99</span> <span class="price-new">€11.99</span></p>
+                <ul>
+                    <li>Full Pro features for 12 months</li>
+                    <li>Best value — save over 40%</li>
+                </ul>
+                <a class="btn primary buy-btn" href="#" role="button" data-plan="365">Buy Yearly</a>
+            </article>
+                </div>
+
+                <p class="small muted">Payments processed via your chosen provider. No files are uploaded to our servers.</p>
+
+                <script>
+                (function(){
+                    function formatPrice(n){return '€' + n.toFixed(2)}
+                    document.querySelectorAll('.plan-card').forEach(function(card){
+                        var price = parseFloat(card.dataset.price || '0');
+                        var discount = parseFloat(card.dataset.discount || '0');
+                        var newPrice = Math.round((price * (1 - discount/100)) * 100) / 100;
+                        var newEl = card.querySelector('.price-new');
+                        if(newEl) newEl.textContent = formatPrice(newPrice);
+                    });
+
+                    var input = document.getElementById('coupon-input');
+                    if (input) {
+                        input.addEventListener('dragover', function(e){e.preventDefault(); input.classList.add('dragover')});
+                        input.addEventListener('dragleave', function(){input.classList.remove('dragover')});
+                        input.addEventListener('drop', function(e){e.preventDefault(); input.classList.remove('dragover');
+                            var text = (e.dataTransfer && (e.dataTransfer.getData('text') || e.dataTransfer.getData('text/plain'))) || '';
+                            if(text) input.value = text.trim();
+                        });
+                    }
+
+                    var applyBtn = document.getElementById('apply-coupon');
+                    if (applyBtn) {
+                        applyBtn.addEventListener('click', function(){
+                            var code = input && input.value ? input.value.trim() : '';
+                            if(!code){ if (input) input.focus(); return }
+                            alert('Coupon '+code+' entered — implement validation on server.');
+                        });
+                    }
+                })();
+                </script>
+    </section>
+
     <footer class="site-footer" id="contact">
         <div class="container footer-grid">
             <div class="footer-col">
