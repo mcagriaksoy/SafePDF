@@ -1,33 +1,68 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset
-      xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
-            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml"
+  xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+    http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+
 
 <url>
-  <loc>https://mcagriaksoy.github.io/SafePDF/</loc>
+  <loc>https://safepdf.de/</loc>
   <lastmod>2025-12-15T00:00:00+00:00</lastmod>
   <changefreq>monthly</changefreq>
   <priority>1.0</priority>
+  <xhtml:link rel="alternate" hreflang="en" href="https://safepdf.de/" />
+  <xhtml:link rel="alternate" hreflang="tr" href="https://safepdf.de/?lang=tr" />
+  <xhtml:link rel="alternate" hreflang="de" href="https://safepdf.de/?lang=de" />
+  <xhtml:link rel="alternate" hreflang="x-default" href="https://safepdf.de/" />
 </url>
 
 <url>
-  <loc>https://mcagriaksoy.github.io/SafePDF/terms.html</loc>
+  <loc>http://safepdf.de/</loc>
+  <lastmod>2025-12-25T00:00:00+00:00</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.5</priority>
+  <xhtml:link rel="canonical" href="https://safepdf.de/" />
+  <!-- This page is a redirect to the canonical SafePDF homepage. -->
+</url>
+<url>
+  <loc>https://safepdf.de/?lang=tr</loc>
+  <lastmod>2025-12-15T00:00:00+00:00</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.9</priority>
+  <xhtml:link rel="alternate" hreflang="en" href="https://safepdf.de/" />
+  <xhtml:link rel="alternate" hreflang="tr" href="https://safepdf.de/?lang=tr" />
+  <xhtml:link rel="alternate" hreflang="de" href="https://safepdf.de/?lang=de" />
+  <xhtml:link rel="alternate" hreflang="x-default" href="https://safepdf.de/" />
+</url>
+<url>
+  <loc>https://safepdf.de/?lang=de</loc>
+  <lastmod>2025-12-15T00:00:00+00:00</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.9</priority>
+  <xhtml:link rel="alternate" hreflang="en" href="https://safepdf.de/" />
+  <xhtml:link rel="alternate" hreflang="tr" href="https://safepdf.de/?lang=tr" />
+  <xhtml:link rel="alternate" hreflang="de" href="https://safepdf.de/?lang=de" />
+  <xhtml:link rel="alternate" hreflang="x-default" href="https://safepdf.de/" />
+</url>
+
+<url>
+  <loc>https://safepdf.de/terms.html</loc>
   <lastmod>2025-12-15T00:00:00+00:00</lastmod>
   <changefreq>monthly</changefreq>
   <priority>0.6</priority>
 </url>
 
 <url>
-  <loc>https://mcagriaksoy.github.io/SafePDF/privacy.html</loc>
+  <loc>https://safepdf.de/privacy.html</loc>
   <lastmod>2025-12-15T00:00:00+00:00</lastmod>
   <changefreq>monthly</changefreq>
   <priority>0.6</priority>
 </url>
 
 <url>
-  <loc>https://mcagriaksoy.github.io/SafePDF/cookie-policy.html</loc>
+  <loc>https://safepdf.de/cookie-policy.html</loc>
   <lastmod>2025-12-15T00:00:00+00:00</lastmod>
   <changefreq>monthly</changefreq>
   <priority>0.5</priority>

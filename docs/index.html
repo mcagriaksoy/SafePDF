@@ -5,16 +5,47 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>SafePDF: A Privacy-First PDF Toolkit</title>
-    <link rel="stylesheet" href="style.20251215.css">
+    <link rel="stylesheet" href="style.css">
     <link id="deferred-google-fonts"
         data-href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
     <meta name="description"
         content="SafePDF : finally a privacy focused offline PDF compression, split, merge, convert, rotate and repair. Data never leaves your device.">
-    <link rel="canonical" href="https://mcagriaksoy.github.io/SafePDF/">
-    <!-- Alternate language versions -->
-    <link rel="alternate" hreflang="en" href="https://mcagriaksoy.github.io/SafePDF/">
-    <link rel="alternate" hreflang="tr" href="https://mcagriaksoy.github.io/SafePDF/?lang=tr">
-    <link rel="alternate" hreflang="de" href="https://mcagriaksoy.github.io/SafePDF/?lang=de">
+        <!-- Canonical and hreflang tags for multilingual SEO -->
+        <script>
+            // Dynamically set canonical and hreflang for each language version
+            (function() {
+                var base = 'https://safepdf.de/';
+                var url = new URL(window.location.href);
+                var lang = url.searchParams.get('lang') || 'en';
+                var canon = base;
+                if(lang === 'tr') canon = base + '?lang=tr';
+                else if(lang === 'de') canon = base + '?lang=de';
+                // Canonical
+                var linkCanon = document.createElement('link');
+                linkCanon.rel = 'canonical';
+                linkCanon.href = canon;
+                document.head.appendChild(linkCanon);
+                // Hreflang alternates
+                var langs = [
+                    {code:'en', url: base},
+                    {code:'tr', url: base+'?lang=tr'},
+                    {code:'de', url: base+'?lang=de'}
+                ];
+                langs.forEach(function(l) {
+                    var link = document.createElement('link');
+                    link.rel = 'alternate';
+                    link.hreflang = l.code;
+                    link.href = l.url;
+                    document.head.appendChild(link);
+                });
+                // x-default
+                var linkDef = document.createElement('link');
+                linkDef.rel = 'alternate';
+                linkDef.hreflang = 'x-default';
+                linkDef.href = base;
+                document.head.appendChild(linkDef);
+            })();
+        </script>
     <meta name="keywords"
         content="SafePDF, PDF, compress, split, merge, convert, rotate, repair, offline, privacy, safe pdf operations, privacy-focused, local pdf tool, pdf toolkit, pdf editor, pdf compressor, open soruce pdf app, safe pdf operations, data privacy, document security, pdf management, pdf utilities, pdf processing, pdf manipulation">
     <meta name="author" content="mcagriaksoy">
@@ -33,7 +64,7 @@
     <meta property="og:description"
         content="Offline PDF toolkit: compress, split, merge, convert, rotate and repair locally on your device.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://mcagriaksoy.github.io/SafePDF/">
+    <meta property="og:url" content="https://safepdf.de/">
     <meta property="og:image" content="https://github.com/mcagriaksoy/SafePDF/raw/main/img/SafePDF_Ad.avif">
     <meta property="og:image:alt" content="SafePDF application banner showing privacy-focused PDF operations">
 
@@ -85,7 +116,7 @@
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
       "name": "SafePDF",
-      "url": "https://mcagriaksoy.github.io/SafePDF/",
+      "url": "https://safepdf.de/",
       "description": "Privacy-first offline PDF toolkit for compressing, splitting, merging, converting, rotating and repairing PDF documents.",
       "author": { "@type": "Person", "name": "mcagriaksoy", "url": "https://github.com/mcagriaksoy" },
       "operatingSystem": "Windows, macOS, Linux",
@@ -119,12 +150,13 @@
                 <li><a href="#operations">Operations</a></li>
                 <li><a href="#" id="nav-contact-btn">Contact</a></li>
             </ul>
-            <div class="lang-selector">
+            <div class="lang-selector" style="display:flex;align-items:center;gap:6px">
+                <span id="lang-flag" style="font-size:1.3em;font-family:'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol','Noto Color Emoji',sans-serif;">🇬🇧</span>
                 <label for="language-select" style="display:none">Language</label>
-                <select class="language-select" aria-label="Language">
-                    <option value="en">English</option>
-                    <option value="tr">Türkçe</option>
-                    <option value="de">Deutsch</option>
+                <select class="language-select" id="language-select" aria-label="Language" style="background:#fff;color:#0f1724;border:1px solid #ddd;padding:4px 8px;border-radius:6px;">
+                    <option value="en" data-flag="🇬🇧">English</option>
+                    <option value="tr" data-flag="🇹🇷">Türkçe</option>
+                    <option value="de" data-flag="🇩🇪">Deutsch</option>
                 </select>
             </div>
         </div>
@@ -139,7 +171,8 @@
                     documents stay on your device. 100% Safe</p>
 
                 <div class="badges">
-                    <a class="btn primary" href="https://github.com/mcagriaksoy/SafePDF/releases">Download</a>
+                    <a class="btn primary" href="https://github.com/mcagriaksoy/SafePDF/releases">Try Free Version</a>
+                    <a class="btn" href="#buy-pro" id="pro">Buy Pro</a>
                     <a class="btn" href="https://github.com/mcagriaksoy/SafePDF/blob/main/LICENSE">License</a>
                     <a class="btn" href="#" id="contact-btn">Contact</a>
                 </div>
@@ -306,7 +339,7 @@
                     <h3>Repair Corrupted PDFs</h3>
                     <p>Attempt recovery of damaged PDFs using relaxed parsing and page-by-page salvage.</p>
                     <ul>
-                        <li>Best-effort recovery — some content may be lost</li>
+                        <li>Best-effort recovery, some content may be lost</li>
                         <li>Outputs recovered pages as a new PDF</li>
                     </ul>
                     <p class="small">If a file is partially readable, the tool extracts readable pages into a new file.
@@ -357,7 +390,6 @@
                 <p class="price"><span class="price-old">€11.99</span> <span class="price-new">€6.59</span></p>
                 <ul>
                     <li>Full Pro features for 90 days</li>
-                    <li>Priority support &amp; discounted renewals</li>
                 </ul>
                 <a class="btn primary buy-btn" href="#" role="button" data-plan="90">Buy 90 Days</a>
             </article>
@@ -368,7 +400,6 @@
                 <p class="price"><span class="price-old">€29.99</span> <span class="price-new">€11.99</span></p>
                 <ul>
                     <li>Full Pro features for 12 months</li>
-                    <li>Best value — save over 40%</li>
                 </ul>
                 <a class="btn primary buy-btn" href="#" role="button" data-plan="365">Buy Yearly</a>
             </article>
@@ -459,7 +490,41 @@
 
     </footer>
 
-    <script src="translate.js"></script>
+        <script>
+                // Minimal language switcher with flag (flag only in span, not in dropdown)
+                const langSelect = document.getElementById('language-select');
+                const langFlag = document.getElementById('lang-flag');
+                function updateFlag() {
+                    // Use a mapping for reliability
+                    const flagMap = { en: '🇬🇧', tr: '🇹🇷', de: '🇩🇪' };
+                    const lang = langSelect.value;
+                    langFlag.textContent = flagMap[lang] || '🌐';
+                }
+                langSelect.addEventListener('change', function() {
+                    updateFlag();
+                    const lang = langSelect.value;
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('lang', lang);
+                    window.location.href = url.toString();
+                });
+                (function(){
+                    const urlLang = new URL(window.location.href).searchParams.get('lang');
+                    if(urlLang) {
+                        for(let i=0;i<langSelect.options.length;i++) {
+                            if(langSelect.options[i].value===urlLang) langSelect.selectedIndex=i;
+                        }
+                    }
+                    updateFlag();
+                })();
+                // Smooth scroll for Buy Pro button
+                document.getElementById('pro').addEventListener('click', function(e) {
+                    const target = document.getElementById('buy-pro');
+                    if(target) {
+                        e.preventDefault();
+                        target.scrollIntoView({behavior:'smooth',block:'start'});
+                    }
+                });
+        </script>
 
     <!-- Contact Modal -->
     <div id="contact-modal" class="modal">
@@ -658,7 +723,75 @@
 
         // Cookie consent is handled by cookie-consent.js
     </script>
-    <script src="cookie-consent.js"></script>
+    <script>
+    // --- Improved machine translation using Google Translate API (client-side) ---
+    (function() {
+        const selectors = [
+            {selector: 'title', attr: 'text'},
+            {selector: "meta[name='description']", attr: 'content'},
+            {selector: "meta[property='og:title']", attr: 'content'},
+            {selector: "meta[property='og:description']", attr: 'content'},
+            {selector: "meta[name='twitter:title']", attr: 'content'},
+            {selector: "meta[name='twitter:description']", attr: 'content'},
+            {selector: 'h1', attr: 'text'},
+            {selector: 'h2', attr: 'text'},
+            {selector: 'h3', attr: 'text'},
+            {selector: '.lead', attr: 'text'},
+            {selector: '.feature-title', attr: 'text', all: true},
+            {selector: '.feature-desc', attr: 'text', all: true},
+            {selector: '.op-card h3', attr: 'text', all: true},
+            {selector: '.op-card p', attr: 'text', all: true},
+            {selector: '.op-card ul li', attr: 'text', all: true},
+            {selector: '.plan-card h3', attr: 'text', all: true},
+            {selector: '.plan-card ul li', attr: 'text', all: true},
+            {selector: '.footer-col h4', attr: 'text', all: true},
+            {selector: '.footer-col p', attr: 'text', all: true},
+            {selector: '.footer-links a', attr: 'text', all: true},
+        ];
+        async function translateText(text, targetLang) {
+            const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`;
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                return data[0]?.map(x => x[0]).join('') || text;
+            } catch (e) {
+                return text;
+            }
+        }
+        async function translatePage(lang) {
+            // Translate single elements
+            for (const item of selectors.filter(i => !i.all)) {
+                const el = document.querySelector(item.selector);
+                if (el) {
+                    let orig = item.attr === 'text' ? el.textContent : el.getAttribute(item.attr);
+                    if (orig && orig.trim().length > 0) {
+                        const translated = await translateText(orig, lang);
+                        if (item.attr === 'text') el.textContent = translated;
+                        else el.setAttribute(item.attr, translated);
+                    }
+                }
+            }
+            // Translate multiple elements (NodeList)
+            await Promise.all(selectors.filter(i => i.all).map(async item => {
+                const nodeList = document.querySelectorAll(item.selector);
+                for (const el of nodeList) {
+                    let orig = item.attr === 'text' ? el.textContent : el.getAttribute(item.attr);
+                    if (orig && orig.trim().length > 0) {
+                        const translated = await translateText(orig, lang);
+                        if (item.attr === 'text') el.textContent = translated;
+                        else el.setAttribute(item.attr, translated);
+                    }
+                }
+            }));
+        }
+        var urlLang = new URL(window.location.href).searchParams.get('lang');
+        if (urlLang && (urlLang === 'tr' || urlLang === 'de')) {
+            window.addEventListener('DOMContentLoaded', function() {
+                translatePage(urlLang);
+            });
+        }
+    })();
+    </script>
 </body>
 
 </html>
