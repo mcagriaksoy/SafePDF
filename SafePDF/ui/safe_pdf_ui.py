@@ -1001,16 +1001,18 @@ class SafePDFUI:
                     text_widget.tag_add("info", f"1.0+{start}c", f"1.0+{start + len(section)}c")
     
     def create_file_tab(self):
-        """Create the file selection tab with modern design"""
+        """Create the file selection tab with modern design and PDF preview"""
         main_frame = ttk.Frame(self.file_frame, style="TFrame")
         main_frame.pack(fill='both', expand=True, padx=32, pady=32)
 
-        # Drop zone (modern design with custom dashed border)
-        # Create a frame to hold the canvas and label
-        drop_frame = tk.Frame(main_frame, bg="#f8f9fa", relief=tk.FLAT, bd=0)
-        drop_frame.pack(fill='both', expand=True, pady=(0, 12))
-        
-        # Create canvas for dashed border
+        # Horizontal layout for drop zone and preview
+        file_tab_container = tk.Frame(main_frame, bg="#f8f9fa")
+        file_tab_container.pack(fill='both', expand=True)
+
+        # Left: Drop zone
+        drop_frame = tk.Frame(file_tab_container, bg="#f8f9fa", relief=tk.FLAT, bd=0)
+        drop_frame.pack(side='left', fill='both', expand=True, pady=(0, 12))
+
         self.drop_canvas = tk.Canvas(
             drop_frame,
             bg="#f8f9fa",
@@ -1018,8 +1020,7 @@ class SafePDFUI:
             relief=tk.FLAT
         )
         self.drop_canvas.pack(fill='both', expand=True)
-        
-        # Create the drop label inside the canvas
+
         self.drop_label = tk.Label(
             self.drop_canvas,
             text="📄 Drop PDF File Here\n\nClick to browse",
@@ -1031,27 +1032,23 @@ class SafePDFUI:
             cursor="hand2",
             fg=CommonElements.RED_COLOR
         )
-        
-        # Bind click event to the label
         self.drop_label.bind("<Button-1>", self.browse_file)
-        
-        # Draw the dashed border
         self._draw_dashed_border()
-        
-        # Bind resize event to redraw border
         drop_frame.bind('<Configure>', lambda e: self._draw_dashed_border())
-        
-        # Setup drag and drop after drop_label is created
-        self.setup_drag_drop()
-        
-        # Setup drag and drop after drop_label is created
         self.setup_drag_drop()
 
-        # Or label
+        # Right: PDF preview area
+        preview_frame = tk.Frame(file_tab_container, bg="#f8f9fa", relief=tk.FLAT, bd=0)
+        preview_frame.pack(side='right', fill='y', padx=(16, 0), pady=(0, 12))
+        preview_label = tk.Label(preview_frame, text="Preview:", font=(CommonElements.FONT, 11, "bold"), bg="#f8f9fa", fg="#333")
+        preview_label.pack(anchor='nw', pady=(0, 4))
+        self.pdf_preview_canvas = tk.Canvas(preview_frame, width=180, height=240, bg="#ffffff", bd=1, relief=tk.SOLID, highlightthickness=1, highlightbackground="#acb2bb")
+        self.pdf_preview_canvas.pack(anchor='n', pady=(0, 8))
+        self.pdf_preview_image = None
+
+        # Or label and browse button below
         or_label = ttk.Label(main_frame, text="or", style="TLabel")
         or_label.pack(pady=4)
-
-        # Browse button
         browse_btn = ttk.Button(
             main_frame,
             text="Load File from Disk",
@@ -1060,8 +1057,65 @@ class SafePDFUI:
         )
         browse_btn.pack(pady=(8, 0))
 
-        # Update UI based on selected operation
         self.update_file_tab_ui()
+
+    def show_pdf_preview(self, pdf_path):
+        """Render and show the first page of the selected PDF in the preview canvas."""
+        if not hasattr(self, 'pdf_preview_canvas') or not self.pdf_preview_canvas:
+            return
+
+        canvas_w, canvas_h = 180, 240
+        self.pdf_preview_canvas.delete("all")
+
+        if not pdf_path:
+            self.pdf_preview_canvas.create_text(
+                canvas_w // 2,
+                canvas_h // 2,
+                text="No file\nselected",
+                fill="#888",
+                font=(CommonElements.FONT, 10),
+            )
+            return
+
+        try:
+            pdf_path = str(Path(pdf_path))
+            if not Path(pdf_path).exists():
+                raise FileNotFoundError(pdf_path)
+
+            Image, ImageTk = _get_pil()
+            if not Image or not ImageTk:
+                raise ImportError("Pillow is not available")
+
+            # Use PyMuPDF for rendering (no external Poppler dependency)
+            import fitz  # PyMuPDF
+
+            with fitz.open(pdf_path) as doc:
+                if doc.page_count < 1:
+                    raise ValueError("Empty PDF")
+                page = doc.load_page(0)
+                rect = page.rect
+                if rect.width <= 0 or rect.height <= 0:
+                    raise ValueError("Invalid page size")
+
+                base_scale = min(canvas_w / rect.width, canvas_h / rect.height)
+                zoom = max(0.1, base_scale * 2.0)
+                mat = fitz.Matrix(zoom, zoom)
+                pix = page.get_pixmap(matrix=mat, alpha=False)
+
+            img = Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
+            img.thumbnail((canvas_w, canvas_h), Image.LANCZOS)
+
+            self.pdf_preview_image = ImageTk.PhotoImage(img)
+            self.pdf_preview_canvas.create_image(canvas_w // 2, canvas_h // 2, image=self.pdf_preview_image)
+        except Exception:
+            self.pdf_preview_canvas.delete("all")
+            self.pdf_preview_canvas.create_text(
+                canvas_w // 2,
+                canvas_h // 2,
+                text="Preview\nUnavailable",
+                fill="#888",
+                font=(CommonElements.FONT, 10),
+            )
 
     def update_file_tab_ui(self):
         """Update file tab UI based on selected operation"""
@@ -1874,6 +1928,12 @@ class SafePDFUI:
                     
                     # Show PDF info for the first file
                     self.show_pdf_info()
+
+                    # Show preview of the first selected file
+                    try:
+                        self.show_pdf_preview(file_paths[0])
+                    except Exception:
+                        pass
                     
                     # Enable settings tab
                     self.notebook.tab(3, state='normal')
@@ -1909,6 +1969,8 @@ class SafePDFUI:
                 if success:
                     self.update_file_display()
                     self.notebook.tab(3, state='normal')
+                    # Show preview of first file
+                    self.show_pdf_preview(file_paths[0])
                 else:
                     messagebox.showerror("Error", message)
         else:
@@ -1923,7 +1985,6 @@ class SafePDFUI:
                 
                 if success:
                     filename = os.path.basename(file_path)
-                    
                     # Update UI with consistent styling - check if widgets exist first
                     if hasattr(self, 'file_label') and self.file_label:
                         self.file_label.config(text=message, foreground='green')
@@ -1936,10 +1997,10 @@ class SafePDFUI:
                             highlightbackground='#28a745',
                             highlightthickness=3
                         )
-                    
                     # Show PDF info
                     self.show_pdf_info()
-                    
+                    # Show PDF preview
+                    self.show_pdf_preview(file_path)
                     # Enable settings tab
                     self.notebook.tab(3, state='normal')
                 else:
@@ -3060,6 +3121,12 @@ class SafePDFUI:
                 
                 # Show PDF info for the first file
                 self.show_pdf_info()
+
+                # Update preview for the first file
+                try:
+                    self.show_pdf_preview(self.controller.selected_files[0])
+                except Exception:
+                    pass
             else:
                 # No files selected
                 if hasattr(self, 'file_label') and self.file_label:
@@ -3072,6 +3139,12 @@ class SafePDFUI:
                         relief=tk.RIDGE,
                         bd=2
                     )
+
+                # Clear preview
+                try:
+                    self.show_pdf_preview(None)
+                except Exception:
+                    pass
         except Exception as e:
             logger.debug(f"Error updating file display: {e}", exc_info=True)
             pass
