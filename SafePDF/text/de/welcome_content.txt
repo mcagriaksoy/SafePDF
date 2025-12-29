@@ -1,8 +1,8 @@
 Willkommen
 
-Klicken Sie auf „Weiter“, um den Prozess zu starten und Ihre gewünschte Aktion auszuwählen.
+Klicken Sie auf „Weiter“, um den Vorgang zu starten und Ihre gewünschte Aktion auszuwählen.
 
-📋 Prozessschritte:
+📋 Ablauf:
 
 (1) Startseite dieser Anwendung
 (2) Quelldatei auswählen
@@ -14,8 +14,9 @@ Keine Sorge, Ihre Dateien verlassen Ihren Computer nicht.
 
 💻 Softwareinformationen
 
-Version: v1.0.9
+Version: v1.0.10
 🔗 Nach Updates suchen
-👨‍💻 von mcagriaksoy – 2025
 
-Weitere Informationen und Updates finden Sie in unserem GitHub-Repository.
+
+
+Für weitere Informationen und Updates kontaktieren Sie uns. SafePdf™ – 2025

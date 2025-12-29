@@ -14,9 +14,9 @@ Endişelenmeyin, dosyalarınız bilgisayarınızdan asla ayrılmaz.
 
 💻 Yazılım Bilgileri
 
-Sürüm: v1.0.9
+Sürüm: v1.0.10
 🔗 Güncellemeleri Kontrol Et
-👨‍💻 mcagriaksoy tarafından - 2025
 
 
-Daha fazla bilgi ve güncellemeler için GitHub depomuzu ziyaret edin.
+
+Daha fazla bilgi ve güncellemeler için bizimle iletişime geçin. SafePdf™ - 2025

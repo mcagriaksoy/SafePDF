@@ -23,7 +23,7 @@ from SafePDF.ops.license_manager import LicenseManager
 class SafePDFController:
     """Controller class that manages application state and logic"""
     
-    def __init__(self, progress_callback=None):
+    def __init__(self, progress_callback=None, language_manager=None):
         # Application state
         self.selected_files = []
         self.selected_file = None
@@ -43,6 +43,9 @@ class SafePDFController:
         # Module logger (needed for _load_pro_status)
         self.logger = get_logger('SafePDF.Controller')
         
+        # Language manager for localization
+        self.language_manager = language_manager
+        
         # License manager for verification (must be initialized BEFORE _load_pro_status)
         self.license_manager = LicenseManager(logger=self.logger)
         
@@ -50,7 +53,7 @@ class SafePDFController:
         self._load_pro_status()
         
         # PDF operations handler
-        self.pdf_ops = PDFOperations(progress_callback=progress_callback)
+        self.pdf_ops = PDFOperations(progress_callback=progress_callback, language_manager=language_manager)
         
         # Updates handler for GitHub releases and signed keys
         self.updates = SafePDFUpdates()
