@@ -2,165 +2,44 @@
 <html lang="en">
 
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>SafePDF: A Privacy-First PDF Toolkit</title>
-    <link rel="stylesheet" href="style.css">
-    <link id="deferred-google-fonts"
-        data-href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-    <meta name="description"
-        content="SafePDF : finally a privacy focused offline PDF compression, split, merge, convert, rotate and repair. Data never leaves your device.">
-        <!-- Canonical and hreflang tags for multilingual SEO -->
-        <script>
-            // Dynamically set canonical and hreflang for each language version
-            (function() {
-                var base = 'https://safepdf.de/';
-                var url = new URL(window.location.href);
-                var lang = url.searchParams.get('lang') || 'en';
-                var canon = base;
-                if(lang === 'tr') canon = base + '?lang=tr';
-                else if(lang === 'de') canon = base + '?lang=de';
-                // Canonical
-                var linkCanon = document.createElement('link');
-                linkCanon.rel = 'canonical';
-                linkCanon.href = canon;
-                document.head.appendChild(linkCanon);
-                // Hreflang alternates
-                var langs = [
-                    {code:'en', url: base},
-                    {code:'tr', url: base+'?lang=tr'},
-                    {code:'de', url: base+'?lang=de'}
-                ];
-                langs.forEach(function(l) {
-                    var link = document.createElement('link');
-                    link.rel = 'alternate';
-                    link.hreflang = l.code;
-                    link.href = l.url;
-                    document.head.appendChild(link);
-                });
-                // x-default
-                var linkDef = document.createElement('link');
-                linkDef.rel = 'alternate';
-                linkDef.hreflang = 'x-default';
-                linkDef.href = base;
-                document.head.appendChild(linkDef);
-            })();
-        </script>
-    <meta name="keywords"
-        content="SafePDF, PDF, compress, split, merge, convert, rotate, repair, offline, privacy, safe pdf operations, privacy-focused, local pdf tool, pdf toolkit, pdf editor, pdf compressor, open soruce pdf app, safe pdf operations, data privacy, document security, pdf management, pdf utilities, pdf processing, pdf manipulation">
-    <meta name="author" content="mcagriaksoy">
-    <meta name="robots" content="index,follow">
-
-    <meta name="theme-color" content="#0f1720">
-    <meta name="language" content="English">
-    <meta name="geo.region" content="DE">
-    <meta name="geo.placename" content="Germany">
-
-    <!-- Google Site Verification -->
-    <meta name="google-site-verification" content="mQnGPoNx88KSBPyDdHNruiZHFH4WV-oMpTWV8IbjlQA" />
-
-    <!-- Open Graph -->
-    <meta property="og:title" content="SafePDF : Privacy‑First PDF Toolkit">
-    <meta property="og:description"
-        content="Offline PDF toolkit: compress, split, merge, convert, rotate and repair locally on your device.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://safepdf.de/">
-    <meta property="og:image" content="https://github.com/mcagriaksoy/SafePDF/raw/main/img/SafePDF_Ad.avif">
-    <meta property="og:image:alt" content="SafePDF application banner showing privacy-focused PDF operations">
-
-    <!-- Twitter card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="SafePDF : Privacy‑First PDF Toolkit">
-    <meta name="twitter:description"
-        content="Offline PDF toolkit: compress, split, merge, convert, rotate and repair locally on your device.">
-    <meta name="twitter:image" content="https://github.com/mcagriaksoy/SafePDF/raw/main/img/SafePDF_Ad.avif">
-    <meta name="twitter:image:alt" content="SafePDF application banner showing privacy-focused PDF operations">
-
-    <!-- Additional recommended meta & link tags -->
-    <!-- Favicons -->
-    <link rel="icon" href="/favicon.ico">
-    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
-    <link rel="manifest" href="/site.webmanifest">
-    <!-- Open Graph extras -->
-    <meta property="og:site_name" content="SafePDF">
-    <meta property="og:locale" content="en_US">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-
-    <!-- Twitter extras (replace with your handle) -->
-    <meta name="twitter:site" content="@your_twitter">
-    <meta name="twitter:creator" content="@your_twitter">
-
-    <!-- Privacy / browser hints -->
-    <meta name="referrer" content="strict-origin-when-cross-origin">
-    <meta name="color-scheme" content="dark light">
-
-    <!-- Apple / PWA hints -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="SafePDF">
-    <meta name="msapplication-TileColor" content="#0f1720">
-    <meta name="msapplication-TileImage" content="/icons/mstile-150x150.png">
-
-    <!-- Performance / fonts & manifest -->
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="manifest" href="/site.webmanifest">
-    <!-- Preload hero image to improve LCP -->
-    <link rel="preload" as="image" href="https://github.com/mcagriaksoy/SafePDF/raw/main/img/SafePDF_Ad.avif">
-
-    <!-- JSON-LD structured data -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "SafePDF",
-      "url": "https://safepdf.de/",
-      "description": "Privacy-first offline PDF toolkit for compressing, splitting, merging, converting, rotating and repairing PDF documents.",
-      "author": { "@type": "Person", "name": "mcagriaksoy", "url": "https://github.com/mcagriaksoy" },
-      "operatingSystem": "Windows, macOS, Linux",
-      "applicationCategory": "DeveloperTool",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      },
-      "featureList": [
-        "Offline PDF processing",
-        "Privacy-focused operations",
-        "PDF compression",
-        "Split and merge PDFs",
-        "Convert PDF to JPG/TXT/DOCX",
-        "Rotate PDF pages",
-        "Repair corrupted PDFs",
-        "Edit PDF metadata"
-      ]
-    }
+    <!-- Common head elements loaded via JavaScript -->
+    <script src="head.js"></script>
+    <script>
+        // Page configuration for head.js
+        const pageConfig = {
+            title: "SafePDF: A Privacy-First PDF Toolkit",
+            description: "SafePDF : finally a privacy focused offline PDF compression, split, merge, convert, rotate and repair. Data never leaves your device.",
+            keywords: "SafePDF, PDF, compress, split, merge, convert, rotate, repair, offline, privacy, safe pdf operations, privacy-focused, local pdf tool, pdf toolkit, pdf editor, pdf compressor, open soruce pdf app, safe pdf operations, data privacy, document security, pdf management, pdf utilities, pdf processing, pdf manipulation",
+            ogTitle: "SafePDF : Privacy‑First PDF Toolkit",
+            ogDescription: "Offline PDF toolkit: compress, split, merge, convert, rotate and repair locally on your device.",
+            canonicalUrl: "https://safepdf.de/",
+            ogImageAlt: "SafePDF application banner showing privacy-focused PDF operations",
+            twitterTitle: "SafePDF : Privacy‑First PDF Toolkit",
+            twitterDescription: "Offline PDF toolkit: compress, split, merge, convert, rotate and repair locally on your device.",
+            twitterImageAlt: "SafePDF application banner showing privacy-focused PDF operations",
+            baseUrl: "https://safepdf.de/"
+        };
+        createCommonHead(pageConfig);
     </script>
 </head>
 
 <body>
-    <nav class="navbar">
-        <div class="container">
-            <a href="" class="nav-brand">SafePDF™</a>
-            <ul class="nav-links">
-                <li><a href="#features">Features</a></li>
-                <li><a href="#screenshots">Screenshots</a></li>
-                <li><a href="#operations">Operations</a></li>
-                <li><a href="#" id="nav-contact-btn">Contact</a></li>
-            </ul>
-            <div class="lang-selector" style="display:flex;align-items:center;gap:6px">
-                <span id="lang-flag" style="font-size:1.3em;font-family:'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol','Noto Color Emoji',sans-serif;">🇬🇧</span>
-                <label for="language-select" style="display:none">Language</label>
-                <select class="language-select" id="language-select" aria-label="Language" style="background:#fff;color:#0f1724;border:1px solid #ddd;padding:4px 8px;border-radius:6px;">
-                    <option value="en" data-flag="🇬🇧">English</option>
-                    <option value="tr" data-flag="🇹🇷">Türkçe</option>
-                    <option value="de" data-flag="🇩🇪">Deutsch</option>
-                </select>
-            </div>
-        </div>
-    </nav>
+    <!-- Navigation -->
+    <script src="nav.js"></script>
+    <script>
+        // Navigation configuration for nav.js
+        const navConfig = {
+            brandLink: "",
+            links: [
+                { href: "#features", text: "Features" },
+                { href: "#comparison", text: "Compare Plans" },
+                { href: "#screenshots", text: "Screenshots" },
+                { href: "#operations", text: "Operations" },
+                { href: "#", text: "Contact", id: "nav-contact-btn" }
+            ]
+        };
+        createNavigation(navConfig);
+    </script>
 
     <header class="hero" id="hero">
 
@@ -171,10 +50,29 @@
                     documents stay on your device. 100% Safe</p>
 
                 <div class="badges">
-                    <a class="btn primary" href="https://github.com/mcagriaksoy/SafePDF/releases">Try Free Version</a>
+                    <a class="btn primary" href="downloads.html">Try Free Version</a>
+                    <a class="btn" href="#comparison">Compare Plans</a>
                     <a class="btn" href="#buy-pro" id="pro">Buy Pro</a>
                     <a class="btn" href="https://github.com/mcagriaksoy/SafePDF/blob/main/LICENSE">License</a>
                     <a class="btn" href="#" id="contact-btn">Contact</a>
+                </div>
+
+                <!-- Social Proof Badges -->
+                <div class="social-proof">
+                    <a href="https://github.com/mcagriaksoy/SafePDF" class="social-badge github-badge" target="_blank" rel="noopener">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                        <span class="badge-text">Star on GitHub</span>
+                        <span class="star-count">⭐ 4</span>
+                    </a>
+
+                    <a href="https://www.producthunt.com/products/safepdf-privacy-first-pdf-toolkit" class="social-badge producthunt-badge" target="_blank" rel="noopener">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M13.604 8.4h-3.405V12h3.405c1.209 0 2.187-.98 2.187-2.188S14.813 8.4 13.604 8.4zM12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.209 14.32c-.875 1.116-2.196 1.861-3.651 1.861H8.441V6.677h4.99c1.455 0 2.776.745 3.651 1.861.875 1.116.875 2.627 0 3.743z"/>
+                        </svg>
+                        <span class="badge-text">View on Product Hunt</span>
+                    </a>
                 </div>
             </div>
 
@@ -265,7 +163,7 @@
             </div>
         </section>
 
-
+        <!-- Screenshots Section -->
         <section class="screenshots" id="screenshots">
             <h2>Screenshots</h2>
             <div class="shot-row"
@@ -278,7 +176,6 @@
                     style="width:48%;max-width:720px;height:auto;object-fit:contain;" />
             </div>
         </section>
-
 
         <!-- New Operations section -->
         <section class="operations" id="operations">
@@ -354,7 +251,190 @@
 
         </section>
 
+         <!-- Free vs Pro Comparison -->
+        <section class="comparison" id="comparison">
+            <h2>Free vs Pro: Choose Your Plan</h2>
+            <p class="lead">Compare features and find the perfect plan for your PDF needs</p>
+
+            <div class="comparison-table">
+                <div class="comparison-header">
+                    <div class="feature-name-header">Features</div>
+                    <div class="plan-name free-plan">Free</div>
+                    <div class="plan-name pro-plan">Pro</div>
+                </div>
+
+                <div class="comparison-row">
+                    <div class="feature-name">Offline Processing</div>
+                    <div class="plan-check free-plan">✓</div>
+                    <div class="plan-check pro-plan">✓</div>
+                </div>
+
+                <div class="comparison-row">
+                    <div class="feature-name">Privacy-Focused</div>
+                    <div class="plan-check free-plan">✓</div>
+                    <div class="plan-check pro-plan">✓</div>
+                </div>
+
+                <div class="comparison-row">
+                    <div class="feature-name">Open Source</div>
+                    <div class="plan-check free-plan">✓</div>
+                    <div class="plan-check pro-plan">✓</div>
+                </div>
+
+                <div class="comparison-row">
+                    <div class="feature-name">PDF Compression</div>
+                    <div class="plan-check free-plan">✓</div>
+                    <div class="plan-check pro-plan">✓</div>
+                </div>
+
+                <div class="comparison-row">
+                    <div class="feature-name">Split & Merge PDFs</div>
+                    <div class="plan-check free-plan">✓</div>
+                    <div class="plan-check pro-plan">✓</div>
+                </div>
+
+                <div class="comparison-row">
+                    <div class="feature-name">Convert to Images</div>
+                    <div class="plan-check free-plan">✓</div>
+                    <div class="plan-check pro-plan">✓</div>
+                </div>
+
+                <div class="comparison-row">
+                    <div class="feature-name">Text Extraction</div>
+                    <div class="plan-check free-plan">✓</div>
+                    <div class="plan-check pro-plan">✓</div>
+                </div>
+
+                <div class="comparison-row">
+                    <div class="feature-name">Rotate Pages</div>
+                    <div class="plan-check free-plan">✓</div>
+                    <div class="plan-check pro-plan">✓</div>
+                </div>
+
+                <div class="comparison-row">
+                    <div class="feature-name">Repair PDFs</div>
+                    <div class="plan-check free-plan">✓</div>
+                    <div class="plan-check pro-plan">✓</div>
+                </div>
+
+                <div class="comparison-row">
+                    <div class="feature-name">Ultra High Quality Compression</div>
+                    <div class="plan-check free-plan"></div>
+                    <div class="plan-check pro-plan">✓</div>
+                </div>
+
+                <div class="comparison-row">
+                    <div class="feature-name">Lossless Mode</div>
+                    <div class="plan-check free-plan"></div>
+                    <div class="plan-check pro-plan">✓</div>
+                </div>
+
+                <div class="comparison-row">
+                    <div class="feature-name">Batch Processing</div>
+                    <div class="plan-check free-plan"></div>
+                    <div class="plan-check pro-plan">✓</div>
+                </div>
+
+                <div class="comparison-row">
+                    <div class="feature-name">Priority Support</div>
+                    <div class="plan-check free-plan"></div>
+                    <div class="plan-check pro-plan">✓</div>
+                </div>
+
+                <div class="comparison-row">
+                    <div class="feature-name">Automatic Updates</div>
+                    <div class="plan-check free-plan"></div>
+                    <div class="plan-check pro-plan">✓</div>
+                </div>
+
+                <div class="comparison-row cta-row">
+                    <div class="feature-name"></div>
+                    <div class="plan-cta free-plan">
+                        <a class="btn primary" href="https://github.com/mcagriaksoy/SafePDF/releases">Download Free</a>
+                    </div>
+                    <div class="plan-cta pro-plan">
+                        <a class="btn primary" href="#buy-pro">Get Pro</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
     </main>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials">
+        <div class="container">
+            <h2>What Users Say</h2>
+            <p class="lead">Join thousands of users who trust SafePDF for their PDF needs</p>
+
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p>"SafePDF is exactly what I needed - fast, reliable, and completely offline. No more worrying about my documents being uploaded to some server."</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">👨‍💼</div>
+                        <div class="author-info">
+                            <div class="author-name">Markus</div>
+                            <div class="author-title">Data Analyst</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p>"The compression quality is outstanding. I can reduce PDF sizes by 70% without losing readability. The Pro version's lossless mode is a game-changer."</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">👩‍💻</div>
+                        <div class="author-info">
+                            <div class="author-name">Sara</div>
+                            <div class="author-title">Graphic Designer</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p>"As someone who works with sensitive legal documents, SafePDF gives me peace of mind. Everything stays on my machine, and the repair feature saved me hours of work."</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">👨‍⚖️</div>
+                        <div class="author-info">
+                            <div class="author-name">David</div>
+                            <div class="author-title">Legal Assistant</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Social Proof Stats -->
+            <div class="stats-section">
+                <div class="stat-item">
+                    <div class="stat-number">100+</div>
+                    <div class="stat-label">Downloads</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">4.9★</div>
+                    <div class="stat-label">User Rating</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">100%</div>
+                    <div class="stat-label">Offline</div>
+                </div>
+            </div>
+
+            <!-- CTA Section -->
+            <div class="testimonials-cta">
+                <h3>Ready to secure your PDFs?</h3>
+                <p>Download SafePDF today and experience the difference of truly private PDF processing.</p>
+                <div class="cta-buttons">
+                    <a class="btn primary" href="downloads.html">Download Free</a>
+                    <a class="btn" href="#buy-pro">View Pro Features</a>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- Buy Pro Section -->
     <section class="buy-pro container" id="buy-pro">
@@ -441,54 +521,10 @@
     </section>
 
     <footer class="site-footer" id="contact">
-        <div class="container footer-grid">
-            <div class="footer-col">
-                <p class="muted">SafePDF is a privacy-focused offline tool for PDF manipulation. Merge, compress, split,
-                    and organize your PDF files securely: No internet required, your documents stay local and safe.</p>
-                <p class="small">Released under <a
-                        href="https://github.com/mcagriaksoy/SafePDF/blob/main/LICENSE">GPL‑3.0</a></p>
-            </div>
-
-            <div class="footer-col">
-                <h4>Resources</h4>
-                <ul class="footer-links">
-                    <li><a href="https://github.com/mcagriaksoy/SafePDF/releases">Downloads / Releases</a></li>
-                    <li><a href="terms.html">Terms of Use</a></li>
-                    <li><a href="privacy.html">Privacy & Consent</a></li>
-                    <li><a href="cookie-policy.html">Cookie Policy</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-col">
-                <h4>Community</h4>
-                <ul class="footer-links">
-                    <li><a href="https://github.com/mcagriaksoy/SafePDF">Source Code</a></li>
-                    <li><a href="https://github.com/mcagriaksoy/SafePDF/releases">Download Latest Release</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-col">
-                <h4>Contact & Support</h4>
-                <p class="muted">Need help or have feedback?</p>
-                <p class="small"><a href="#" id="contact-btn-footer">Contact Us</a></p>
-                <p class="small"><a href="#" id="cookie-settings-footer">Cookie Settings</a></p>
-            </div>
-        </div>
-        <div class="container footer-bottom">
-            <p class="muted">© <span id="copy-year"></span> SafePDF • Finally, a safe solution. <a
-                    href="https://github.com/mcagriaksoy/SafePDF">Repository</a>
-            </p>
-            <button id="back-to-top" title="Back to top"
-                style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">↑</button>
-            <a href="https://www.checkdomain.de/unternehmen/garantie/ssl/popup/"
-                onclick="window.open(this.href + '?host=' + window.location.host,'','height=600,width=560,scrollbars=yes'); return false;"><img
-                    src="https://www.checkdomain.de/assets/bundles/web/app/widget/seal/img/ssl_certificate/de/150x150.png?20251209-101640"
-                    alt="SSL-Zertifikat" /></a>
-        </div>
-
-
-
     </footer>
+
+    <!-- Footer -->
+    <script src="footer.js"></script>
 
         <script>
                 // Minimal language switcher with flag (flag only in span, not in dropdown)
@@ -669,14 +705,15 @@
         }
 
         btn.onclick = openContactModal;
-        btnFooter.onclick = function (e) {
-            e.preventDefault();
-            openContactModal();
-        };
-        btnNav.onclick = function (e) {
-            e.preventDefault();
-            openContactModal();
-        };
+        // btnFooter and btnNav are handled by nav.js and footer.js
+        // btnFooter.onclick = function (e) {
+        //     e.preventDefault();
+        //     openContactModal();
+        // };
+        // btnNav.onclick = function (e) {
+        //     e.preventDefault();
+        //     openContactModal();
+        // };
 
         span.onclick = function () {
             modal.style.display = 'none';

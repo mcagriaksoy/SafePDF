@@ -229,6 +229,12 @@
   "op_word_success": "PDF converted to Word document: {output_path}",
   "op_word_failed": "PDF to Word conversion failed: {error}",
   "op_compression_info": "Compression Info",
-  "op_compression_info_msg": "Compression completed but no size reduction detected.\nThis file has already been optimized or contains\nelements that cannot be compressed further.\nIf you need further compression, consider using the\n'Microsoft Print to PDF' option from the print dialog."
-}
+  "op_compression_info_msg": "Compression completed but no size reduction detected.\nThis file has already been optimized or contains\nelements that cannot be compressed further.\nIf you need further compression, consider using the\n'Microsoft Print to PDF' option from the print dialog.",
+  "tooltip_welcome": "Start here - Welcome and introduction to SafePDF",
+  "tooltip_operation": "Choose the PDF operation you want to perform",
+  "tooltip_file": "Select the PDF file(s) you want to process",
+  "tooltip_settings": "Configure operation-specific settings",
+  "tooltip_results": "View the results of your PDF operation",
+  "tooltip_app_settings": "Application settings and preferences",
+  "tooltip_help": "Help and documentation"
 }

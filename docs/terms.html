@@ -13,16 +13,16 @@
   <link rel="alternate" hreflang="de" href="https://safepdf.de/terms.html?lang=de">
 </head>
 <body>
-  <nav class="navbar"><div class="container"><a class="nav-brand" href="index.html">SafePDF™</a>
-    <div class="lang-selector">
-      <label for="language-select" style="display:none">Language</label>
-      <select class="language-select" aria-label="Language">
-        <option value="en">English</option>
-        <option value="tr">Türkçe</option>
-        <option value="de">Deutsch</option>
-      </select>
-    </div>
-  </div></nav>
+  <!-- Navigation -->
+  <script src="nav.js"></script>
+  <script>
+    // Simple navigation for legal pages
+    const navConfig = {
+      brandLink: "index.html",
+      links: []
+    };
+    createNavigation(navConfig);
+  </script>
   <main class="container" style="padding-top:28px;padding-bottom:60px;">
     <h1>Terms of Use</h1>
     <p class="muted">Last updated: December 15, 2025</p>
@@ -96,6 +96,14 @@
 
     <p class="small"><a href="index.html">← Back to SafePDF</a> • <a href="sitemap.xml">Sitemap</a></p>
   </main>
+
+    <footer class="site-footer" id="contact">
+    </footer>
+
+    <!-- Footer -->
+    <script src="footer.js"></script>
+
     <script src="translate.js"></script>
+    <script src="cookie-consent.js"></script>
 </body>
 </html>

@@ -233,6 +233,9 @@ class SafePDFUI:
         # Previous tab for reverting disabled tab selection
         self._previous_tab = 0
         
+        # Current tooltip index to prevent flickering
+        self.current_tooltip_index = None
+        
         # Store icon for taskbar window
         self.icon_path = None
         self._find_icon()
@@ -784,13 +787,13 @@ class SafePDFUI:
         """Setup tooltips for notebook tabs"""
         # Define tooltips for each tab
         tooltips = {
-            0: "Start here - Welcome and introduction to SafePDF",
-            1: "Choose the PDF operation you want to perform",
-            2: "Select the PDF file(s) you want to process",
-            3: "Configure operation-specific settings",
-            4: "View the results of your PDF operation",
-            5: "Application settings and preferences",
-            6: "Help and documentation"
+            0: self.lang_manager.get('tooltip_welcome', "Start here - Welcome and introduction to SafePDF"),
+            1: self.lang_manager.get('tooltip_operation', "Choose the PDF operation you want to perform"),
+            2: self.lang_manager.get('tooltip_file', "Select the PDF file(s) you want to process"),
+            3: self.lang_manager.get('tooltip_settings', "Configure operation-specific settings"),
+            4: self.lang_manager.get('tooltip_results', "View the results of your PDF operation"),
+            5: self.lang_manager.get('tooltip_app_settings', "Application settings and preferences"),
+            6: self.lang_manager.get('tooltip_help', "Help and documentation")
         }
         
         # Create tooltip window
@@ -798,26 +801,27 @@ class SafePDFUI:
         
         def show_tooltip(event, text):
             """Show tooltip on hover"""
-            if self.tooltip_window:
-                self.tooltip_window.destroy()
-            
-            # Create a toplevel window for tooltip
-            self.tooltip_window = tk.Toplevel(self.root)
-            self.tooltip_window.wm_overrideredirect(True)
-            self.tooltip_window.wm_attributes("-topmost", True)
-            
-            label = tk.Label(
-                self.tooltip_window,
-                text=text,
-                background="#333333",
-                foreground="#ffffff",
-                relief=tk.FLAT,
-                bd=0,
-                font=(CommonElements.FONT, 9),
-                padx=10,
-                pady=5
-            )
-            label.pack()
+            if not self.tooltip_window:
+                # Create a toplevel window for tooltip
+                self.tooltip_window = tk.Toplevel(self.root)
+                self.tooltip_window.wm_overrideredirect(True)
+                self.tooltip_window.wm_attributes("-topmost", True)
+                
+                self.tooltip_label = tk.Label(
+                    self.tooltip_window,
+                    text=text,
+                    background="#ffffff",
+                    foreground="#000000",
+                    relief=tk.FLAT,
+                    bd=0,
+                    font=(CommonElements.FONT, 9),
+                    padx=10,
+                    pady=5
+                )
+                self.tooltip_label.pack()
+            else:
+                # Update text
+                self.tooltip_label.config(text=text)
             
             # Position tooltip near the cursor
             x = event.x_root + 15
@@ -829,16 +833,24 @@ class SafePDFUI:
             if self.tooltip_window:
                 self.tooltip_window.destroy()
                 self.tooltip_window = None
+            self.current_tooltip_index = None
+        
+        def move_tooltip(event):
+            """Move tooltip to follow cursor"""
+            if self.tooltip_window:
+                x = event.x_root + 15
+                y = event.y_root + 10
+                self.tooltip_window.wm_geometry(f"+{x}+{y}")
         
         # Bind mouse events to notebook tabs
         try:
             # Get the notebook's internal tab container
-            self.notebook.bind("<Motion>", lambda e: self.check_tab_hover(e, tooltips, show_tooltip, hide_tooltip))
+            self.notebook.bind("<Motion>", lambda e: self.check_tab_hover(e, tooltips, show_tooltip, hide_tooltip, move_tooltip))
             self.notebook.bind("<Leave>", hide_tooltip)
         except Exception as e:
             logger.debug(f"Could not setup tab tooltips: {e}")
     
-    def check_tab_hover(self, event, tooltips, show_func, hide_func):
+    def check_tab_hover(self, event, tooltips, show_func, hide_func, move_func):
         """Check which tab is being hovered"""
         try:
             # Use identify to find which tab is under cursor
@@ -847,7 +859,11 @@ class SafePDFUI:
                 # Get the tab index
                 tab_index = self.notebook.index("@%d,%d" % (event.x, event.y))
                 if tab_index in tooltips:
-                    show_func(event, tooltips[tab_index])
+                    if tab_index != self.current_tooltip_index:
+                        self.current_tooltip_index = tab_index
+                        show_func(event, tooltips[tab_index])
+                    else:
+                        move_func(event)
                     return
             hide_func(event)
         except Exception:
@@ -1679,6 +1695,12 @@ class SafePDFUI:
         This will recreate localized content in welcome/help/settings tabs.
         """
         try:
+            # Unbind existing tooltip events to prevent multiple bindings
+            try:
+                self.notebook.unbind("<Motion>")
+                self.notebook.unbind("<Leave>")
+            except Exception:
+                pass
             # Recreate welcome content
             if getattr(self, 'welcome_frame', None):
                 for w in self.welcome_frame.winfo_children():
@@ -1826,6 +1848,12 @@ class SafePDFUI:
                     self.next_btn.config(text=self.lang_manager.get('nav_next', "Next →"))
                 if hasattr(self, 'cancel_btn') and self.cancel_btn:
                     self.cancel_btn.config(text=self.lang_manager.get('nav_cancel', "Cancel"))
+            except Exception:
+                pass
+
+            # Re-setup tooltips with new language
+            try:
+                self.setup_tab_tooltips()
             except Exception:
                 pass
         except Exception:

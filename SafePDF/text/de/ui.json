@@ -229,5 +229,12 @@
   "op_word_success": "PDF in Word-Dokument konvertiert: {output_path}",
   "op_word_failed": "PDF-zu-Word-Konvertierung fehlgeschlagen: {error}",
   "op_compression_info": "Komprimierung Info",
-  "op_compression_info_msg": "Komprimierung abgeschlossen, aber keine Größenreduzierung festgestellt.\nDiese Datei wurde bereits optimiert oder enthält\nElemente, die nicht weiter komprimiert werden können.\nFür weitere Komprimierung erwägen Sie die Verwendung der\n'Microsoft Print to PDF'-Option aus dem Druckdialog."
+  "op_compression_info_msg": "Komprimierung abgeschlossen, aber keine Größenreduzierung festgestellt.\nDiese Datei wurde bereits optimiert oder enthält\nElemente, die nicht weiter komprimiert werden können.\nFür weitere Komprimierung erwägen Sie die Verwendung der\n'Microsoft Print to PDF'-Option aus dem Druckdialog.",
+  "tooltip_welcome": "Beginnen Sie hier - Willkommen und Einführung in SafePDF",
+  "tooltip_operation": "Wählen Sie den PDF-Vorgang aus, den Sie ausführen möchten",
+  "tooltip_file": "Wählen Sie die PDF-Datei(en) aus, die Sie verarbeiten möchten",
+  "tooltip_settings": "Konfigurieren Sie vorgangsspezifische Einstellungen",
+  "tooltip_results": "Zeigen Sie die Ergebnisse Ihres PDF-Vorgangs an",
+  "tooltip_app_settings": "Anwendungseinstellungen und -einstellungen",
+  "tooltip_help": "Hilfe und Dokumentation"
 }

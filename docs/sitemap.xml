@@ -68,5 +68,12 @@
   <priority>0.5</priority>
 </url>
 
+<url>
+  <loc>https://safepdf.de/downloads.html</loc>
+  <lastmod>2025-12-30T00:00:00+00:00</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.7</priority>
+</url>
+
 
 </urlset>

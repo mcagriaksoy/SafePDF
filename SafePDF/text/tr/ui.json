@@ -229,5 +229,12 @@
   "op_word_success": "PDF Word belgesine dönüştürüldü: {output_path}",
   "op_word_failed": "PDF'den Word'e dönüştürme başarısız: {error}",
   "op_compression_info": "Sıkıştırma Bilgisi",
-  "op_compression_info_msg": "Sıkıştırma tamamlandı ancak boyut azaltma tespit edilmedi.\nBu dosya zaten optimize edilmiş veya daha fazla\nsıkıştırılamayacak öğeler içeriyor.\nDaha fazla sıkıştırma için yazdırma iletişim kutusundan\n'Microsoft Print to PDF' seçeneğini kullanmayı düşünün."
+  "op_compression_info_msg": "Sıkıştırma tamamlandı ancak boyut azaltma tespit edilmedi.\nBu dosya zaten optimize edilmiş veya daha fazla\nsıkıştırılamayacak öğeler içeriyor.\nDaha fazla sıkıştırma için yazdırma iletişim kutusundan\n'Microsoft Print to PDF' seçeneğini kullanmayı düşünün.",
+  "tooltip_welcome": "Buradan başlayın - SafePDF'ye hoş geldiniz ve tanıtım",
+  "tooltip_operation": "Gerçekleştirmek istediğiniz PDF işlemini seçin",
+  "tooltip_file": "İşlemek istediğiniz PDF dosya(larını) seçin",
+  "tooltip_settings": "İşlem özel ayarları yapılandırın",
+  "tooltip_results": "PDF işleminizin sonuçlarını görüntüleyin",
+  "tooltip_app_settings": "Uygulama ayarları ve tercihleri",
+  "tooltip_help": "Yardım ve belgeler"
 }
