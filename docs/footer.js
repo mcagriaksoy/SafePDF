@@ -30,9 +30,25 @@ function createFooter() {
             </div>
 
             <div class="footer-col">
+                <h4>Download for</h4>
+                <div class="footer-download-buttons">
+                    <a href="https://github.com/mcagriaksoy/SafePDF/releases/download/v1_0_9/SafePDF_v1.0.9.win64.exe.7z" class="footer-download-btn" title="Download for Windows">
+                        <i class="fab fa-windows"></i>
+                    </a>
+                    <a href="https://github.com/mcagriaksoy/SafePDF/releases/download/v1.2.0/SafePDF-macOS.dmg" class="footer-download-btn" title="Download for macOS">
+                        <i class="fab fa-apple"></i>
+                    </a>
+                    <a href="https://github.com/mcagriaksoy/SafePDF/releases/download/v1.2.0/SafePDF-Linux.AppImage" class="footer-download-btn" title="Download for Linux">
+                        <i class="fab fa-linux"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="footer-col">
                 <h4>Contact & Support</h4>
                 <p class="muted">Need help or have feedback?</p>
-                <p class="small"><a href="#" id="contact-btn-footer">Contact Us</a></p>
+                <p class="small"><a href="mailto:info@safepdf.de">info@safepdf.de</a></p>
+                <p class="small"><a href="#" id="contact-btn-footer">Contact Form</a></p>
                 <p class="small"><a href="#" id="cookie-settings-footer">Cookie Settings</a></p>
             </div>
         </div>
@@ -40,6 +56,17 @@ function createFooter() {
             <p class="muted">© <span id="copy-year"></span> SafePDF • Finally, a safe solution. <a
                     href="https://github.com/mcagriaksoy/SafePDF">Repository</a>
             </p>
+                <div class="footer-social-buttons">
+                    <a href="https://github.com/mcagriaksoy/SafePDF" class="footer-social-btn" title="GitHub">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="https://linkedin.com/in/mcagriaksoy" class="footer-social-btn" title="LinkedIn">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                    <a href="mailto:info@safepdf.de" class="footer-social-btn" title="Email">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                </div>
             <button id="back-to-top" title="Back to top"
                 style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">↑</button>
             <a href="https://www.checkdomain.de/unternehmen/garantie/ssl/popup/"
@@ -47,6 +74,7 @@ function createFooter() {
                     src="https://www.checkdomain.de/assets/bundles/web/app/widget/seal/img/ssl_certificate/de/150x150.png?20251209-101640"
                     alt="SSL-Zertifikat" /></a>
         </div>
+        
     </footer>
     `;
 
@@ -67,12 +95,12 @@ function initializeFooter() {
     // Back to top button functionality
     const backToTopBtn = document.getElementById('back-to-top');
     if (backToTopBtn) {
-        backToTopBtn.addEventListener('click', function() {
+        backToTopBtn.addEventListener('click', function () {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
         // Show/hide back to top button based on scroll position
-        window.addEventListener('scroll', function() {
+        window.addEventListener('scroll', function () {
             if (window.pageYOffset > 300) {
                 backToTopBtn.style.display = 'block';
             } else {
@@ -84,7 +112,7 @@ function initializeFooter() {
     // Contact button functionality
     const contactBtn = document.getElementById('contact-btn-footer');
     if (contactBtn) {
-        contactBtn.addEventListener('click', function(e) {
+        contactBtn.addEventListener('click', function (e) {
             e.preventDefault();
             // Show contact modal instead of scrolling
             const modal = document.getElementById('contact-modal');
@@ -107,7 +135,7 @@ function initializeFooter() {
     // Cookie settings functionality
     const cookieSettingsBtn = document.getElementById('cookie-settings-footer');
     if (cookieSettingsBtn) {
-        cookieSettingsBtn.addEventListener('click', function(e) {
+        cookieSettingsBtn.addEventListener('click', function (e) {
             e.preventDefault();
             // Trigger cookie consent modal if available
             if (window.showCookieConsent) {
@@ -118,6 +146,6 @@ function initializeFooter() {
 }
 
 // Auto-initialize footer when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     createFooter();
 });

@@ -1,4 +1,8 @@
 ## Privacy-First PDF Toolkit
+
+<p align="center">
+  <img src="img/SafePDF_small.avif" alt="Banner" />
+</p>
 [![mcagriaksoy - SafePDF](https://img.shields.io/static/v1?label=mcagriaksoy&message=SafePDF&color=red&logo=github)](https://github.com/mcagriaksoy/SafePDF "Go to GitHub repo")
 [![stars - SafePDF](https://img.shields.io/github/stars/mcagriaksoy/SafePDF?style=social)](https://github.com/mcagriaksoy/SafePDF)
 [![forks - SafePDF](https://img.shields.io/github/forks/mcagriaksoy/SafePDF?style=social)](https://github.com/mcagriaksoy/SafePDF)
