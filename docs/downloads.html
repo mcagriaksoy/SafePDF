@@ -3,6 +3,7 @@
 
 <head>
     <!-- Common head elements loaded via JavaScript -->
+    <meta name="description" content="Download SafePDF for Windows, macOS, and Linux. Privacy-focused offline PDF toolkit for compression, split, merge, convert, rotate and repair.">
     <script src="head.js"></script>
     <script>
         // Page configuration for head.js
@@ -249,6 +250,26 @@
                 <button class="btn" onclick="openCookieModal()">Cookie Settings</button>
                 <button class="btn" onclick="rejectAllCookies()">Reject All</button>
                 <button class="btn primary" onclick="acceptAllCookies()">Accept All</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Modal -->
+    <div id="contact-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Contact & Support</h2>
+            <div class="contact-options">
+                <div class="contact-option">
+                    <h3>✉️ Email Us</h3>
+                    <p>Send us an email for support or inquiries.</p>
+                    <a href="mailto:info@safepdf.de" class="contact-btn primary">info@safepdf.de</a>
+                </div>
+                <div class="contact-option">
+                    <h3>📄 Contact Form</h3>
+                    <p>Use our main contact form for detailed inquiries.</p>
+                    <a href="index.html#contact" class="contact-btn secondary" onclick="document.getElementById('contact-modal').style.display='none'">Go to Contact Form</a>
+                </div>
             </div>
         </div>
     </div>

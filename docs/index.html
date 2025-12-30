@@ -3,6 +3,7 @@
 
 <head>
     <!-- Common head elements loaded via JavaScript -->
+    <meta name="description" content="SafePDF : finally a privacy focused offline PDF compression, split, merge, convert, rotate and repair. Data never leaves your device.">
     <script src="head.js"></script>
     <script>
         // Page configuration for head.js
@@ -573,7 +574,11 @@
                     <p>Send me a direct message and I'll get back to you.</p>
                     <button class="contact-btn primary" onclick="showContactForm()">Send Message</button>
                 </div>
-
+                <div class="contact-option">
+                    <h3>✉️ Email Us</h3>
+                    <p>Prefer to send an email directly?</p>
+                    <a href="mailto:info@safepdf.de" class="contact-btn primary">info@safepdf.de</a>
+                </div>
             </div>
 
             <div id="contact-form" style="display: none;">
@@ -648,8 +653,15 @@
 
     <!-- small scripts for footer -->
     <script>
-        // update copyright year
-        document.getElementById('copy-year').textContent = new Date().getFullYear();
+        // update copyright year (run after footer is loaded)
+        function updateCopyright() {
+            const copyYear = document.getElementById('copy-year');
+            if (copyYear) {
+                copyYear.textContent = new Date().getFullYear();
+            }
+        }
+        // Run on DOMContentLoaded to ensure footer is loaded
+        document.addEventListener('DOMContentLoaded', updateCopyright);
 
         // smooth scroll for nav links
         document.querySelectorAll('.nav-links a').forEach(anchor => {

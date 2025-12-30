@@ -111,6 +111,17 @@ function createCommonHead(pageConfig) {
       "url": "${pageConfig.canonicalUrl}",
       "description": "Privacy-first offline PDF toolkit for compressing, splitting, merging, converting, rotating and repairing PDF documents.",
       "author": { "@type": "Person", "name": "mcagriaksoy", "url": "https://github.com/mcagriaksoy" },
+      "publisher": {
+        "@type": "Person",
+        "name": "mcagriaksoy",
+        "email": "info@safepdf.de",
+        "url": "https://github.com/mcagriaksoy"
+      },
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "info@safepdf.de",
+        "contactType": "customer support"
+      },
       "operatingSystem": "Windows, macOS, Linux",
       "applicationCategory": "DeveloperTool",
       "offers": {
