@@ -19,7 +19,7 @@ if errorlevel 1 (
 )
 
 echo About to call pyinstaller...
-pyinstaller --noconfirm --onefile --windowed ^
+pyinstaller --noconfirm --windowed ^
     --icon "%ROOT%\assets\icon.ico" ^
     --version-file "%ROOT%\version.txt" ^
     --add-data "%ROOT%\assets;assets/" ^

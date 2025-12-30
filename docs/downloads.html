@@ -6,6 +6,63 @@
     <meta name="description" content="Download SafePDF for Windows, macOS, and Linux. Privacy-focused offline PDF toolkit for compression, split, merge, convert, rotate and repair.">
     <script src="head.js"></script>
     <script>
+        // Fetch latest version from GitHub releases
+        let latestVersion = 'v1.0.9'; // fallback version
+        let installerDownloadUrl = '';
+        let portableDownloadUrl = '';
+        
+        async function fetchLatestRelease() {
+            try {
+                const response = await fetch('https://api.github.com/repos/mcagriaksoy/SafePDF/releases/latest');
+                const data = await response.json();
+                latestVersion = data.tag_name || 'v1.0.9';
+                
+                // Find installer and portable versions in assets
+                const installerAsset = data.assets.find(asset => 
+                    (asset.name.toLowerCase().includes('installer') || 
+                     asset.name.toLowerCase().includes('setup')) &&
+                    (asset.name.includes('.exe') || asset.name.includes('.msi'))
+                );
+                
+                const portableAsset = data.assets.find(asset => 
+                    asset.name.toLowerCase().includes('portable') ||
+                    asset.name.toLowerCase().includes('.7z') ||
+                    asset.name.toLowerCase().includes('.zip')
+                ) || data.assets.find(asset => 
+                    asset.name.includes('.exe') || asset.name.includes('win64')
+                );
+                
+                if (installerAsset) {
+                    installerDownloadUrl = installerAsset.browser_download_url;
+                }
+                if (portableAsset) {
+                    portableDownloadUrl = portableAsset.browser_download_url;
+                }
+                
+                // Update version displays
+                document.querySelectorAll('.version-number').forEach(el => {
+                    el.textContent = latestVersion;
+                });
+                
+                // Update Windows download links
+                if (installerDownloadUrl) {
+                    document.querySelectorAll('.windows-installer-link').forEach(link => {
+                        link.href = installerDownloadUrl;
+                    });
+                }
+                if (portableDownloadUrl) {
+                    document.querySelectorAll('.windows-portable-link').forEach(link => {
+                        link.href = portableDownloadUrl;
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to fetch latest release:', error);
+            }
+        }
+        
+        // Fetch on page load
+        window.addEventListener('DOMContentLoaded', fetchLatestRelease);
+        
         // Page configuration for head.js
         const pageConfig = {
             title: "Download SafePDF - Privacy-First PDF Toolkit",
@@ -50,7 +107,7 @@
 
                 <div class="download-stats">
                     <div class="stat">
-                        <span class="stat-number">v1.0.9</span>
+                        <span class="stat-number version-number">v1.0.9</span>
                         <span class="stat-label">Latest Version</span>
                     </div>
                     <div class="stat">
@@ -75,7 +132,7 @@
     <main class="container">
         <section class="downloads-section">
             <h2>Choose Your Platform</h2>
-            <p class="section-desc">SafePDF works on Windows, macOS, and Linux. Download the appropriate version for your operating system.</p>
+            <p class="section-desc">SafePDF is currently available for Windows. macOS and Linux versions are under development.</p>
 
             <div class="downloads-grid">
                 <!-- Windows -->
@@ -84,50 +141,42 @@
                     <h3>Windows</h3>
                     <p>Compatible with Windows 10 and later</p>
                     <div class="download-options">
-                        <a href="https://github.com/mcagriaksoy/SafePDF/releases/download/v1_0_9/SafePDF_v1.0.9.win64.exe.7z" class="btn primary download-btn">
+                        <a href="https://github.com/mcagriaksoy/SafePDF/releases/latest" class="btn primary download-btn windows-installer-link">
                             <span class="download-icon">⬇️</span>
-                            Download Installer
+                            Download Installer (<span class="version-number">v1.0.9</span>)
                         </a>
-                        <a href="https://github.com/mcagriaksoy/SafePDF/releases/download/v1_0_9/SafePDF_v1.0.9.win64.exe.7z" class="btn download-btn secondary">
+                        <a href="https://github.com/mcagriaksoy/SafePDF/releases/latest" class="btn download-btn secondary windows-portable-link">
                             <span class="download-icon">📦</span>
-                            Portable Version
+                            Portable Version (<span class="version-number">v1.0.9</span>)
                         </a>
                     </div>
                 </div>
 
                 <!-- macOS -->
-                <div class="download-card">
+                <div class="download-card" style="opacity: 0.7;">
                     <div class="platform-icon"><i class="fab fa-apple"></i></div>
                     <h3>macOS</h3>
                     <p>Compatible with macOS 10.15 and later</p>
                     <div class="download-options">
-                        <a href="https://github.com/mcagriaksoy/SafePDF/releases/download/v1.2.0/SafePDF-macOS.dmg" class="btn primary download-btn">
-                            <span class="download-icon">⬇️</span>
-                            Download
-                        </a>
-                        <a href="https://github.com/mcagriaksoy/SafePDF/releases/download/v1.2.0/SafePDF-macOS.zip" class="btn download-btn secondary">
-                            <span class="download-icon">📦</span>
-                            Archive (.zip)
-                        </a>
+                        <div class="btn primary download-btn" style="cursor: not-allowed; background: #ccc; color: #666;">
+                            <span class="download-icon">🚧</span>
+                            Not Ready Yet
+                        </div>
+                        <p style="margin-top: 10px; font-size: 0.9em; color: #666;">macOS version is under development</p>
                     </div>
                 </div>
 
                 <!-- Linux -->
-                <div class="download-card">
+                <div class="download-card" style="opacity: 0.7;">
                     <div class="platform-icon"><i class="fab fa-linux"></i></div>
                     <h3>Linux</h3>
                     <p>Compatible with most Linux distributions</p>
                     <div class="download-options">
-                        <a href="https://github.com/mcagriaksoy/SafePDF/releases/download/v1.2.0/SafePDF-Linux.AppImage" class="btn primary download-btn">
-                            <span class="download-icon">⬇️</span>
-                            AppImage (.AppImage)
-                            <span class="file-size">~40 MB</span>
-                        </a>
-                        <a href="https://github.com/mcagriaksoy/SafePDF/releases/download/v1.2.0/SafePDF-Linux.tar.gz" class="btn download-btn secondary">
-                            <span class="download-icon">📦</span>
-                            Archive (.tar.gz)
-                            <span class="file-size">~37 MB</span>
-                        </a>
+                        <div class="btn primary download-btn" style="cursor: not-allowed; background: #ccc; color: #666;">
+                            <span class="download-icon">🚧</span>
+                            Not Ready Yet
+                        </div>
+                        <p style="margin-top: 10px; font-size: 0.9em; color: #666;">Linux version is under development</p>
                     </div>
                 </div>
             </div>
@@ -190,7 +239,7 @@
 
             <!-- What's New -->
             <div class="whats-new">
-                <h3>What's New in v1.0.9</h3>
+                <h3>What's New in <span class="version-number">v1.0.9</span></h3>
                 <ul class="changelog">
                     <li>License system is fully adapted for pro features</li>
                     <li>Texts, UI elements and language support fixed for executables</li>
