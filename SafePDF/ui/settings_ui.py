@@ -77,7 +77,7 @@ class SettingsUI:
             lang_map = {lang_en: "en", lang_de: "de", lang_tr: "tr"}
             lang_label = self.language_manager.get('settings_language_label', "Language:") if self.language_manager else "Language:"
             ttk.Label(content, text=lang_label, font=(self.font, CommonElements.FONT_SIZE, "bold")).pack(anchor='w', pady=(6, 4))
-            combo = ttk.Combobox(content, values=list(lang_map.keys()), state='readonly')
+            combo = ttk.Combobox(content, values=list(lang_map.keys()), state='readonly', width=10)
             cur = str(self.language_var.get())
             display = next((k for k, v in lang_map.items() if v == cur or k.lower() == cur.lower()), None)
             combo.set(display or lang_en)
@@ -94,7 +94,7 @@ class SettingsUI:
                     logger.debug("Error setting language", exc_info=True)
 
             combo.bind('<<ComboboxSelected>>', on_lang_change)
-            combo.pack(fill='x', pady=4)
+            combo.pack(anchor='w', pady=4)
 
             # Theme / Log
             self._create_theme_controls(content)
@@ -222,7 +222,7 @@ class SettingsUI:
         # Language selection: use combobox and map to language codes
         ttk.Label(main_frame, text="Language:", font=(self.font, CommonElements.FONT_SIZE, "bold")).pack(anchor='w', pady=(12, 4))
         lang_map = {"English": "en", "German": "de", "Turkish": "tr"}
-        combo = ttk.Combobox(main_frame, values=list(lang_map.keys()), state='readonly')
+        combo = ttk.Combobox(main_frame, values=list(lang_map.keys()), state='readonly', width=10)
         cur = str(self.language_var.get())
         disp = next((k for k, v in lang_map.items() if v == cur or k.lower() == cur.lower()), None)
         combo.set(disp or "English")
@@ -239,7 +239,7 @@ class SettingsUI:
                 logger.debug("Error changing language from settings tab", exc_info=True)
 
         combo.bind('<<ComboboxSelected>>', _on_tab_lang_change)
-        combo.pack(fill='x', pady=4)
+        combo.pack(anchor='w', pady=4)
 
         # Theme / Log
         self._create_theme_controls(main_frame)

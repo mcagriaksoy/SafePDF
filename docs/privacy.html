@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Privacy & Consent — SafePDF</title>
+  <title>Privacy & Consent -SafePDF</title>
   <link rel="stylesheet" href="style.20251215.css">
   <meta name="description" content="Privacy & Consent details for SafePDF : privacy-first offline PDF toolkit. Learn about cookies, data handling, and your rights.">
   <link rel="canonical" href="https://safepdf.de/privacy.html">
@@ -13,16 +13,16 @@
   <link rel="alternate" hreflang="de" href="https://safepdf.de/privacy.html?lang=de">
 </head>
 <body>
-  <nav class="navbar"><div class="container"><a class="nav-brand" href="index.html">SafePDF</a>
-    <div class="lang-selector">
-      <label for="language-select" style="display:none">Language</label>
-      <select class="language-select" aria-label="Language">
-        <option value="en">English</option>
-        <option value="tr">Türkçe</option>
-        <option value="de">Deutsch</option>
-      </select>
-    </div>
-  </div></nav>
+  <!-- Navigation -->
+  <script src="nav.js"></script>
+  <script>
+    // Simple navigation for legal pages
+    const navConfig = {
+      brandLink: "index.html",
+      links: []
+    };
+    createNavigation(navConfig);
+  </script>
   <main class="container" style="padding-top:28px;padding-bottom:60px;">
     <h1>Privacy & Consent</h1>
     <p class="muted">Last updated: December 15, 2025</p>
@@ -77,7 +77,7 @@
 
     <section>
       <h2>Security</h2>
-      <p>We apply reasonable administrative and technical safeguards to protect stored data. However, no online system is completely secure — please avoid sending sensitive information via public forms.</p>
+      <p>We apply reasonable administrative and technical safeguards to protect stored data. However, no online system is completely secure -please avoid sending sensitive information via public forms.</p>
     </section>
 
     <section>
@@ -88,6 +88,63 @@
     <p class="small"><a href="cookie-policy.html">Cookie Policy</a> • <a href="terms.html">Terms of Use</a></p>
     <p class="small"><a href="index.html">← Back to SafePDF</a></p>
   </main>
+
+    <footer class="site-footer" id="contact">
+    </footer>
+
+    <!-- Footer -->
+    <script src="footer.js"></script>
+
     <script src="translate.js"></script>
+    <script src="cookie-consent.js"></script>
+</body>
+</html>
+                <p class="muted">SafePDF is a privacy-focused offline tool for PDF manipulation. Merge, compress, split,
+                    and organize your PDF files securely: No internet required, your documents stay local and safe.</p>
+                <p class="small">Released under <a
+                        href="https://github.com/mcagriaksoy/SafePDF/blob/main/LICENSE">GPL‑3.0</a></p>
+            </div>
+
+            <div class="footer-col">
+                <h4>Resources</h4>
+                <ul class="footer-links">
+                    <li><a href="downloads.html">Downloads</a></li>
+                    <li><a href="sitemap.xml">Sitemap</a></li>
+                    <li><a href="terms.html">Terms of Use</a></li>
+                    <li><a href="privacy.html">Privacy & Consent</a></li>
+                    <li><a href="cookie-policy.html">Cookie Policy</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>Community</h4>
+                <ul class="footer-links">
+                    <li><a href="https://github.com/mcagriaksoy/SafePDF">Source Code</a></li>
+                    <li><a href="downloads.html">Download Latest Release</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>Contact & Support</h4>
+                <p class="muted">Need help or have feedback?</p>
+                <p class="small"><a href="index.html#contact" id="contact-btn-footer">Contact Us</a></p>
+                <p class="small"><a href="#" id="cookie-settings-footer">Cookie Settings</a></p>
+            </div>
+        </div>
+        <div class="container footer-bottom">
+            <p class="muted">© <span id="copy-year"></span> SafePDF • Finally, a safe solution. <a
+                    href="https://github.com/mcagriaksoy/SafePDF">Repository</a>
+            </p>
+            <button id="back-to-top" title="Back to top"
+                style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">↑</button>
+            <a href="https://www.checkdomain.de/unternehmen/garantie/ssl/popup/"
+                onclick="window.open(this.href + '?host=' + window.location.host,'','height=600,width=560,scrollbars=yes'); return false;"><img
+                    src="https://www.checkdomain.de/assets/bundles/web/app/widget/seal/img/ssl_certificate/de/150x150.png?20251209-101640"
+                    alt="SSL-Zertifikat" /></a>
+        </div>
+    </footer>
+
+    <script src="translate.js"></script>
+    <script src="cookie-consent.js"></script>
 </body>
 </html>

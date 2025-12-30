@@ -36,14 +36,16 @@ except ImportError:
 class PDFOperations:
     """Class containing all PDF manipulation operations"""
     
-    def __init__(self, progress_callback=None):
+    def __init__(self, progress_callback=None, language_manager=None):
         """
         Initialize PDF operations handler
         
         Args:
             progress_callback: Function to call for progress updates (0-100)
+            language_manager: Language manager for localization
         """
         self.progress_callback = progress_callback
+        self.language_manager = language_manager
         # Cancellation flag that can be set by controller/UI
         self._cancel_requested = False
 
@@ -203,16 +205,16 @@ class PDFOperations:
         """
         try:
             if not PdfReader or not PdfWriter:
-                return False, "PyPDF2/pypdf not available"
+                return False, self.language_manager.get('op_pypdf_unavailable', "PyPDF2/pypdf not available") if self.language_manager else "PyPDF2/pypdf not available"
             
             self.update_progress(5)
             
             # Validate input file
             if not os_path.exists(input_path):
-                return False, "Input file does not exist"
+                return False, self.language_manager.get('op_input_file_not_exist', "Input file does not exist") if self.language_manager else "Input file does not exist"
                 
             if not self.validate_pdf(input_path):
-                return False, "Input file is not a valid PDF"
+                return False, self.language_manager.get('op_invalid_pdf', "Input file is not a valid PDF") if self.language_manager else "Input file is not a valid PDF"
             
             # Prefer PyMuPDF approach for effective compression (image re-encoding)
             if fitz:
@@ -233,7 +235,7 @@ class PDFOperations:
                 doc = fitz.open(input_path)
                 total_pages = len(doc)
                 if total_pages == 0:
-                    return False, "Input PDF has no pages"
+                    return False, self.language_manager.get('op_no_pages', "Input PDF has no pages") if self.language_manager else "Input PDF has no pages"
                 
                 self.update_progress(15)
                 
@@ -246,7 +248,7 @@ class PDFOperations:
                             doc.close()
                         except Exception:
                             pass
-                        return False, "Operation cancelled by user"
+                        return False, self.language_manager.get('op_cancelled', "Operation cancelled by user") if self.language_manager else "Operation cancelled by user"
                     page = doc.load_page(i)
                     # render page at chosen dpi
                     mat = fitz.Matrix(dpi / 72.0, dpi / 72.0)
@@ -290,7 +292,7 @@ class PDFOperations:
                             tmp_fd = None
                             tmp_name = None
                             try:
-                                tmp_fd, tmp_name = tmp_mkstemp(suffix=".avif")
+                                tmp_fd, tmp_name = tmp_mkstemp(suffix=".jpg")
                                 os.write(tmp_fd, img_bytes)
                                 os.close(tmp_fd)
                                 tmp_fd = None
@@ -335,11 +337,12 @@ class PDFOperations:
                     
                     # Guard against zero-size original file
                     if original_size == 0:
-                        return False, "Original file size is zero. Cannot calculate compression."
+                        return False, self.language_manager.get('op_zero_size', "Original file size is zero. Cannot calculate compression.") if self.language_manager else "Original file size is zero. Cannot calculate compression."
                     
                     if compressed_size < original_size:
                         compression_ratio = (1 - (compressed_size / original_size)) * 100
-                        return True, f"PDF compressed successfully. Quality: {quality}. Size reduced by {abs(compression_ratio):.1f}%"
+                        success_msg = self.language_manager.get('op_compress_success', "PDF compressed successfully. Quality: {quality}. Size reduced by {compression_ratio:.1f}%") if self.language_manager else "PDF compressed successfully. Quality: {quality}. Size reduced by {compression_ratio:.1f}%"
+                        return True, success_msg.format(quality=quality, compression_ratio=abs(compression_ratio))
                     else:
                         # If compression didn't reduce size, try with lower quality automatically
                         if quality == "high":
@@ -352,12 +355,13 @@ class PDFOperations:
                             # Already tried low quality, show warning
                             self._show_compression_error_popup()
                             if compressed_size == original_size:
-                                return False, "No size reduction achieved. Please try a different quality setting or use 'Microsoft Print to PDF' from the print dialog."
+                                return False, self.language_manager.get('op_no_compression', "No size reduction achieved. Please try a different quality setting or use 'Microsoft Print to PDF' from the print dialog.") if self.language_manager else "No size reduction achieved. Please try a different quality setting or use 'Microsoft Print to PDF' from the print dialog."
                             else:
                                 increase_pct = ((compressed_size / original_size) - 1) * 100
-                                return False, f"Compression increased file size by {increase_pct:.1f}%. Please try a different quality setting."
+                                error_msg = self.language_manager.get('op_compress_increased', "Compression increased file size by {increase_pct:.1f}%. Please try a different quality setting.") if self.language_manager else "Compression increased file size by {increase_pct:.1f}%. Please try a different quality setting."
+                                return False, error_msg.format(increase_pct=increase_pct)
                 
-                return False, "Compression completed but output file is invalid"
+                return False, self.language_manager.get('op_invalid_output', "Compression completed but output file is invalid") if self.language_manager else "Compression completed but output file is invalid"
             
             # Fallback: attempt in-place stream compression using PdfWriter (may not always reduce size)
             # The existing writer-based approach is retained as fallback to avoid removing functionality.
@@ -368,7 +372,7 @@ class PDFOperations:
             total_pages = len(reader.pages)
             for i, page in enumerate(reader.pages):
                 if self._cancel_requested:
-                    return False, "Operation cancelled by user"
+                    return False, self.language_manager.get('op_cancelled', "Operation cancelled by user") if self.language_manager else "Operation cancelled by user"
                 try:
                     page.compress_content_streams()
                 except Exception:
@@ -387,23 +391,26 @@ class PDFOperations:
                 original_size = os_path.getsize(input_path)
                 compressed_size = os_path.getsize(output_path)
                 if original_size == 0:
-                    return False, "Original file size is zero. Cannot calculate compression."
+                    return False, self.language_manager.get('op_zero_size', "Original file size is zero. Cannot calculate compression.") if self.language_manager else "Original file size is zero. Cannot calculate compression."
                 if compressed_size < original_size:
                     compression_ratio = (1 - (compressed_size / original_size)) * 100
-                    return True, f"PDF compressed successfully (fallback). Quality: {quality}. Size reduced by {abs(compression_ratio):.1f}%"
+                    success_msg = self.language_manager.get('op_compress_success', "PDF compressed successfully (fallback). Quality: {quality}. Size reduced by {compression_ratio:.1f}%") if self.language_manager else "PDF compressed successfully (fallback). Quality: {quality}. Size reduced by {compression_ratio:.1f}%"
+                    return True, success_msg.format(quality=quality, compression_ratio=abs(compression_ratio))
                 else:
                     # Show warning immediately when compression doesn't reduce size
                     self._show_compression_error_popup()
                     if compressed_size == original_size:
-                        return False, "No size reduction achieved using fallback method. Please try a different quality setting or use 'Microsoft Print to PDF' from the print dialog."
+                        return False, self.language_manager.get('op_no_compression', "No size reduction achieved using fallback method. Please try a different quality setting or use 'Microsoft Print to PDF' from the print dialog.") if self.language_manager else "No size reduction achieved using fallback method. Please try a different quality setting or use 'Microsoft Print to PDF' from the print dialog."
                     else:
                         increase_pct = ((compressed_size / original_size) - 1) * 100
-                        return False, f"Fallback compression increased file size by {increase_pct:.1f}%. Please try a different quality setting."
+                        error_msg = self.language_manager.get('op_compress_increased', "Fallback compression increased file size by {increase_pct:.1f}%. Please try a different quality setting.") if self.language_manager else "Fallback compression increased file size by {increase_pct:.1f}%. Please try a different quality setting."
+                        return False, error_msg.format(increase_pct=increase_pct)
             
-            return False, "Fallback compression completed but output file is invalid"
+            return False, self.language_manager.get('op_invalid_output', "Fallback compression completed but output file is invalid") if self.language_manager else "Fallback compression completed but output file is invalid"
             
         except Exception as e:
-            return False, f"Compression failed: {str(e)}"
+            error_msg = self.language_manager.get('op_compress_failed', "Compression failed: {error}") if self.language_manager else "Compression failed: {error}"
+            return False, error_msg.format(error=str(e))
             
     def split_pdf(self, input_path: str, output_dir: str, method: str = "pages", page_range: str = None) -> Tuple[bool, str]:
         """
@@ -420,7 +427,7 @@ class PDFOperations:
         """
         try:
             if not PdfReader or not PdfWriter:
-                return False, "PyPDF2/pypdf not available"
+                return False, self.language_manager.get('op_pypdf_unavailable', "PyPDF2/pypdf not available") if self.language_manager else "PyPDF2/pypdf not available"
                 
             self.update_progress(10)
             
@@ -434,7 +441,7 @@ class PDFOperations:
                     # Split each page into separate file
                     for i, page in enumerate(reader.pages):
                         if self._cancel_requested:
-                            return False, "Operation cancelled by user"
+                            return False, self.language_manager.get('op_cancelled', "Operation cancelled by user") if self.language_manager else "Operation cancelled by user"
                         writer = PdfWriter()
                         writer.add_page(page)
                         
@@ -448,7 +455,8 @@ class PDFOperations:
                         self.update_progress(20 + (70 * i // total_pages))
                         
                     self.update_progress(100)
-                    return True, f"PDF split into {total_pages} files"
+                    success_msg = self.language_manager.get('op_split_pages', "PDF split into {total_pages} files") if self.language_manager else "PDF split into {total_pages} files"
+                    return True, success_msg.format(total_pages=total_pages)
                     
                 elif method == "range" and page_range:
                     # Parse page range and create files
@@ -456,7 +464,7 @@ class PDFOperations:
                     
                     for i, (start, end) in enumerate(ranges):
                         if self._cancel_requested:
-                            return False, "Operation cancelled by user"
+                            return False, self.language_manager.get('op_cancelled', "Operation cancelled by user") if self.language_manager else "Operation cancelled by user"
                         writer = PdfWriter()
                         for page_num in range(start-1, end):
                             if 0 <= page_num < total_pages:
@@ -472,12 +480,14 @@ class PDFOperations:
                         self.update_progress(20 + (70 * i // len(ranges)))
                         
                     self.update_progress(100)
-                    return True, f"PDF split into {len(ranges)} files based on ranges"
+                    success_msg = self.language_manager.get('op_split_ranges', "PDF split into {num_ranges} files based on ranges") if self.language_manager else "PDF split into {num_ranges} files based on ranges"
+                    return True, success_msg.format(num_ranges=len(ranges))
                     
             return False, "Invalid split method or parameters"
             
         except Exception as e:
-            return False, f"Split failed: {str(e)}"
+            error_msg = self.language_manager.get('op_split_failed', "Split failed: {error}") if self.language_manager else "Split failed: {error}"
+            return False, error_msg.format(error=str(e))
             
     def merge_pdfs(self, input_paths: List[str], output_path: str) -> Tuple[bool, str]:
         """
@@ -492,7 +502,7 @@ class PDFOperations:
         """
         try:
             if not PdfReader or not PdfWriter:
-                return False, "PyPDF2/pypdf not available"
+                return False, self.language_manager.get('op_pypdf_unavailable', "PyPDF2/pypdf not available") if self.language_manager else "PyPDF2/pypdf not available"
                 
             self.update_progress(10)
             
@@ -501,7 +511,7 @@ class PDFOperations:
             
             for i, input_path in enumerate(input_paths):
                 if self._cancel_requested:
-                    return False, "Operation cancelled by user"
+                    return False, self.language_manager.get('op_cancelled', "Operation cancelled by user") if self.language_manager else "Operation cancelled by user"
                 with open(input_path, 'rb') as input_file:
                     reader = PdfReader(input_file)
                     for page in reader.pages:
@@ -514,10 +524,12 @@ class PDFOperations:
             
             self._atomic_write_file(output_path, _write_merged)
             self.update_progress(100)
-            return True, f"Successfully merged {total_files} PDF files"
+            success_msg = self.language_manager.get('op_merge_success', "Successfully merged {total_files} PDF files") if self.language_manager else "Successfully merged {total_files} PDF files"
+            return True, success_msg.format(total_files=total_files)
             
         except Exception as e:
-            return False, f"Merge failed: {str(e)}"
+            error_msg = self.language_manager.get('op_merge_failed', "Merge failed: {error}") if self.language_manager else "Merge failed: {error}"
+            return False, error_msg.format(error=str(e))
             
     def pdf_to_jpg(self, input_path: str, output_dir: str, dpi: int = 200) -> Tuple[bool, str]:
         """
@@ -533,7 +545,7 @@ class PDFOperations:
         """
         try:
             if not fitz:
-                return False, "PyMuPDF not available for PDF to image conversion"
+                return False, self.language_manager.get('op_pymupdf_unavailable', "PyMuPDF not available for PDF to image conversion") if self.language_manager else "PyMuPDF not available for PDF to image conversion"
                 
             self.update_progress(10)
             
@@ -545,7 +557,7 @@ class PDFOperations:
             
             for page_num in range(total_pages):
                 if self._cancel_requested:
-                    return False, "Operation cancelled by user"
+                    return False, self.language_manager.get('op_cancelled', "Operation cancelled by user") if self.language_manager else "Operation cancelled by user"
                 page = pdf_document.load_page(page_num)
                 
                 # Create transformation matrix for desired DPI
@@ -553,7 +565,7 @@ class PDFOperations:
                 pix = page.get_pixmap(matrix=mat)
                 
                 # Save as JPG
-                output_filename = f"page_{page_num + 1}.avif"
+                output_filename = f"page_{page_num + 1}.jpg"
                 output_path = os_path.join(output_dir, output_filename)
                 pix.save(output_path)
                 
@@ -562,10 +574,12 @@ class PDFOperations:
             pdf_document.close()
             self.update_progress(100)
             
-            return True, f"Converted {total_pages} pages to JPG images"
+            success_msg = self.language_manager.get('op_jpg_success', "Converted {total_pages} pages to JPG images") if self.language_manager else "Converted {total_pages} pages to JPG images"
+            return True, success_msg.format(total_pages=total_pages)
             
         except Exception as e:
-            return False, f"PDF to JPG conversion failed: {str(e)}"
+            error_msg = self.language_manager.get('op_jpg_failed', "PDF to JPG conversion failed: {error}") if self.language_manager else "PDF to JPG conversion failed: {error}"
+            return False, error_msg.format(error=str(e))
             
     def rotate_pdf(self, input_path: str, output_path: str, angle: int = 90) -> Tuple[bool, str]:
         """
@@ -581,7 +595,7 @@ class PDFOperations:
         """
         try:
             if not PdfReader or not PdfWriter:
-                return False, "PyPDF2/pypdf not available"
+                return False, self.language_manager.get('op_pypdf_unavailable', "PyPDF2/pypdf not available") if self.language_manager else "PyPDF2/pypdf not available"
                 
             self.update_progress(10)
             
@@ -594,7 +608,7 @@ class PDFOperations:
                 
                 for i, page in enumerate(reader.pages):
                     if self._cancel_requested:
-                        return False, "Operation cancelled by user"
+                        return False, self.language_manager.get('op_cancelled', "Operation cancelled by user") if self.language_manager else "Operation cancelled by user"
                     rotated_page = page.rotate(angle)
                     writer.add_page(rotated_page)
                     self.update_progress(30 + (60 * i // total_pages))
@@ -604,10 +618,12 @@ class PDFOperations:
                 
                 self._atomic_write_file(output_path, _write_rotated)
             self.update_progress(100)
-            return True, f"PDF rotated by {angle} degrees"
+            success_msg = self.language_manager.get('op_rotate_success', "PDF rotated by {angle} degrees") if self.language_manager else "PDF rotated by {angle} degrees"
+            return True, success_msg.format(angle=angle)
             
         except Exception as e:
-            return False, f"Rotation failed: {str(e)}"
+            error_msg = self.language_manager.get('op_rotate_failed', "Rotation failed: {error}") if self.language_manager else "Rotation failed: {error}"
+            return False, error_msg.format(error=str(e))
             
     def repair_pdf(self, input_path: str, output_path: str) -> Tuple[bool, str]:
         """
@@ -622,7 +638,7 @@ class PDFOperations:
         """
         try:
             if not PdfReader or not PdfWriter:
-                return False, "PyPDF2/pypdf not available"
+                return False, self.language_manager.get('op_pypdf_unavailable', "PyPDF2/pypdf not available") if self.language_manager else "PyPDF2/pypdf not available"
                 
             self.update_progress(10)
             
@@ -638,7 +654,7 @@ class PDFOperations:
                 try:
                     for i, page in enumerate(reader.pages):
                         if self._cancel_requested:
-                            return False, "Operation cancelled by user"
+                            return False, self.language_manager.get('op_cancelled', "Operation cancelled by user") if self.language_manager else "Operation cancelled by user"
                         try:
                             writer.add_page(page)
                             pages_recovered += 1
@@ -657,12 +673,14 @@ class PDFOperations:
                     
                     self._atomic_write_file(output_path, _write_repaired)
                     self.update_progress(100)
-                    return True, f"PDF repaired. Recovered {pages_recovered} pages"
+                    success_msg = self.language_manager.get('op_repair_success', "PDF repaired. Recovered {pages_recovered} pages") if self.language_manager else "PDF repaired. Recovered {pages_recovered} pages"
+                    return True, success_msg.format(pages_recovered=pages_recovered)
                 else:
-                    return False, "Could not recover any pages from the PDF"
+                    return False, self.language_manager.get('op_repair_no_pages', "Could not recover any pages from the PDF") if self.language_manager else "Could not recover any pages from the PDF"
                     
         except Exception as e:
-            return False, f"Repair failed: {str(e)}"
+            error_msg = self.language_manager.get('op_repair_failed', "Repair failed: {error}") if self.language_manager else "Repair failed: {error}"
+            return False, error_msg.format(error=str(e))
             
     def _parse_page_range(self, page_range: str, total_pages: int) -> List[Tuple[int, int]]:
         """
@@ -740,7 +758,7 @@ class PDFOperations:
         """
         try:
             if not PdfReader:
-                return False, "PyPDF2/pypdf not available"
+                return False, self.language_manager.get('op_pypdf_unavailable', "PyPDF2/pypdf not available") if self.language_manager else "PyPDF2/pypdf not available"
             
             with open(input_path, 'rb') as file:
                 reader = PdfReader(file)
@@ -750,7 +768,7 @@ class PDFOperations:
                 for i, page in enumerate(reader.pages):
                     self.update_progress(int((i + 1) / total_pages * 100))
                     if self._cancel_requested:
-                        return False, "Operation cancelled"
+                        return False, self.language_manager.get('op_word_cancelled', "Operation cancelled") if self.language_manager else "Operation cancelled"
                     
                     text_content += page.extract_text() + "\n\n"
                 
@@ -758,10 +776,12 @@ class PDFOperations:
                 tmpf.write(text_content.encode('utf-8'))
             
             self._atomic_write_file(output_path, _write_text)
-            return True, f"Text extracted to {output_path}"
+            success_msg = self.language_manager.get('op_text_success', "Text extracted to {output_path}") if self.language_manager else "Text extracted to {output_path}"
+            return True, success_msg.format(output_path=output_path)
             
         except Exception as e:
-            return False, f"Text extraction failed: {str(e)}"
+            error_msg = self.language_manager.get('op_text_failed', "Text extraction failed: {error}") if self.language_manager else "Text extraction failed: {error}"
+            return False, error_msg.format(error=str(e))
     
     def extract_hidden_info(self, input_path: str, output_path: str) -> Tuple[bool, str]:
         """
@@ -776,7 +796,7 @@ class PDFOperations:
         """
         try:
             if not PdfReader:
-                return False, "PyPDF2/pypdf not available"
+                return False, self.language_manager.get('op_pypdf_unavailable', "PyPDF2/pypdf not available") if self.language_manager else "PyPDF2/pypdf not available"
             
             info = self.get_pdf_info(input_path)
             if "error" in info:
@@ -812,10 +832,12 @@ class PDFOperations:
                 tmpf.write('\n'.join(hidden_info).encode('utf-8'))
             
             self._atomic_write_file(output_path, _write_info)
-            return True, f"Hidden information extracted to {output_path}"
+            success_msg = self.language_manager.get('op_hidden_success', "Hidden information extracted to {output_path}") if self.language_manager else "Hidden information extracted to {output_path}"
+            return True, success_msg.format(output_path=output_path)
             
         except Exception as e:
-            return False, f"Hidden info extraction failed: {str(e)}"
+            error_msg = self.language_manager.get('op_hidden_failed', "Hidden info extraction failed: {error}") if self.language_manager else "Hidden info extraction failed: {error}"
+            return False, error_msg.format(error=str(e))
     
     def pdf_to_word(self, input_path: str, output_path: str) -> Tuple[bool, str]:
         """
@@ -834,10 +856,10 @@ class PDFOperations:
                 from docx import Document
                 from docx.shared import Inches
             except ImportError:
-                return False, "python-docx not installed. Please install with: pip install python-docx"
+                return False, self.language_manager.get('op_docx_unavailable', "python-docx not installed. Please install with: pip install python-docx") if self.language_manager else "python-docx not installed. Please install with: pip install python-docx"
             
             if not fitz:
-                return False, "PyMuPDF not available for PDF to Word conversion"
+                return False, self.language_manager.get('op_word_pymupdf_unavailable', "PyMuPDF not available for PDF to Word conversion") if self.language_manager else "PyMuPDF not available for PDF to Word conversion"
             
             # Open PDF with PyMuPDF
             doc = Document()
@@ -847,7 +869,7 @@ class PDFOperations:
             for page_num in range(total_pages):
                 self.update_progress(int((page_num + 1) / total_pages * 100))
                 if self._cancel_requested:
-                    return False, "Operation cancelled"
+                    return False, self.language_manager.get('op_word_cancelled', "Operation cancelled") if self.language_manager else "Operation cancelled"
                 
                 page = pdf_document.load_page(page_num)
                 text = page.get_text()
@@ -894,10 +916,12 @@ class PDFOperations:
                 doc.save(tmp_path)
             
             self._atomic_write_via_path(output_path, _save_docx)
-            return True, f"PDF converted to Word document: {output_path}"
+            success_msg = self.language_manager.get('op_word_success', "PDF converted to Word document: {output_path}") if self.language_manager else "PDF converted to Word document: {output_path}"
+            return True, success_msg.format(output_path=output_path)
             
         except Exception as e:
-            return False, f"PDF to Word conversion failed: {str(e)}"
+            error_msg = self.language_manager.get('op_word_failed', "PDF to Word conversion failed: {error}") if self.language_manager else "PDF to Word conversion failed: {error}"
+            return False, error_msg.format(error=str(e))
     
     def _show_compression_error_popup(self):
         """
@@ -909,7 +933,7 @@ class PDFOperations:
             
             # Create popup window
             popup = Toplevel()
-            popup.title("Compression Info")
+            popup.title(self.language_manager.get('op_compression_info', "Compression Info") if self.language_manager else "Compression Info")
             popup.geometry("550x400")
             popup.resizable(False, False)
             # Disable menu bar
@@ -949,20 +973,14 @@ class PDFOperations:
                     
                 except Exception:
                     # If gif loading fails, show text instead
-                    Label(popup, text="Compression Info", font=(CommonElements.FONT, 16, "bold")).pack(pady=10)
+                    Label(popup, text=self.language_manager.get('op_compression_info', "Compression Info") if self.language_manager else "Compression Info", font=(CommonElements.FONT, 16, "bold")).pack(pady=10)
                     self.logger.error("Error loading compression error GIF", exc_info=True)
             else:
                 # If gif file doesn't exist, show icon
-                Label(popup, text="Compression Info", font=(CommonElements.FONT, 16, "bold")).pack(pady=10)
+                Label(popup, text=self.language_manager.get('op_compression_info', "Compression Info") if self.language_manager else "Compression Info", font=(CommonElements.FONT, 16, "bold")).pack(pady=10)
             
             # Info message with better formatting
-            info_text = (
-                "Compression completed but no size reduction detected.\n"
-                "This file has already been optimized or contains\n"
-                "elements that cannot be compressed further.\n"
-                "If you need further compression, consider using the\n"
-                "'Microsoft Print to PDF' option from the print dialog."
-            )
+            info_text = self.language_manager.get('op_compression_info_msg', "Compression completed but no size reduction detected.\nThis file has already been optimized or contains\nelements that cannot be compressed further.\nIf you need further compression, consider using the\n'Microsoft Print to PDF' option from the print dialog.") if self.language_manager else "Compression completed but no size reduction detected.\nThis file has already been optimized or contains\nelements that cannot be compressed further.\nIf you need further compression, consider using the\n'Microsoft Print to PDF' option from the print dialog."
             
             Label(popup, text=info_text, justify="center", wraplength=400, 
                   font=(CommonElements.FONT, 10), padx=20, pady=10).pack(pady=10)
@@ -980,7 +998,5 @@ class PDFOperations:
         except Exception:
             # Fallback to simple messagebox if custom popup fails
             if messagebox:
-                messagebox.showinfo("Compression Info", 
-                    "Compression completed but no size reduction detected.\n"
-                    "This file has already been optimized or contains elements that cannot be compressed further.\n"
-                    "If you need further compression, consider using the 'Microsoft Print to PDF' option from the print dialog.")
+                messagebox.showinfo(self.language_manager.get('op_compression_info', "Compression Info") if self.language_manager else "Compression Info", 
+                    self.language_manager.get('op_compression_info_msg', "Compression completed but no size reduction detected.\nThis file has already been optimized or contains elements that cannot be compressed further.\nIf you need further compression, consider using the 'Microsoft Print to PDF' option from the print dialog.") if self.language_manager else "Compression completed but no size reduction detected.\nThis file has already been optimized or contains elements that cannot be compressed further.\nIf you need further compression, consider using the 'Microsoft Print to PDF' option from the print dialog.")

@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Common head elements loaded via JavaScript -->
+    <script src="head.js"></script>
+    <script>
+        // Page configuration for head.js
+        const pageConfig = {
+            title: "Download SafePDF - Privacy-First PDF Toolkit",
+            description: "Download SafePDF for Windows, macOS, and Linux. Privacy-focused offline PDF toolkit for compression, split, merge, convert, rotate and repair.",
+            keywords: "SafePDF download, PDF toolkit download, Windows PDF software, macOS PDF tool, Linux PDF application, offline PDF processor, privacy-focused PDF software",
+            ogTitle: "Download SafePDF - Privacy-First PDF Toolkit",
+            ogDescription: "Download SafePDF for your platform. Offline PDF toolkit: compress, split, merge, convert, rotate and repair locally on your device.",
+            canonicalUrl: "https://safepdf.de/downloads.html",
+            ogImageAlt: "SafePDF download page showing platform options",
+            twitterTitle: "Download SafePDF - Privacy-First PDF Toolkit",
+            twitterDescription: "Download SafePDF for your platform. Offline PDF toolkit: compress, split, merge, convert, rotate and repair locally on your device.",
+            twitterImageAlt: "SafePDF download page showing platform options",
+            baseUrl: "https://safepdf.de/downloads.html"
+        };
+        createCommonHead(pageConfig);
+    </script>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <script src="nav.js"></script>
+    <script>
+        // Navigation configuration for nav.js
+        const navConfig = {
+            brandLink: "index.html",
+            links: [
+                { href: "index.html#features", text: "Features" },
+                { href: "index.html#comparison", text: "Compare Plans" },
+                { href: "index.html#screenshots", text: "Screenshots" },
+                { href: "index.html#operations", text: "Operations" },
+                { href: "index.html#contact", text: "Contact", id: "nav-contact-btn" }
+            ]
+        };
+        createNavigation(navConfig);
+    </script>
+
+    <header class="hero downloads-hero">
+        <div class="container hero-inner">
+            <div class="hero-text">
+                <h1>Download SafePDF</h1>
+                <p class="lead">Choose your platform and start processing PDFs privately and securely. All downloads are free and open source.</p>
+
+                <div class="download-stats">
+                    <div class="stat">
+                        <span class="stat-number">v1.0.9</span>
+                        <span class="stat-label">Latest Version</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">100+</span>
+                        <span class="stat-label">Downloads</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">GPL-3.0</span>
+                        <span class="stat-label">License</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-media">
+                <img class="hero-banner" src="https://github.com/mcagriaksoy/SafePDF/raw/main/img/SafePDF_Ad.avif"
+                    fetchpriority="high" width="1200" height="630"
+                    alt="SafePDF application interface showing download options" />
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="downloads-section">
+            <h2>Choose Your Platform</h2>
+            <p class="section-desc">SafePDF works on Windows, macOS, and Linux. Download the appropriate version for your operating system.</p>
+
+            <div class="downloads-grid">
+                <!-- Windows -->
+                <div class="download-card">
+                    <div class="platform-icon"><i class="fab fa-windows"></i></div>
+                    <h3>Windows</h3>
+                    <p>Compatible with Windows 10 and later</p>
+                    <div class="download-options">
+                        <a href="https://github.com/mcagriaksoy/SafePDF/releases/download/v1_0_9/SafePDF_v1.0.9.win64.exe.7z" class="btn primary download-btn">
+                            <span class="download-icon">⬇️</span>
+                            Download Installer
+                        </a>
+                        <a href="https://github.com/mcagriaksoy/SafePDF/releases/download/v1_0_9/SafePDF_v1.0.9.win64.exe.7z" class="btn download-btn secondary">
+                            <span class="download-icon">📦</span>
+                            Portable Version
+                        </a>
+                    </div>
+                </div>
+
+                <!-- macOS -->
+                <div class="download-card">
+                    <div class="platform-icon"><i class="fab fa-apple"></i></div>
+                    <h3>macOS</h3>
+                    <p>Compatible with macOS 10.15 and later</p>
+                    <div class="download-options">
+                        <a href="https://github.com/mcagriaksoy/SafePDF/releases/download/v1.2.0/SafePDF-macOS.dmg" class="btn primary download-btn">
+                            <span class="download-icon">⬇️</span>
+                            Download
+                        </a>
+                        <a href="https://github.com/mcagriaksoy/SafePDF/releases/download/v1.2.0/SafePDF-macOS.zip" class="btn download-btn secondary">
+                            <span class="download-icon">📦</span>
+                            Archive (.zip)
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Linux -->
+                <div class="download-card">
+                    <div class="platform-icon"><i class="fab fa-linux"></i></div>
+                    <h3>Linux</h3>
+                    <p>Compatible with most Linux distributions</p>
+                    <div class="download-options">
+                        <a href="https://github.com/mcagriaksoy/SafePDF/releases/download/v1.2.0/SafePDF-Linux.AppImage" class="btn primary download-btn">
+                            <span class="download-icon">⬇️</span>
+                            AppImage (.AppImage)
+                            <span class="file-size">~40 MB</span>
+                        </a>
+                        <a href="https://github.com/mcagriaksoy/SafePDF/releases/download/v1.2.0/SafePDF-Linux.tar.gz" class="btn download-btn secondary">
+                            <span class="download-icon">📦</span>
+                            Archive (.tar.gz)
+                            <span class="file-size">~37 MB</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alternative Download Options -->
+            <div class="alternative-downloads">
+                <h3>Other Download Options</h3>
+                <div class="alt-options-grid">
+                    <a href="https://github.com/mcagriaksoy/SafePDF/releases" class="alt-option">
+                        <div class="alt-icon">📋</div>
+                        <div class="alt-content">
+                            <h4>All Releases</h4>
+                            <p>View all versions, source code, and release notes on GitHub</p>
+                        </div>
+                    </a>
+                    <a href="https://github.com/mcagriaksoy/SafePDF" class="alt-option">
+                        <div class="alt-icon">📦</div>
+                        <div class="alt-content">
+                            <h4>Source Code</h4>
+                            <p>Build from source or contribute to the project</p>
+                        </div>
+                    </a>
+                    <a href="https://pypi.org/project/safepdf/" class="alt-option">
+                        <div class="alt-icon">🐍</div>
+                        <div class="alt-content">
+                            <h4>Python Package</h4>
+                            <p>Install via pip for command-line usage</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Installation Instructions -->
+            <div class="installation-guide">
+                <h3>Installation Guide</h3>
+                <div class="guide-steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Download</h4>
+                            <p>Choose the appropriate file for your operating system from the options above.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Install/Extract</h4>
+                            <p>Run the installer or extract the archive to your preferred location.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Launch</h4>
+                            <p>Open SafePDF and start processing your PDFs privately and securely.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- What's New -->
+            <div class="whats-new">
+                <h3>What's New in v1.0.9</h3>
+                <ul class="changelog">
+                    <li>License system is fully adapted for pro features</li>
+                    <li>Texts, UI elements and language support fixed for executables</li>
+                    <li>Enhanced security and stability improvements</li>
+                    <li>Various bug fixes and performance optimizations</li>
+                </ul>
+                <p><strong>Previous version highlights (v1.0.8):</strong></p>
+                <ul class="changelog">
+                    <li>Improved user interface with theming support (light, dark, system themes)</li>
+                    <li>Added log viewer for better debugging and monitoring</li>
+                    <li>New SettingsUI class for managing theme and language preferences</li>
+                    <li>Pro feature activation and management system</li>
+                    <li>Ultra quality option for PDF to JPG conversion (Pro feature)</li>
+                    <li>Dynamic tab enabling/disabling based on operation selection</li>
+                    <li>Enhanced UX with better navigation and feedback</li>
+                </ul>
+                <a href="https://github.com/mcagriaksoy/SafePDF/releases/tag/v1_0_9" class="btn">View Full Changelog</a>
+            </div>
+        </section>
+
+        <!-- Pro Version CTA -->
+        <section class="pro-cta-section">
+            <div class="pro-cta-card">
+                <div class="pro-cta-content">
+                    <h3><span class="pro-icon">🚀</span> Unlock Pro Features</h3>
+                    <p>Get advanced compression, batch processing, and priority support with SafePDF Pro.</p>
+                    <ul>
+                        <li>Ultra-high quality compression (300 DPI)</li>
+                        <li>Lossless compression mode</li>
+                        <li>Batch processing for multiple files</li>
+                        <li>Priority customer support</li>
+                        <li>Automatic updates</li>
+                    </ul>
+                </div>
+                <div class="pro-cta-actions">
+                    <a href="index.html#buy-pro" class="btn primary">View Pro Plans</a>
+                    <a href="index.html#comparison" class="btn">Compare Free vs Pro</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer" id="contact">
+    </footer>
+
+    <!-- Footer -->
+    <script src="footer.js"></script>
+
+    <!-- Cookie Banner -->
+    <div id="cookie-banner" aria-live="polite">
+        <div class="container cookie-inner">
+            <div>
+                <p class="muted">We use essential cookies to make the site work, and optional cookies to improve the
+                    experience. You can manage preferences.</p>
+            </div>
+            <div class="cookie-actions">
+                <button class="btn" onclick="openCookieModal()">Cookie Settings</button>
+                <button class="btn" onclick="rejectAllCookies()">Reject All</button>
+                <button class="btn primary" onclick="acceptAllCookies()">Accept All</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- small scripts for footer -->
+    <script>
+        // update copyright year
+        document.getElementById('copy-year').textContent = new Date().getFullYear();
+
+        // back to top smooth scroll
+        document.getElementById('back-to-top').addEventListener('click', function () {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Modal functionality (simplified for downloads page)
+        var modal = document.getElementById('contact-modal');
+        if (modal) {
+            var span = document.getElementsByClassName('close')[0];
+            if (span) {
+                span.onclick = function () {
+                    modal.style.display = 'none';
+                }
+            }
+            window.onclick = function (event) {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            }
+        }
+
+        // Cookie consent is handled by cookie-consent.js
+    </script>
+
+    <!-- Language switcher -->
+    <script>
+        const langSelect = document.getElementById('language-select');
+        const langFlag = document.getElementById('lang-flag');
+        function updateFlag() {
+            const flagMap = { en: '🇬🇧', tr: '🇹🇷', de: '🇩🇪' };
+            const lang = langSelect.value;
+            langFlag.textContent = flagMap[lang] || '🌐';
+        }
+        langSelect.addEventListener('change', function() {
+            updateFlag();
+            const lang = langSelect.value;
+            const url = new URL(window.location.href);
+            url.searchParams.set('lang', lang);
+            window.location.href = url.toString();
+        });
+        (function(){
+            const urlLang = new URL(window.location.href).searchParams.get('lang');
+            if(urlLang) {
+                for(let i=0;i<langSelect.options.length;i++) {
+                    if(langSelect.options[i].value===urlLang) langSelect.selectedIndex=i;
+                }
+            }
+            updateFlag();
+        })();
+    </script>
+</body>
+
+</html>

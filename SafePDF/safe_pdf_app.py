@@ -38,11 +38,18 @@ class SafePDFApp:
         # Keep a reference to icon image to avoid GC
         self._icon_image = None
 
-        # Initialize controller with progress callback
+        # Initialize controller with progress callback (language_manager will be set later)
         self.controller = SafePDFController(progress_callback=self.update_progress)
         
         # Initialize UI with controller reference
         self.ui = SafePDFUI(root, self.controller)
+        
+        # Now that UI is created, update controller with language_manager from UI
+        if hasattr(self.ui, 'lang_manager'):
+            self.controller.language_manager = self.ui.lang_manager
+            # Also update the pdf_ops with the language_manager
+            if hasattr(self.controller, 'pdf_ops') and self.controller.pdf_ops:
+                self.controller.pdf_ops.language_manager = self.ui.lang_manager
         
         # Module logger
         self.logger = get_logger('SafePDF.App')
