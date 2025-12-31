@@ -9,6 +9,7 @@ This application provides various PDF operations including:
 - PDF Rotate
 - PDF Repair
 """
+
 import os
 import sys
 
@@ -31,35 +32,35 @@ from SafePDF.ui.safe_pdf_ui import SafePDFUI  # noqa: E402
 
 class SafePDFApp:
     """Main application coordinator that manages the UI and controller"""
-    
+
     def __init__(self, root):
         self.root = root
-        
+
         # Keep a reference to icon image to avoid GC
         self._icon_image = None
 
         # Initialize controller with progress callback (language_manager will be set later)
         self.controller = SafePDFController(progress_callback=self.update_progress)
-        
+
         # Initialize UI with controller reference
         self.ui = SafePDFUI(root, self.controller)
-        
+
         # Now that UI is created, update controller with language_manager from UI
-        if hasattr(self.ui, 'lang_manager'):
+        if hasattr(self.ui, "lang_manager"):
             self.controller.language_manager = self.ui.lang_manager
             # Also update the pdf_ops with the language_manager
-            if hasattr(self.controller, 'pdf_ops') and self.controller.pdf_ops:
+            if hasattr(self.controller, "pdf_ops") and self.controller.pdf_ops:
                 self.controller.pdf_ops.language_manager = self.ui.lang_manager
-        
+
         # Module logger
-        self.logger = get_logger('SafePDF.App')
+        self.logger = get_logger("SafePDF.App")
 
         # Set application icon and taskbar properties
         self.set_app_icon_and_taskbar()
-    
+
     def update_progress(self, value):
         """Progress callback for PDF operations"""
-        if hasattr(self.ui, 'update_progress'):
+        if hasattr(self.ui, "update_progress"):
             self.ui.update_progress(value)
 
     def set_app_icon_and_taskbar(self):
@@ -77,7 +78,7 @@ class SafePDFApp:
         candidates = [
             base / "assets" / "icon.ico",
             base / "assets" / "icon.png",
-            Path(sys.argv[0]).with_suffix('.ico'),
+            Path(sys.argv[0]).with_suffix(".ico"),
         ]
         icon_path = None
         for c in candidates:
@@ -89,7 +90,7 @@ class SafePDFApp:
         try:
             if icon_path:
                 # .ico on Windows
-                if icon_path.suffix.lower() == '.ico' and sys.platform == "win32":
+                if icon_path.suffix.lower() == ".ico" and sys.platform == "win32":
                     self.root.iconbitmap(str(icon_path))
                 else:
                     img = tk.PhotoImage(file=str(icon_path))
@@ -104,6 +105,7 @@ class SafePDFApp:
             self.logger.error("Error setting application icon", exc_info=True)
             pass
 
+
 def main():
     """Main application entry point"""
     try:
@@ -113,6 +115,7 @@ def main():
 
     SafePDFApp(root)
     root.mainloop()
+
 
 if __name__ == "__main__":
     main()

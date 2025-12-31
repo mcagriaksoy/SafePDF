@@ -43,9 +43,7 @@ Vorgänge abbrechen:
 
 Fehlerbehebung:
 
-- Falls ein Vorgang nicht startet, überprüfen Sie, ob PyPDF2/pypdf und PyMuPDF/Pillow installiert sind.
-
-- Für die PDF-zu-Bild-Konvertierung bietet PyMuPDF (PyMuPDF/Fitz) eine bessere Qualität und höhere Geschwindigkeit. Falls PyMuPDF nicht installiert ist, wird nach Möglichkeit Pillow verwendet.
+- Falls ein Vorgang nicht startet, überprüfen Sie, ob PyPDF2/pypdf und Pillow installiert sind.
 
 - Sollte die Benutzeroberfläche einfrieren, schließen Sie die Anwendung und starten Sie sie neu. Melden Sie reproduzierbare Probleme, wenn möglich inklusive Beispieldateien.
 

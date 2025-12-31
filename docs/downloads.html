@@ -7,7 +7,7 @@
     <script src="head.js"></script>
     <script>
         // Fetch latest version from GitHub releases
-        let latestVersion = 'v1.0.9'; // fallback version
+        let latestVersion = 'v1.0.10'; // fallback version
         let installerDownloadUrl = '';
         let portableDownloadUrl = '';
         
@@ -15,7 +15,7 @@
             try {
                 const response = await fetch('https://api.github.com/repos/mcagriaksoy/SafePDF/releases/latest');
                 const data = await response.json();
-                latestVersion = data.tag_name || 'v1.0.9';
+                latestVersion = data.tag_name || 'v1.0.10';
                 
                 // Find installer and portable versions in assets
                 const installerAsset = data.assets.find(asset => 
@@ -239,14 +239,14 @@
 
             <!-- What's New -->
             <div class="whats-new">
-                <h3>What's New in <span class="version-number">v1.0.9</span></h3>
+                <h3>What's New in <span class="version-number"></span></h3>
                 <ul class="changelog">
                     <li>License system is fully adapted for pro features</li>
                     <li>Texts, UI elements and language support fixed for executables</li>
                     <li>Enhanced security and stability improvements</li>
                     <li>Various bug fixes and performance optimizations</li>
                 </ul>
-                <p><strong>Previous version highlights (v1.0.8):</strong></p>
+                <p><strong>Previous version highlights:</strong></p>
                 <ul class="changelog">
                     <li>Improved user interface with theming support (light, dark, system themes)</li>
                     <li>Added log viewer for better debugging and monitoring</li>
@@ -256,7 +256,7 @@
                     <li>Dynamic tab enabling/disabling based on operation selection</li>
                     <li>Enhanced UX with better navigation and feedback</li>
                 </ul>
-                <a href="https://github.com/mcagriaksoy/SafePDF/releases/tag/v1_0_9" class="btn">View Full Changelog</a>
+                <a href="https://github.com/mcagriaksoy/SafePDF/releases/" class="btn">View Full Changelog</a>
             </div>
         </section>
 
@@ -348,8 +348,6 @@
                 }
             }
         }
-
-        // Cookie consent is handled by cookie-consent.js
     </script>
 
     <!-- Language switcher -->

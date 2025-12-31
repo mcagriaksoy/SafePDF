@@ -70,7 +70,6 @@ You can use the executable directly or download the source-code and run given in
 - pip (Python package installer)
 - PyPDF2>=3.0.0
 - Pillow>=9.0.0
-- PyMuPDF>=1.20.0
 - tkinterdnd2>=0.3.0
 - python-docx>=0.8.11
   
@@ -200,11 +199,6 @@ The application includes comprehensive error handling:
 2. **"PIL/Pillow not installed"**
    ```bash
    pip install Pillow
-   ```
-
-3. **"PyMuPDF not available"**
-   ```bash
-   pip install PyMuPDF
    ```
 
 4. **Drag and drop not working**

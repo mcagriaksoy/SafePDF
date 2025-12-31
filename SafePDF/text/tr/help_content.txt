@@ -40,10 +40,7 @@ Nasıl kullanılır:
 - Bir işlemi iptal etmek için işlem sırasında İptal düğmesine tıklayın. Yanlışlıkla durdurmaları önlemek için çift onay gereklidir.
 
 Sorun giderme:
-- Bir işlem başlamazsa, PyPDF2/pypdf ve PyMuPDF/Pillow'un yüklü olduğundan emin olun.
-
-- PDF'den Görüntüye dönüştürme için PyMuPDF (PyMuPDF/Fitz) daha iyi kalite ve hız sağlar. Yüklü değilse, dönüştürme mümkün olduğunca Pillow'u kullanmaya çalışacaktır.
-
+- Bir işlem başlamazsa, PyPDF2/pypdf ve Pillow'un yüklü olduğundan emin olun.
 - Kullanıcı arayüzü donarsa, uygulamayı kapatıp tekrar çalıştırmayı deneyin. Mümkünse örnek dosyalar da dahil olmak üzere tekrarlanabilir sorunları bildirin.
 
 Yerelleştirme:

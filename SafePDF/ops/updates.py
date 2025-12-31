@@ -6,20 +6,16 @@ This module handles checking for updates from GitHub Releases,
 downloading and verifying releases using GPG signatures.
 """
 
-import os
-import sys
-import json
-import hashlib
-import tempfile
 import platform
+import sys
+import tempfile
 from pathlib import Path
-from urllib.request import urlopen
 from urllib.error import URLError
+from urllib.request import urlopen
 
 try:
-    import requests
-    from github import Github
     import gnupg
+    from github import Github
 except ImportError as e:
     print(f"Missing required libraries for updates: {e}")
     print("Please install with: pip install requests PyGitHub python-gnupg")
@@ -36,7 +32,7 @@ class SafePDFUpdates:
         self.repo_name = repo_name
         self.github = Github()  # Uses anonymous access for public repos
         self.repo = self.github.get_repo(f"{repo_owner}/{repo_name}")
-        self.logger = get_logger('SafePDF.Updates')
+        self.logger = get_logger("SafePDF.Updates")
 
         # Initialize GPG
         try:
@@ -55,7 +51,7 @@ class SafePDFUpdates:
         try:
             version_file = Path(__file__).parent.parent / "version.txt"
             if version_file.exists():
-                with open(version_file, 'r') as f:
+                with open(version_file, "r") as f:
                     return f.read().strip()
             return "0.0.0"
         except Exception as e:
@@ -74,8 +70,8 @@ class SafePDFUpdates:
             # Get latest release
             latest_release = self.repo.get_latest_release()
 
-            latest_version = latest_release.tag_name.lstrip('v')
-            current_version = self.current_version.lstrip('v')
+            latest_version = latest_release.tag_name.lstrip("v")
+            current_version = self.current_version.lstrip("v")
 
             if self._is_newer_version(latest_version, current_version):
                 # Find appropriate asset for current platform
@@ -83,15 +79,15 @@ class SafePDFUpdates:
 
                 if download_url:
                     return {
-                        'available': True,
-                        'latest_version': latest_version,
-                        'download_url': download_url,
-                        'signature_url': signature_url,
-                        'changelog': latest_release.body,
-                        'release_url': latest_release.html_url
+                        "available": True,
+                        "latest_version": latest_version,
+                        "download_url": download_url,
+                        "signature_url": signature_url,
+                        "changelog": latest_release.body,
+                        "release_url": latest_release.html_url,
                     }
 
-            return {'available': False}
+            return {"available": False}
 
         except Exception as e:
             self.logger.error(f"Error checking for updates: {e}")
@@ -101,6 +97,7 @@ class SafePDFUpdates:
         """Compare version strings"""
         try:
             from packaging import version
+
             return version.parse(latest) > version.parse(current)
         except ImportError:
             # Fallback to simple string comparison
@@ -114,13 +111,13 @@ class SafePDFUpdates:
             tuple: (download_url, signature_url) or (None, None)
         """
         system = platform.system().lower()
-        machine = platform.machine().lower()
+        platform.machine().lower()
 
         # Map platform to asset name patterns
         platform_patterns = {
-            'windows': ['windows', 'win', '.exe', '.msi'],
-            'linux': ['linux', '.deb', '.rpm', '.tar.gz'],
-            'darwin': ['macos', 'darwin', 'osx', '.dmg', '.pkg']
+            "windows": ["windows", "win", ".exe", ".msi"],
+            "linux": ["linux", ".deb", ".rpm", ".tar.gz"],
+            "darwin": ["macos", "darwin", "osx", ".dmg", ".pkg"],
         }
 
         patterns = platform_patterns.get(system, [])
@@ -132,11 +129,11 @@ class SafePDFUpdates:
             name = asset.name.lower()
 
             # Check for main binary
-            if any(pattern in name for pattern in patterns) and not name.endswith('.sig'):
+            if any(pattern in name for pattern in patterns) and not name.endswith(".sig"):
                 download_url = asset.browser_download_url
 
             # Check for signature file
-            if name.endswith('.sig') or '.sig.' in name:
+            if name.endswith(".sig") or ".sig." in name:
                 signature_url = asset.browser_download_url
 
         return download_url, signature_url
@@ -172,10 +169,10 @@ class SafePDFUpdates:
                 self._download_file(signature_url, sig_path)
 
                 # Verify signature
-                with open(sig_path, 'rb') as f:
+                with open(sig_path, "rb") as f:
                     signature_data = f.read()
 
-                with open(release_path, 'rb') as f:
+                with open(release_path, "rb") as f:
                     file_data = f.read()
 
                 verified = self.gpg.verify_data(signature_data, file_data)
@@ -198,14 +195,14 @@ class SafePDFUpdates:
     def _download_file(self, url, dest_path):
         """Download a file from URL to destination path"""
         try:
-            with urlopen(url) as response, open(dest_path, 'wb') as out_file:
+            with urlopen(url) as response, open(dest_path, "wb") as out_file:
                 out_file.write(response.read())
         except URLError as e:
             raise Exception(f"Failed to download {url}: {e}")
 
     def _get_install_path(self):
         """Get the installation path for updates"""
-        if getattr(sys, 'frozen', False):
+        if getattr(sys, "frozen", False):
             # Running as executable
             return Path(sys.executable).parent / "SafePDF_new.exe"
         else:
@@ -238,11 +235,11 @@ class SafePDFUpdates:
                 return False
 
             # For detached signature verification, we need the signed data
-            # Assume the signed data is "SafePDF-Pro-License" 
+            # Assume the signed data is "SafePDF-Pro-License"
             signed_data = b"SafePDF-Pro-License"
-            
+
             # Verify the detached signature
-            with open(license_file_path, 'rb') as f:
+            with open(license_file_path, "rb") as f:
                 signature_data = f.read()
 
             verified = self.gpg.verify_data(signature_data, signed_data)
@@ -256,26 +253,26 @@ class SafePDFUpdates:
     def _get_default_public_key(self):
         """Get the default public key for verification"""
         key_dir = Path(__file__).parent.parent / "key"
-        
+
         # Try PGP key files first
-        for ext in ['.asc', '.pgp', '.gpg']:
+        for ext in [".asc", ".pgp", ".gpg"]:
             key_file = key_dir / f"public{ext}"
             if key_file.exists():
                 try:
-                    with open(key_file, 'r') as f:
+                    with open(key_file, "r") as f:
                         return f.read().strip()
                 except Exception as e:
                     self.logger.error(f"Error reading PGP key file {key_file}: {e}")
-        
+
         # Fall back to PEM file
         pem_file = key_dir / "public.pem"
         if pem_file.exists():
             try:
-                with open(pem_file, 'r') as f:
+                with open(pem_file, "r") as f:
                     return f.read().strip()
             except Exception as e:
                 self.logger.error(f"Error reading PEM key file: {e}")
-        
+
         # Fallback to placeholder if no key files found
         return """
 -----BEGIN PGP PUBLIC KEY BLOCK-----
@@ -300,12 +297,11 @@ class SafePDFUpdates:
                 release = self.repo.get_latest_release()
 
             return {
-                'version': release.tag_name,
-                'name': release.title,
-                'description': release.body,
-                'published_at': release.published_at,
-                'assets': [{'name': asset.name, 'url': asset.browser_download_url}
-                          for asset in release.assets]
+                "version": release.tag_name,
+                "name": release.title,
+                "description": release.body,
+                "published_at": release.published_at,
+                "assets": [{"name": asset.name, "url": asset.browser_download_url} for asset in release.assets],
             }
         except Exception as e:
             self.logger.error(f"Error getting release info: {e}")

@@ -29,8 +29,7 @@ Canceling operations:
 - Click the Cancel button during an operation to request cancellation. A double confirmation is required to avoid accidental stops.
 
 Troubleshooting:
-- If an operation does not start, verify that PyPDF2/pypdf and PyMuPDF/Pillow are installed.
-- For PDF->Image conversion, PyMuPDF (PyMuPDF/Fitz) provides better quality and speed. If not installed, conversion will try to use Pillow where possible.
+- If an operation does not start, verify that PyPDF2/pypdf and Pillow are installed.
 - If the UI freezes, try closing the app and running again. Report reproducible issues including sample files if possible.
 
 Localization:

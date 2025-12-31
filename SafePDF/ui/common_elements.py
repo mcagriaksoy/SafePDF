@@ -1,5 +1,4 @@
-
-#define color, font, size, and layout for common UI elements
+# define color, font, size, and layout for common UI elements
 class CommonElements:
     # Colors
     BG_COLOR = "#f0f0f0"
@@ -19,11 +18,11 @@ class CommonElements:
     BUTTON_FG = "#000000"
     ENTRY_BG = "#ffffff"
     ENTRY_FG = "#000000"
-    
+
     # Font
     FONT = "Century Gothic"
     FONT_SIZE = 10
-    
+
     # Sizes
     SIZE_STR = "800x640"
     SIZE_LIST = (800, 640)
@@ -31,7 +30,6 @@ class CommonElements:
 
     PRO_POPUP_SIZE = "550x550"
     PRO_POPUP_SIZE_LIST = (550, 550)
-
 
     # Default Language
     DEFAULT_LANGUAGE = "en"

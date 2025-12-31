@@ -3,9 +3,9 @@ Language Manager - Loads localized UI strings and content from JSON and text fil
 Supports language switching without restart by reloading language data.
 """
 
-from pathlib import Path
 import json
 import sys
+from pathlib import Path
 from typing import Optional
 
 
@@ -19,13 +19,13 @@ class LanguageManager:
 
     def __init__(self, lang: str = "en"):
         # Get the base directory - handle both Python and PyInstaller executables
-        if getattr(sys, 'frozen', False):
+        if getattr(sys, "frozen", False):
             # Running in PyInstaller bundle
             base_dir = Path(sys._MEIPASS)
         else:
             # Running as Python script
             base_dir = Path(__file__).parent.parent
-        
+
         self.base = base_dir / "text"
         self.lang = lang or "en"
         self.ui_strings = {}
@@ -39,10 +39,10 @@ class LanguageManager:
         fallback = self.base / "ui.json"
         try:
             if ui_path.exists():
-                with open(ui_path, 'r', encoding='utf-8') as f:
+                with open(ui_path, "r", encoding="utf-8") as f:
                     self.ui_strings = json.load(f)
             elif fallback.exists():
-                with open(fallback, 'r', encoding='utf-8') as f:
+                with open(fallback, "r", encoding="utf-8") as f:
                     self.ui_strings = json.load(f)
         except Exception:
             self.ui_strings = {}
@@ -63,7 +63,7 @@ class LanguageManager:
         for p in candidates:
             try:
                 if p.exists():
-                    return p.read_text(encoding='utf-8')
+                    return p.read_text(encoding="utf-8")
             except Exception:
                 continue
         return None

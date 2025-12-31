@@ -12,6 +12,7 @@ Usage:
     logger = get_logger(__name__)
     logger.info("Ready")
 """
+
 import logging
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
@@ -21,6 +22,7 @@ DEFAULT_LOG_FILE = "safepdf.log"
 
 _configured = False
 _log_file_path = None
+
 
 def setup_logging(log_dir: str | None = None, max_bytes: int = 5 * 1024 * 1024, backup_count: int = 3):
     """Configure root logger with a rotating file handler.
@@ -44,25 +46,28 @@ def setup_logging(log_dir: str | None = None, max_bytes: int = 5 * 1024 * 1024, 
     try:
         log_dir_path.mkdir(parents=True, exist_ok=True)
     except Exception:
-        logging.error(f"Failed to create log directory at {log_dir_path}, falling back to current working directory.", exc_info=True)
+        logging.error(
+            f"Failed to create log directory at {log_dir_path}, falling back to current working directory.",
+            exc_info=True,
+        )
         # Fall back to current working directory
         log_dir_path = Path.cwd()
 
     _log_file_path = log_dir_path / DEFAULT_LOG_FILE
 
-    formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'
-    )
+    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
 
-    handler = RotatingFileHandler(str(_log_file_path), maxBytes=max_bytes, backupCount=backup_count, encoding='utf-8')
+    handler = RotatingFileHandler(str(_log_file_path), maxBytes=max_bytes, backupCount=backup_count, encoding="utf-8")
     handler.setFormatter(formatter)
     handler.setLevel(logging.DEBUG)
 
     root = logging.getLogger()
     root.setLevel(logging.DEBUG)
     # Avoid adding multiple handlers when setup_logging is called more than once
-    if not any(isinstance(h, RotatingFileHandler) and getattr(h, 'baseFilename', None) == str(_log_file_path) for h in root.handlers):
+    if not any(
+        isinstance(h, RotatingFileHandler) and getattr(h, "baseFilename", None) == str(_log_file_path)
+        for h in root.handlers
+    ):
         root.addHandler(handler)
 
     # Optional: also emit warnings to console in development

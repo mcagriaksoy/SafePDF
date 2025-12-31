@@ -220,7 +220,6 @@
                         <li>Per-page JPEG quality setting</li>
                         <li>Output: folder with page_001.avif, page_002.avif, ...</li>
                     </ul>
-                    <p class="small">Uses PyMuPDF/Pillow for reliable rendering.</p>
                 </article>
 
                 <article class="op-card">
@@ -462,7 +461,7 @@
                 <ul>
                     <li>Full Pro features for 30 days</li>
                 </ul>
-                <a class="btn primary buy-btn" href="https://www.shopier.com/safepdf/42232954" role="button" data-plan="30">Buy 30 Days</a>
+                <a class="btn primary buy-btn disabled" href="#" role="button" data-plan="30" style="cursor: not-allowed; opacity: 0.6;" title="Payment system not ready yet">Buy 30 Days</a>
             </article>
 
             <article class="plan-card" data-price="11.99" data-discount="45">
@@ -472,7 +471,7 @@
                 <ul>
                     <li>Full Pro features for 90 days</li>
                 </ul>
-                <a class="btn primary buy-btn" href="#" role="button" data-plan="90">Buy 90 Days</a>
+                <a class="btn primary buy-btn disabled" href="#" role="button" data-plan="90" style="cursor: not-allowed; opacity: 0.6;" title="Payment system not ready yet">Buy 90 Days</a>
             </article>
 
             <article class="plan-card recommended" data-price="29.99" data-discount="60">
@@ -482,7 +481,7 @@
                 <ul>
                     <li>Full Pro features for 12 months</li>
                 </ul>
-                <a class="btn primary buy-btn" href="#" role="button" data-plan="365">Buy Yearly</a>
+                <a class="btn primary buy-btn disabled" href="#" role="button" data-plan="365" style="cursor: not-allowed; opacity: 0.6;" title="Payment system not ready yet">Buy Yearly</a>
             </article>
                 </div>
 
@@ -517,6 +516,15 @@
                             alert('Coupon '+code+' entered implement validation on server.');
                         });
                     }
+
+                    // Handle buy button clicks - payment system not ready
+                    document.querySelectorAll('.buy-btn').forEach(function(btn){
+                        btn.addEventListener('click', function(e){
+                            e.preventDefault();
+                            alert('Payment system is not ready yet. Please check back later or contact us for manual activation.');
+                            return false;
+                        });
+                    });
                 })();
                 </script>
     </section>
@@ -717,16 +725,7 @@
         }
 
         btn.onclick = openContactModal;
-        // btnFooter and btnNav are handled by nav.js and footer.js
-        // btnFooter.onclick = function (e) {
-        //     e.preventDefault();
-        //     openContactModal();
-        // };
-        // btnNav.onclick = function (e) {
-        //     e.preventDefault();
-        //     openContactModal();
-        // };
-
+        
         span.onclick = function () {
             modal.style.display = 'none';
         }

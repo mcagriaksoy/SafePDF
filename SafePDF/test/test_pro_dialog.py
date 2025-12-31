@@ -2,8 +2,9 @@
 """
 Test script for SafePDF pro dialog functionality
 """
-import sys
+
 import os
+import sys
 
 # Add parent directory to sys.path so SafePDF package imports work
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -12,6 +13,7 @@ if parent_dir not in sys.path:
 
 try:
     from ctrl.safe_pdf_controller import SafePDFController
+
     print("✓ Controller import successful")
 
     # Test controller creation
@@ -21,14 +23,15 @@ try:
 
     # Test activation with valid license file
     import tempfile
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.license', delete=False) as f:
-        f.write('SAFEPRO2025')
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".license", delete=False) as f:
+        f.write("SAFEPRO2025")
         temp_license = f.name
-    
+
     success, msg = c.activate_pro_features(temp_license)
     print(f"✓ Activation result: {success} - {msg}")
     print(f"✓ Pro status after activation: {c.is_pro_activated}")
-    
+
     # Clean up
     os.unlink(temp_license)
 
@@ -38,4 +41,5 @@ try:
 except Exception as e:
     print(f"❌ Error: {e}")
     import traceback
+
     traceback.print_exc()
