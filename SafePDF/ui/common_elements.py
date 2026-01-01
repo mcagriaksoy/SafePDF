@@ -1,4 +1,6 @@
 # define color, font, size, and layout for common UI elements
+from typing import ClassVar
+
 class CommonElements:
     # Colors
     BG_COLOR = "#f0f0f0"
@@ -8,7 +10,7 @@ class CommonElements:
     BG_CARD = "#ffffff"
     BG_FRAME = "#ffffff"
     FG_TEXT = "#000000"
-    FG_SECONDARY = "#666666"
+    FG_SECONDARY = "#DBDBDB"
     TAB_BG = "#e9ecef"
     TAB_SELECTED = "#ffffff"
     HIGHLIGHT_COLOR = "#f8f9fa"
@@ -18,6 +20,8 @@ class CommonElements:
     BUTTON_FG = "#000000"
     ENTRY_BG = "#ffffff"
     ENTRY_FG = "#000000"
+
+    URL_COLOR = "#27bf73"
 
     # Font
     FONT = "Century Gothic"
@@ -33,4 +37,4 @@ class CommonElements:
 
     # Default Language
     DEFAULT_LANGUAGE = "en"
-    SELECTED_LANGUAGE = "en"
+    SELECTED_LANGUAGE: ClassVar[str] = "en"
