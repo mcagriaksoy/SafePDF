@@ -163,11 +163,19 @@ class SettingsUI:
         """Open log file viewer dialog"""
         try:
             if not self.log_file_path.exists():
-                messagebox.showinfo("Log File", "No log file found yet.")
+                no_file_msg = (
+                    self.language_manager.get("log_no_file", "No log file found yet.")
+                    if self.language_manager
+                    else "No log file found yet."
+                )
+                messagebox.showinfo("Log File", no_file_msg)
                 return
 
             log_dlg = tk.Toplevel(self.root)
-            log_dlg.title("SafePDF Error Log")
+            log_title = (
+                self.language_manager.get("log_title", "SafePDF Log") if self.language_manager else "SafePDF Log"
+            )
+            log_dlg.title(log_title)
             log_dlg.geometry("700x500")
             log_dlg.transient(self.root)
             x = self.root.winfo_x() + (self.root.winfo_width() // 2) - 350
@@ -180,9 +188,15 @@ class SettingsUI:
                 log_size = self.log_file_path.stat().st_size / 1024
             except Exception:
                 log_size = 0
+            log_location_text = (
+                self.language_manager.get("log_location", "Log Location: {path}\nSize: {size} KB")
+                .format(path=self.log_file_path, size=f"{log_size:.1f}")
+                if self.language_manager
+                else f"Log Location: {self.log_file_path}\nSize: {log_size:.1f} KB"
+            )
             ttk.Label(
                 info_frame,
-                text=f"Log Location: {self.log_file_path}\nSize: {log_size:.1f} KB",
+                text=log_location_text,
                 font=(self.font, CommonElements.FONT_SIZE),
             ).pack(anchor="w")
 
@@ -196,8 +210,8 @@ class SettingsUI:
                 wrap=tk.WORD,
                 yscrollcommand=scrollbar.set,
                 font=(self.font, CommonElements.FONT_SIZE),
-                bg="#f8f9fa",
-                fg="#333",
+                bg=CommonElements.TEXT_BG,
+                fg=CommonElements.TEXT_FG,
             )
             log_text.pack(side="left", fill="both", expand=True)
             scrollbar.config(command=log_text.yview)
@@ -214,14 +228,28 @@ class SettingsUI:
 
             btn_frame = ttk.Frame(log_dlg)
             btn_frame.pack(fill="x", padx=10, pady=10)
-            ttk.Button(btn_frame, text="Refresh", command=lambda: self._refresh_log_view(log_text)).pack(
+            btn_refresh_text = (
+                self.language_manager.get("btn_refresh", "Refresh") if self.language_manager else "Refresh"
+            )
+            btn_close_text = (
+                self.language_manager.get("btn_close", "Close") if self.language_manager else "Close"
+            )
+            ttk.Button(btn_frame, text=btn_refresh_text, command=lambda: self._refresh_log_view(log_text)).pack(
                 side="left", padx=5
             )
-            ttk.Button(btn_frame, text="Close", command=log_dlg.destroy).pack(side="right", padx=5)
+            ttk.Button(btn_frame, text=btn_close_text, command=log_dlg.destroy).pack(side="right", padx=5)
 
         except Exception as e:
             logger.error(f"Error opening log viewer: {e}", exc_info=True)
-            messagebox.showerror("Error", f"Could not open log viewer: {e}")
+            error_title = (
+                self.language_manager.get("error", "Error") if self.language_manager else "Error"
+            )
+            could_not_open_msg = (
+                self.language_manager.get("could_not_open", "Could not open log viewer.")
+                if self.language_manager
+                else "Could not open log viewer."
+            )
+            messagebox.showerror(error_title, f"{could_not_open_msg} {e}")
 
     def _refresh_log_view(self, text_widget):
         try:
@@ -236,26 +264,57 @@ class SettingsUI:
             logger.error(f"Error refreshing log view: {e}", exc_info=True)
             text_widget.config(state=tk.NORMAL)
             text_widget.delete("1.0", tk.END)
-            text_widget.insert("1.0", f"Error reading log file: {e}")
+            log_read_error = (
+                self.language_manager.get("log_read_error", "Error reading log file: {error}")
+                .format(error=str(e))
+                if self.language_manager
+                else f"Error reading log file: {e}"
+            )
+            text_widget.insert("1.0", log_read_error)
             text_widget.config(state=tk.DISABLED)
 
     def clear_log_file(self):
         try:
             if not self.log_file_path.exists():
-                messagebox.showinfo("Log File", "No log file to clear.")
+                log_no_file_clear = (
+                    self.language_manager.get("log_no_file_clear", "No log file to clear.")
+                    if self.language_manager
+                    else "No log file to clear."
+                )
+                messagebox.showinfo("Log File", log_no_file_clear)
                 return
 
-            response = messagebox.askyesno(
-                "Clear Log", "Are you sure you want to clear the error log?\nThis action cannot be undone."
+            log_clear_title = (
+                self.language_manager.get("log_clear_title", "Clear Log") if self.language_manager else "Clear Log"
             )
+            log_clear_confirm = (
+                self.language_manager.get("log_clear_confirm", "Are you sure you want to clear the error log?\nThis action cannot be undone.")
+                if self.language_manager
+                else "Are you sure you want to clear the error log?\nThis action cannot be undone."
+            )
+            response = messagebox.askyesno(log_clear_title, log_clear_confirm)
             if response:
                 with open(self.log_file_path, "w", encoding="utf-8") as f:
                     f.write(f"Log cleared by user at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
                 logger.info("Log file cleared by user")
-                messagebox.showinfo("Success", "Log file has been cleared.")
+                log_clear_success = (
+                    self.language_manager.get("log_clear_success", "Log file has been cleared.")
+                    if self.language_manager
+                    else "Log file has been cleared."
+                )
+                messagebox.showinfo("Success", log_clear_success)
         except Exception as e:
             logger.error(f"Error clearing log file: {e}", exc_info=True)
-            messagebox.showerror("Error", f"Could not clear log file: {e}")
+            error_title = (
+                self.language_manager.get("error", "Error") if self.language_manager else "Error"
+            )
+            log_clear_error = (
+                self.language_manager.get("log_clear_error", "Could not clear log file: {error}")
+                .format(error=str(e))
+                if self.language_manager
+                else f"Could not clear log file: {e}"
+            )
+            messagebox.showerror(error_title, log_clear_error)
 
     def open_log_folder(self):
         try:
@@ -263,24 +322,48 @@ class SettingsUI:
 
             log_dir = self.log_file_path.parent
             if not safe_open_file_or_folder(log_dir):
-                messagebox.showerror("Error", "Could not open log folder.")
+                error_title = (
+                    self.language_manager.get("error", "Error") if self.language_manager else "Error"
+                )
+                log_open_folder_error = (
+                    self.language_manager.get("log_open_folder_error", "Could not open log folder.")
+                    if self.language_manager
+                    else "Could not open log folder."
+                )
+                messagebox.showerror(error_title, log_open_folder_error)
         except Exception as e:
             logger.error(f"Error opening log folder: {e}", exc_info=True)
-            messagebox.showerror("Error", f"Could not open log folder: {e}")
+            error_title = (
+                self.language_manager.get("error", "Error") if self.language_manager else "Error"
+            )
+            log_open_folder_error = (
+                self.language_manager.get("log_open_folder_error", "Could not open log folder.")
+                if self.language_manager
+                else "Could not open log folder."
+            )
+            messagebox.showerror(error_title, f"{log_open_folder_error} {e}")
 
     def create_settings_tab_content(self, parent_frame):
         main_frame = ttk.Frame(parent_frame, style="TFrame")
         main_frame.pack(fill="both", expand=True, padx=24, pady=24)
 
         # Language selection: use combobox and map to language codes
-        ttk.Label(main_frame, text="Language:", font=(self.font, CommonElements.FONT_SIZE, "bold")).pack(
+        lang_label = (
+            self.language_manager.get("settings_language_label", "Language:")
+            if self.language_manager
+            else "Language:"
+        )
+        ttk.Label(main_frame, text=lang_label, font=(self.font, CommonElements.FONT_SIZE, "bold")).pack(
             anchor="w", pady=(12, 4)
         )
-        lang_map = {"English": "en", "German": "de", "Turkish": "tr"}
+        lang_en = self.language_manager.get("lang_english", "English") if self.language_manager else "English"
+        lang_de = self.language_manager.get("lang_german", "German") if self.language_manager else "German"
+        lang_tr = self.language_manager.get("lang_turkish", "Turkish") if self.language_manager else "Turkish"
+        lang_map = {lang_en: "en", lang_de: "de", lang_tr: "tr"}
         combo = ttk.Combobox(main_frame, values=list(lang_map.keys()), state="readonly", width=10)
         cur = str(self.language_var.get())
-        disp = next((k for k, v in lang_map.items() if v == cur or k.lower() == cur.lower()), None)
-        combo.set(disp or "English")
+        display = next((k for k, v in lang_map.items() if v == cur or k.lower() == cur.lower()), None)
+        combo.set(display or lang_en)
 
         def _on_tab_lang_change(event=None):
             sel = combo.get()

@@ -1,4 +1,11 @@
 from setuptools import setup, find_packages
+import re
+
+# Read version from SafePDF/__init__.py
+with open("SafePDF/__init__.py", "r", encoding="utf-8") as f:
+    content = f.read()
+    match = re.search(r'__version__\s*=\s*["\']([^"\']+)["\']', content)
+    version = match.group(1) if match else "0.0.1"
 
 with open("requirements.txt", "r") as f:
     requirements = [
@@ -9,14 +16,14 @@ with open("README.md", "r", encoding="utf-8") as f:
     long_description = f.read()
 
 setup(
-    name="safepdf",
-    version="1.0.10",
-    author="Your Name",  # Replace with actual author
-    author_email="your.email@example.com",  # Replace with actual email
+    name="SafePDF",
+    version=version,
+    author="Mehmet Cagri Aksoy",
+    author_email="info@safepdf.de",
     description="A safe PDF manipulation tool",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/safepdf",  # Replace with actual URL
+    url="https://github.com/mcagriaksoy/safepdf",
     packages=find_packages(),
     include_package_data=True,
     package_data={
@@ -31,12 +38,10 @@ setup(
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: End Users/Desktop",
-        "License :: OSI Approved :: MIT License",  # Adjust if different
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        "Operating System :: OS Independent",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.14",
     ],
     python_requires=">=3.8",
 )

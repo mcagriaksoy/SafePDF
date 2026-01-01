@@ -2,6 +2,7 @@ import sys
 import tkinter as tk
 from pathlib import Path
 from tkinter import messagebox, ttk
+from webbrowser import open as webbrowser_open
 
 from .common_elements import CommonElements
 from .language_elements import LanguageElements
@@ -13,10 +14,75 @@ class HelpUI:
     Designed to be independent to avoid circular imports.
     """
 
-    def __init__(self, root, controller, font=CommonElements.FONT):
+    def __init__(self, root, controller, font=CommonElements.FONT, lang_manager=None):
         self.root = root
         self.controller = controller
         self.font = font
+        self.lang_manager = lang_manager
+
+    def _get_lang_text(self, key, default):
+        """Get localized text from language manager if available"""
+        try:
+            if self.lang_manager:
+                return self.lang_manager.get(key, default)
+            elif hasattr(self.controller, 'lang_manager') and self.controller.lang_manager:
+                return self.controller.lang_manager.get(key, default)
+        except Exception:
+            pass
+        return default
+
+    def _open_how_to_use_gif(self):
+        """Open the How to Use GIF in the default browser"""
+        gif_url = "https://raw.githubusercontent.com/mcagriaksoy/SafePDF/main/img/HowToUse.gif"
+        try:
+            webbrowser_open(gif_url)
+        except Exception as e:
+            try:
+                messagebox.showerror(
+                    self._get_lang_text("error_title", "Error"),
+                    self._get_lang_text(
+                        "error_open_tutorial",
+                        f"Could not open tutorial. Please visit:\n{gif_url}"
+                    )
+                )
+            except Exception:
+                pass
+
+    def _open_contact_email(self):
+        """Open email client to contact SafePDF support"""
+        email = "info@safepdf.de"
+        subject = "SafePDF Support Request"
+        mailto_url = f"mailto:{email}?subject={subject}"
+        try:
+            webbrowser_open(mailto_url)
+        except Exception:
+            try:
+                messagebox.showinfo(
+                    self._get_lang_text("contact_title", "Contact Us"),
+                    self._get_lang_text(
+                        "contact_email_info",
+                        f"Please send your inquiries to:\n\n{email}"
+                    )
+                )
+            except Exception:
+                pass
+
+    def _open_github_issues(self):
+        """Open GitHub issues page to report bugs or request features"""
+        github_issues_url = "https://github.com/mcagriaksoy/SafePDF/issues"
+        try:
+            webbrowser_open(github_issues_url)
+        except Exception:
+            try:
+                messagebox.showinfo(
+                    self._get_lang_text("github_issues_title", "Report Issue"),
+                    self._get_lang_text(
+                        "github_issues_info",
+                        f"Please visit:\n\n{github_issues_url}"
+                    )
+                )
+            except Exception:
+                pass
 
     def _load_help_text(self):
         """Load help text from text/ folder with localization fallback"""
@@ -66,6 +132,34 @@ class HelpUI:
 
             main_frame = ttk.Frame(parent_frame, style="TFrame")
             main_frame.pack(fill="both", expand=True, padx=24, pady=24)
+
+            # Add "How to Use", "Contact", and "GitHub Issues" buttons at the top
+            button_frame = tk.Frame(main_frame, bg="#f8f9fa")
+            button_frame.pack(fill="x", pady=(0, 10))
+
+            how_to_btn = ttk.Button(
+                button_frame,
+                text=self._get_lang_text("btn_how_to_use", "📹 How to Use"),
+                command=self._open_how_to_use_gif,
+                style="Accent.TButton"
+            )
+            how_to_btn.pack(side="left", padx=5, pady=5)
+
+            contact_btn = ttk.Button(
+                button_frame,
+                text=self._get_lang_text("btn_contact_email", "📧 Contact: info@safepdf.de"),
+                command=self._open_contact_email,
+                style="TButton"
+            )
+            contact_btn.pack(side="left", padx=5, pady=5)
+
+            github_btn = ttk.Button(
+                button_frame,
+                text=self._get_lang_text("btn_github_issues", "🐛 Report Issue"),
+                command=self._open_github_issues,
+                style="TButton"
+            )
+            github_btn.pack(side="left", padx=5, pady=5)
 
             help_text = self._load_help_text()
 

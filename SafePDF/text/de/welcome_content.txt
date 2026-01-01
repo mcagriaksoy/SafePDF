@@ -12,9 +12,11 @@ Klicken Sie auf „Weiter“, um den Vorgang zu starten und Ihre gewünschte Akt
 
 Keine Sorge, Ihre Dateien verlassen Ihren Computer nicht.
 
+
+
 💻 Softwareinformationen
 
-Version: v1.0.10
+Version: {VERSION}
 🔗 Nach Updates suchen
 
 

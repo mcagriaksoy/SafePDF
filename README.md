@@ -1,241 +1,125 @@
-## Privacy-First PDF Toolkit
+# SafePDF - Privacy-First PDF Toolkit
 
 <p align="center"> 
-  <img src="img/SafePDF_small.avif" alt="Banner" /> 
-  <a href="https://www.producthunt.com/products/safepdf-privacy-first-pdf-toolkit?utm_source=badge-follow&utm_medium=badge&utm_source=badge-safepdf&#0045;privacy&#0045;first&#0045;pdf&#0045;toolkit" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/follow.svg?product_id=1129974&theme=dark" alt="SafePDF&#0058;&#0032;Privacy‑First&#0032;PDF&#0032;Toolkit - It&#0032;is&#0032;a&#0032;privacy&#0045;focused&#0032;offline&#0032;tool&#0032;for&#0032;PDF&#0032;manipulation&#0046; | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
+  <img src="img/SafePDF_small.avif" alt="SafePDF Banner" /> 
 </p>
-  
-[![mcagriaksoy - SafePDF](https://img.shields.io/static/v1?label=mcagriaksoy&message=SafePDF&color=red&logo=github)](https://github.com/mcagriaksoy/SafePDF "Go to GitHub repo")
-[![stars - SafePDF](https://img.shields.io/github/stars/mcagriaksoy/SafePDF?style=social)](https://github.com/mcagriaksoy/SafePDF)
-[![forks - SafePDF](https://img.shields.io/github/forks/mcagriaksoy/SafePDF?style=social)](https://github.com/mcagriaksoy/SafePDF)
+
 [![GitHub release](https://img.shields.io/github/release/mcagriaksoy/SafePDF?include_prereleases=&sort=semver&color=red)](https://github.com/mcagriaksoy/SafePDF/releases/)
-[![License](https://img.shields.io/badge/License-GPL--3.0--1-red)](#license)
-[![issues - SafePDF](https://img.shields.io/github/issues/mcagriaksoy/SafePDF)](https://github.com/mcagriaksoy/SafePDF/issues)
+[![License](https://img.shields.io/badge/License-GPL--3.0-red)](#license)
+[![stars - SafePDF](https://img.shields.io/github/stars/mcagriaksoy/SafePDF?style=social)](https://github.com/mcagriaksoy/SafePDF)
 
+**SafePDF** is a privacy-focused, offline PDF manipulation tool. All operations are performed locally on your device—your sensitive documents never leave your computer.
 
-SafePDF is a powerful, privacy-focused PDF manipulation tool designed to handle your documents entirely offline. Whether you're compressing large files, splitting pages, merging multiple PDFs, converting to images, rotating pages, or repairing corrupted documents SafePDF does it all locally, ensuring your sensitive data never leaves your device.
+<a href="https://github.com/mcagriaksoy/SafePDF/releases/" download>
+  <img src="https://img.shields.io/badge/Download-Windows_Installer-blue?style=for-the-badge" alt="Download SafePDF">
+</a>
 
 ## Why SafePDF?
 
-Unlike cloud-based tools, SafePDF performs all operations directly on your device, eliminating the risk of data exposure. It's ideal for professionals, legal teams, healthcare providers, and anyone who values document confidentiality.
+**100% Offline** - No cloud uploads, no internet required  
+**Fast & Lightweight** - Operations run directly on your device  
+**Privacy First** - Ideal for sensitive documents (legal, healthcare, financial)  
+**Multi-language** - English, German, Turkish support
 
-Medium article: https://medium.com/dev-genius/the-untold-security-concerns-of-online-pdf-editing-tools-6ee1d83facd6
+> **Read more:** [The Security Concerns of Online PDF Tools](https://medium.com/dev-genius/the-untold-security-concerns-of-online-pdf-editing-tools-6ee1d83facd6)
 
-![Banner](img/SafePDF_Ad.avif)
+![SafePDF Interface](img/SafePDF_Ad.avif)
+
+![SafePDF Interface](img/SafePDF_Ad.avif)
 
 ## Features
 
-- **PDF Compression**: Reduce PDF file size with adjustable quality settings
-- **PDF Split/Separate**: Split PDF into individual pages or custom page ranges
-- **PDF Merge**: Combine multiple PDF files (coming soon)
-- **PDF to JPG**: Convert PDF pages to high-quality JPG images
-- **PDF Rotate**: Rotate PDF pages by 90°, 180°, or 270°
-- **PDF Repair**: Attempt to repair corrupted PDF files
-- **Drag & Drop**: Easy file selection with drag-and-drop support
-- **Progress Tracking**: Real-time progress indication for operations
-- **User-friendly Interface**: Intuitive tabbed interface similar to the Qt version
+- **Compress** - Reduce PDF file size with quality control
+- **Split** - Separate PDFs by pages or custom ranges
+- **Merge** - Combine multiple PDF files into one
+- **Convert to Images** - Export PDF pages as JPG/JPEG
+- **Rotate** - Rotate pages (90°, 180°, 270°)
+- **Repair** - Fix corrupted PDF files
+- **Convert to Word** - Export PDF as DOCX documents
+- **Extract Text** - Extract plain text from PDFs
+- **Extract Info** - View PDF metadata and properties
 
-![Main Window](img/UI_v1.avif)
-![Operations Window](img/UI_v1_p2.avif)
+**Interface Features:**
+- Drag & drop file selection
+- Real-time progress tracking
+- Multi-language UI
+- Modern, intuitive design
 
-### How to use?
+![How to Use](img/HowToUse.gif)
 
-![How to Use?](img/HowToUse.gif)
+## Quick Start
 
-## Download URL
-<a href="https://github.com/mcagriaksoy/SafePDF/releases/" download>
-  <img src="https://img.shields.io/badge/Download-SafePDF_win64_x86.zip-blue?style=for-the-badge" alt="Download SafePDF_win64_x86.zip">
-</a>
+### Option 1: Download Executable (Recommended)
+1. Download the latest release from [Releases](https://github.com/mcagriaksoy/SafePDF/releases/)
+2. Extract the ZIP file
+3. Run `SafePDF.exe`
 
-## Documentation
+### Option 2: Run from Source
 
-[![View site - GH Pages](https://img.shields.io/badge/View_site-GH_Pages-2ea44f?style=for-the-badge)](https://mcagriaksoy.github.io/SafePDF/)
-[![view - Documentation](https://img.shields.io/badge/view-Documentation-blue?style=for-the-badge)](/docs/ "Go to project documentation")
+**Requirements:**
+- Python 3.7+
+- pip
 
-## License
-
-Released under [GPL-3.0-1](/LICENSE) by [@mcagriaksoy](https://github.com/mcagriaksoy).
-
-## Donation
-
-<a href="https://www.buymeacoffee.com/mcagriaksoy"><img src="https://img.shields.io/badge/-buy_me_a%C2%A0coffee-gray?logo=buy-me-a-coffee" alt="Donate"></a>
-
-## Installation
-
-You can use the executable directly or download the source-code and run given instructions.
-
-### Prerequisites
-
-- Python 3.7 or higher
-- pip (Python package installer)
-- PyPDF2>=3.0.0
-- Pillow>=9.0.0
-- tkinterdnd2>=0.3.0
-- python-docx>=0.8.11
-  
-Note: If you encounter issues with `tkinterdnd2`, the application will still work without drag-and-drop functionality.
-
-### Install Dependencies
-
+**Installation:**
 ```bash
+# Clone the repository
+git clone https://github.com/mcagriaksoy/SafePDF.git
+cd SafePDF
+
+# Install dependencies
 pip install -r requirements.txt
-```
 
-## Usage
-
-### Running the Application
-
-You can use the executable or download the source-code and run below:
-
-```bash
-# Run the main application (from project root)
+# Run the application
 python run_safe_pdf.py
-
-# Or run the main application directly (from SafePDF/ directory)
-python safe_pdf_app.py
-
-# Or run as a module (from project root)
-python -m SafePDF.safe_pdf_app
-
-# Or run the test/demo script
-python test_demo.py
-
-# Test dependencies only
-python test_demo.py --test-only
 ```
 
-### Using the Application
+## How to Use
 
-1. **Welcome Tab**: Overview of the application and process steps
-2. **Select File Tab**: 
-   - Drag and drop a PDF file onto the designated area, OR
-   - Click "Load File from Disk" to browse for a PDF file
-3. **Select Operation Tab**: Choose from available PDF operations:
-   - PDF Compress
-   - PDF Separate/Split  
-   - PDF Merge
-   - PDF to JPG
-   - PDF Rotate
-   - PDF Repair
-4. **Adjust Settings Tab**: Configure operation-specific settings
-5. **Results Tab**: View operation progress and results
-
-### Operation Details
-
-#### PDF Compression
-- **Low Quality**: Maximum compression, smaller file size
-- **Medium Quality**: Balanced compression and quality
-- **High Quality**: Minimal compression, better quality
-
-#### PDF Split
-- **Split by Pages**: Creates individual PDF files for each page
-- **Split by Range**: Specify custom page ranges (e.g., "1-5,7,10-12")
-
-#### PDF Rotation
-- Rotate all pages by 90°, 180°, or 270°
-
-#### PDF to JPG
-- Converts each PDF page to a high-resolution JPG image
-- Default DPI: 200 (adjustable in code)
-
-#### PDF Repair
-- Attempts to recover readable pages from corrupted PDF files
-- Uses relaxed parsing to handle damaged files
-
-## File Structure
-
-```
-SafePDF/
-├── run_safe_pdf.py      # Launcher script (run from project root)
-├── SafePDF/             # Main package
-│   ├── __init__.py      # Package initializer
-│   ├── safe_pdf_app.py  # Main application file
-│   ├── ctrl/
-│   │   └── safe_pdf_controller.py
-│   ├── ui/
-│   │   ├── __init__.py
-│   │   └── safe_pdf_ui.py
-│   ├── logger/
-│   │   └── logging_config.py
-│   ├── ops/
-│   │   └── pdf_operations.py
-│   ├── test/
-│   │   ├── test_demo.py
-│   │   └── test_compression.py
-│   ├── assets/
-│   ├── text/
-│   └── version.txt
-├── requirements.txt     # Python dependencies
-├── README.md           # This file
-└── LICENSE
-```
-
-## Navigation Controls
-
-- **Back/Next**: Navigate between tabs
-- **Help**: View application help
-- **Settings**: Application settings (coming soon)
-- **Cancel**: Exit the application
-
-## Error Handling
-
-The application includes comprehensive error handling:
-- Invalid PDF file detection
-- Missing dependency warnings
-- Operation failure notifications
-- Progress tracking with error recovery
-
-## Troubleshooting
-
-### Common Issues
-
-1. **"PyPDF2/pypdf not available"**
-   ```bash
-   pip install PyPDF2
-   # or
-   pip install pypdf
-   ```
-
-2. **"PIL/Pillow not installed"**
-   ```bash
-   pip install Pillow
-   ```
-
-4. **Drag and drop not working**
-   ```bash
-   pip install tkinterdnd2
-   ```
-   Note: If tkinterdnd2 installation fails, you can still use the file browser button.
-
-### Performance Tips
-
-- For large PDF files, operations may take some time
-- The application shows progress indicators for long operations
-- Operations run in separate threads to keep the UI responsive
+1. **Select Operation** - Choose what you want to do (compress, split, merge, etc.)
+2. **Select File** - Drag & drop your PDF or click to browse
+3. **Adjust Settings** - Configure operation-specific options
+4. **Execute** - Click to process your file
+5. **View Results** - See output and open the processed file
 
 ## Development
 
-### Code Structure
+### Project Structure
+```
+SafePDF/
+├── SafePDF/
+│   ├── ctrl/           # Controllers
+│   ├── ui/             # User interface
+│   ├── ops/            # PDF operations
+│   ├── logger/         # Logging
+│   └── text/           # Localization files
+├── run_safe_pdf.py     # Main launcher
+└── requirements.txt    # Dependencies
+```
 
-- `SafePDFApp`: Main application class handling UI and user interactions
-- `PDFOperations`: Backend class with all PDF manipulation logic
-- Modular design allows easy addition of new operations
+### Contributing
 
-### Adding New Operations
+Contributions are welcome! Please:
+- Report bugs via [Issues](https://github.com/mcagriaksoy/SafePDF/issues)
+- Submit pull requests for improvements
+- Follow existing code style
 
-1. Add operation logic to `PDFOperations` class
-2. Create settings UI in `SafePDFApp.update_settings_for_operation()`
-3. Add operation button in `create_operation_tab()`
-4. Handle operation execution in `_run_operation_thread()`
+## Support
 
-## Contributing
+- Email: [info@safepdf.de](mailto:info@safepdf.de)
+- Report Issues: [GitHub Issues](https://github.com/mcagriaksoy/SafePDF/issues)
+- Documentation: [safepdf.de](https://safepdf.de)
 
-Feel free to contribute by:
-- Reporting bugs
-- Suggesting new features
-- Submitting pull requests
-- Improving documentation
-- Easy to modify and extend
+## License
 
-For more information, visit: https://github.com/mcagriaksoy/SafePDF
+Released under [GPL-3.0](/LICENSE) by [@mcagriaksoy](https://github.com/mcagriaksoy).
+
+## Support the Project
+
+<a href="https://www.buymeacoffee.com/mcagriaksoy">
+  <img src="https://img.shields.io/badge/-buy_me_a%C2%A0coffee-gray?logo=buy-me-a-coffee" alt="Buy Me A Coffee">
+</a>
+
+---
+
+Made for privacy-conscious users
 
