@@ -247,5 +247,14 @@
   "tooltip_settings": "Konfigurieren Sie vorgangsspezifische Einstellungen",
   "tooltip_results": "Zeigen Sie die Ergebnisse Ihres PDF-Vorgangs an",
   "tooltip_app_settings": "Anwendungseinstellungen und -einstellungen",
-  "tooltip_help": "Hilfe und Dokumentation"
+  "tooltip_help": "Hilfe und Dokumentation",
+  "btn_how_to_use": "📹 Anleitung",
+  "error_title": "Fehler",
+  "error_open_tutorial": "Tutorial konnte nicht geöffnet werden. Bitte besuchen Sie:\n{url}",
+  "btn_contact_email": "📧 Kontakt: info@safepdf.de",
+  "contact_title": "Kontaktieren Sie uns",
+  "contact_email_info": "Bitte senden Sie Ihre Anfragen an:\n\n{email}",
+  "btn_github_issues": "🐛 Problem melden",
+  "github_issues_title": "Problem melden",
+  "github_issues_info": "Bitte besuchen Sie:\n\n{url}"
 }

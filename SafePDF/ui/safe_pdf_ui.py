@@ -16,6 +16,7 @@ from tkinter import filedialog, messagebox, ttk
 from urllib.parse import urlparse
 from webbrowser import open as webbrowser_open
 
+from SafePDF import __version__ as SAFEPDF_VERSION
 from SafePDF.ctrl.language_manager import LanguageManager
 from SafePDF.logger.logging_config import setup_logging, get_logger
 
@@ -229,7 +230,7 @@ class SafePDFUI:
         )
 
         # Instantiate delegated UI helpers
-        self.help_ui = HelpUI(root, controller, CommonElements.FONT)
+        self.help_ui = HelpUI(root, controller, CommonElements.FONT, lang_manager=self.lang_manager)
         self.settings_ui = SettingsUI(
             root,
             controller,
@@ -252,8 +253,17 @@ class SafePDFUI:
     def setup_main_window(self):
         """Configure the main application window with modern design and custom title bar"""
         self.root.title("SafePDF - A tool for PDF Manipulation")
-        self.root.geometry(SIZE_STR)
-        self.root.minsize(*SIZE_LIST)
+        
+        # Set window size based on screen resolution
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        
+        # Use default size but ensure it fits on screen (80% max)
+        window_width = min(SIZE_LIST[0], int(screen_width * 0.8))
+        window_height = min(SIZE_LIST[1], int(screen_height * 0.8))
+        
+        self.root.geometry(f"{window_width}x{window_height}")
+        self.root.minsize(900, 650)  # Set absolute minimum size
         self.root.configure(bg=CommonElements.BG_MAIN)
 
         # IMPORTANT: First update the window to ensure it's created properly
@@ -447,8 +457,22 @@ class SafePDFUI:
         self.root.update_idletasks()
         width = self.root.winfo_width()
         height = self.root.winfo_height()
-        x = (self.root.winfo_screenwidth() // 2) - (width // 2)
-        y = (self.root.winfo_screenheight() // 2) - (height // 2)
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        
+        # Ensure window fits on screen with some padding
+        if width > screen_width - 100:
+            width = screen_width - 100
+        if height > screen_height - 100:
+            height = screen_height - 100
+        
+        x = (screen_width // 2) - (width // 2)
+        y = (screen_height // 2) - (height // 2)
+        
+        # Ensure window is not positioned off-screen
+        x = max(0, min(x, screen_width - width))
+        y = max(0, min(y, screen_height - height))
+        
         self.root.geometry(f"{width}x{height}+{x}+{y}")
 
     def create_ui_components(self):
@@ -1028,7 +1052,10 @@ class SafePDFUI:
                 try:
                     if welcome_txt_path.exists():
                         with open(str(welcome_txt_path), "r", encoding="utf-8") as f:
-                            return f.read()
+                            content = f.read()
+                            # Replace {VERSION} placeholder with actual version
+                            content = content.replace("{VERSION}", f"v{SAFEPDF_VERSION}")
+                            return content
                 except Exception:
                     logger.debug(
                         f"Error reading welcome file {welcome_txt_path}", exc_info=True
@@ -1166,7 +1193,7 @@ class SafePDFUI:
     def create_file_tab(self):
         """Create the file selection tab with modern design and PDF preview"""
         main_frame = ttk.Frame(self.file_frame, style="TFrame")
-        main_frame.pack(fill="both", expand=True, padx=32, pady=32)
+        main_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
         # Horizontal layout for drop zone and preview
         file_tab_container = tk.Frame(main_frame, bg=CommonElements.TEXT_BG)
@@ -1191,8 +1218,8 @@ class SafePDFUI:
             relief=tk.FLAT,
             bd=0,
             bg=CommonElements.TEXT_BG,
-            font=(CommonElements.FONT, 13, "bold"),
-            height=8,
+            font=(CommonElements.FONT, 12, "bold"),
+            height=10,
             cursor="hand2",
             fg=CommonElements.RED_COLOR,
         )
@@ -1697,7 +1724,7 @@ class SafePDFUI:
     def create_settings_tab(self):
         """Create the settings adjustment tab with modern design"""
         main_frame = ttk.Frame(self.settings_frame, style="TFrame")
-        main_frame.pack(fill="both", expand=True, padx=24, pady=24)
+        main_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
         # Settings will be populated based on selected operation
         self.settings_label = ttk.Label(
@@ -1718,13 +1745,13 @@ class SafePDFUI:
     def create_results_tab(self):
         """Create the results display tab with modern design"""
         main_frame = ttk.Frame(self.results_frame, style="TFrame")
-        main_frame.pack(fill="both", expand=True, padx=24, pady=24)
+        main_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
         # Use tk.Text instead of ScrolledText to avoid scrollbar
         self.results_text = tk.Text(
             main_frame,
             wrap=tk.WORD,
-            height=12,
+            height=15,
             font=(CommonElements.FONT, CommonElements.FONT_SIZE),
             background=CommonElements.TEXT_BG,
             foreground=CommonElements.TEXT_FG,
@@ -2825,6 +2852,12 @@ class SafePDFUI:
         self.update_file_display()
         self.update_navigation_buttons()
 
+        # Clear PDF preview
+        if hasattr(self, "pdf_preview_canvas") and self.pdf_preview_canvas:
+            self.show_pdf_preview(None)
+        if hasattr(self, "pdf_preview_image"):
+            self.pdf_preview_image = None
+
         # Clear results
         self.results_text.config(state=tk.NORMAL)
         self.results_text.delete("1.0", tk.END)
@@ -3038,49 +3071,8 @@ class SafePDFUI:
         open_url("https://safepdf.de/")
 
     def _read_current_version(self) -> str:
-        """Read current packaged version from welcome_content.txt or version.txt"""
-        # Try welcome_content.txt first (it contains 'Version: vX.Y.Z')
-        try:
-            # Prefer localized version of welcome_content.txt
-            lang_code = CommonElements.SELECTED_LANGUAGE or "en"
-            try:
-                lang_var = getattr(self.controller, "language_var", None)
-                if lang_var and hasattr(lang_var, "get"):
-                    v = lang_var.get()
-                    if v and isinstance(v, str) and len(v) <= 5:
-                        lang_code = v
-            except Exception:
-                lang_code = CommonElements.SELECTED_LANGUAGE or "en"
-
-            # Get base directory - handle both Python and PyInstaller
-            if getattr(sys, "frozen", False):
-                base_path = Path(sys._MEIPASS)
-            else:
-                base_path = Path(__file__).parent.parent
-
-            candidates = [
-                base_path / "text" / lang_code / "welcome_content.txt",
-                base_path / "text" / "welcome_content.txt",
-                base_path / "version.txt",
-            ]
-            for welcome_path in candidates:
-                try:
-                    if welcome_path.exists():
-                        with open(str(welcome_path), "r", encoding="utf-8") as f:
-                            for line in f:
-                                if line.strip().lower().startswith("version:"):
-                                    v = line.split(":", 1)[1].strip()
-                                    return v
-                except Exception:
-                    logger.debug(
-                        f"Error reading version from {welcome_path}", exc_info=True
-                    )
-                    continue
-        except Exception:
-            logger.debug("Error loading welcome content from file", exc_info=True)
-            pass  # File may not exist or be readable, continue to fallback
-
-        return "v0.0.0"
+        """Read current packaged version from SafePDF.__version__"""
+        return f"v{SAFEPDF_VERSION}"
 
     def _load_pro_features(self):
         """Delegate loading pro features to UpdateUI"""

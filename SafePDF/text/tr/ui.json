@@ -247,5 +247,14 @@
   "tooltip_settings": "İşlem özel ayarları yapılandırın",
   "tooltip_results": "PDF işleminizin sonuçlarını görüntüleyin",
   "tooltip_app_settings": "Uygulama ayarları ve tercihleri",
-  "tooltip_help": "Yardım ve belgeler"
+  "tooltip_help": "Yardım ve belgeler",
+  "btn_how_to_use": "📹 Nasıl Kullanılır",
+  "error_title": "Hata",
+  "error_open_tutorial": "Öğretici açılamadı. Lütfen şu adresi ziyaret edin:\n{url}",
+  "btn_contact_email": "📧 İletişim: info@safepdf.de",
+  "contact_title": "Bize Ulaşın",
+  "contact_email_info": "Lütfen sorularınızı şu adrese gönderin:\n\n{email}",
+  "btn_github_issues": "🐛 Sorun Bildir",
+  "github_issues_title": "Sorun Bildir",
+  "github_issues_info": "Lütfen şu adresi ziyaret edin:\n\n{url}"
 }

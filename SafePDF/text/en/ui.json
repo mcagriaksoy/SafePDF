@@ -247,5 +247,14 @@
   "tooltip_settings": "Configure operation-specific settings",
   "tooltip_results": "View the results of your PDF operation",
   "tooltip_app_settings": "Application settings and preferences",
-  "tooltip_help": "Help and documentation"
+  "tooltip_help": "Help and documentation",
+  "btn_how_to_use": "📹 How to Use",
+  "error_title": "Error",
+  "error_open_tutorial": "Could not open tutorial. Please visit:\n{url}",
+  "btn_contact_email": "📧 Contact: info@safepdf.de",
+  "contact_title": "Contact Us",
+  "contact_email_info": "Please send your inquiries to:\n\n{email}",
+  "btn_github_issues": "🐛 Report Issue",
+  "github_issues_title": "Report Issue",
+  "github_issues_info": "Please visit:\n\n{url}"
 }

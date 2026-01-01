@@ -12,9 +12,11 @@ Hoş geldiniz
 
 Endişelenmeyin, dosyalarınız bilgisayarınızdan asla ayrılmaz.
 
+
+
 💻 Yazılım Bilgileri
 
-Sürüm: v1.0.10
+Sürüm: {VERSION}
 🔗 Güncellemeleri Kontrol Et
 
 

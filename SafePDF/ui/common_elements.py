@@ -28,8 +28,8 @@ class CommonElements:
     FONT_SIZE = 10
 
     # Sizes
-    SIZE_STR = "800x640"
-    SIZE_LIST = (800, 640)
+    SIZE_STR = "1000x660"
+    SIZE_LIST = (1000, 660)
     PADDING = 10
 
     PRO_POPUP_SIZE = "550x550"
