@@ -42,6 +42,8 @@
 - Real-time progress tracking
 - Multi-language UI
 - Modern, intuitive design
+- 
+![Screenshot](img/UI_v1.avif)
 
 ![How to Use](img/HowToUse.gif)
 
