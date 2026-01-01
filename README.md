@@ -25,8 +25,6 @@
 
 ![SafePDF Interface](img/SafePDF_Ad.avif)
 
-![SafePDF Interface](img/SafePDF_Ad.avif)
-
 ## Features
 
 - **Compress** - Reduce PDF file size with quality control
