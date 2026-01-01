@@ -47,8 +47,6 @@
 
 ![How to Use](img/HowToUse.gif)
 
-![How to Use](img/HowToUse.gif)
-
 ## Quick Start
 
 ### Option 1: Download Executable (Recommended)

@@ -3,8 +3,8 @@
 # For use with PyInstaller --version-file option
 VSVersionInfo(
   ffi=FixedFileInfo(
-    filevers=(1, 0, 10, 0),
-    prodvers=(1, 0, 10, 0),
+    filevers=(1, 0, 11, 0),
+    prodvers=(1, 0, 11, 0),
     mask=0x3f,
     flags=0x0,
     OS=0x4,
@@ -19,13 +19,13 @@ VSVersionInfo(
         [
           StringStruct('CompanyName', 'github.com/mcagriaksoy'),
           StringStruct('FileDescription', 'SafePDF - A privacy focused PDF Manipulation Tool'),
-          StringStruct('FileVersion', '1.0.10'),
+          StringStruct('FileVersion', '1.0.11'),
           StringStruct('InternalName', 'SafePDF'),
           StringStruct('LegalCopyright', 'Copyright (C) 2025 mcagriaksoy'),
           StringStruct('LegalTrademarks', ''),
-          StringStruct('OriginalFilename', 'SafePdf_v1.0.10_win64.exe'),
+          StringStruct('OriginalFilename', 'SafePdf_v1.0.11_win64.exe'),
           StringStruct('ProductName', 'SafePDF'),
-          StringStruct('ProductVersion', '1.0.10'),
+          StringStruct('ProductVersion', '1.0.11'),
           StringStruct('License', 'GPL-V3.0')
         ])
       ]),
