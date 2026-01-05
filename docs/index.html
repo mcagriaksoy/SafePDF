@@ -479,8 +479,7 @@
                 <ul>
                     <li>Full Pro features for 30 days</li>
                 </ul>
-                <a class="btn primary buy-btn disabled" href="#" role="button" data-plan="30"
-                    style="cursor: not-allowed; opacity: 0.6;" title="Payment system not ready yet">Buy 30 Days</a>
+                <a class="btn primary buy-btn" href="https://organicmehtan.gumroad.com/l/safepdf" role="button" data-plan="30" target="_blank" rel="noopener">Buy 30 Days</a>
             </article>
 
             <article class="plan-card" data-price="11.99" data-discount="45">
@@ -506,7 +505,7 @@
             </article>
         </div>
 
-        <p class="small muted">Payments processed via your chosen provider. No files are uploaded to our servers.</p>
+        <p class="small muted" style="text-align: center; margin-top: 10px;">Payments processed securely via Gumroad. No files are uploaded to our servers. Powered by <a href="https://gumroad.com" target="_blank" rel="noopener">Gumroad</a></p>
 
         <script>
             (function () {
@@ -540,7 +539,7 @@
                 }
 
                 // Handle buy button clicks - payment system not ready
-                document.querySelectorAll('.buy-btn').forEach(function (btn) {
+                document.querySelectorAll('.buy-btn.disabled').forEach(function (btn) {
                     btn.addEventListener('click', function (e) {
                         e.preventDefault();
                         alert('Payment system is not ready yet. Please check back later or contact us for manual activation.');
