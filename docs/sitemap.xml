@@ -75,5 +75,17 @@
   <priority>0.7</priority>
 </url>
 
+<url>
+  <loc>https://safepdf.de/sustainability.html</loc>
+  <lastmod>2026-01-05T00:00:00+00:00</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.7</priority>
+</url>
 
+<url>
+  <loc>https://safepdf.de/contact.html</loc>
+  <lastmod>2026-01-05T00:00:00+00:00</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>1</priority>
+</url>
 </urlset>

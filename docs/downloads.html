@@ -355,33 +355,6 @@
             }
         }
     </script>
-
-    <!-- Language switcher -->
-    <script>
-        const langSelect = document.getElementById('language-select');
-        const langFlag = document.getElementById('lang-flag');
-        function updateFlag() {
-            const flagMap = { en: '🇬🇧', tr: '🇹🇷', de: '🇩🇪' };
-            const lang = langSelect.value;
-            langFlag.textContent = flagMap[lang] || '🌐';
-        }
-        langSelect.addEventListener('change', function() {
-            updateFlag();
-            const lang = langSelect.value;
-            const url = new URL(window.location.href);
-            url.searchParams.set('lang', lang);
-            window.location.href = url.toString();
-        });
-        (function(){
-            const urlLang = new URL(window.location.href).searchParams.get('lang');
-            if(urlLang) {
-                for(let i=0;i<langSelect.options.length;i++) {
-                    if(langSelect.options[i].value===urlLang) langSelect.selectedIndex=i;
-                }
-            }
-            updateFlag();
-        })();
-    </script>
 </body>
 
 </html>

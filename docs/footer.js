@@ -67,6 +67,11 @@ function createFooter() {
                         <i class="fas fa-envelope"></i>
                     </a>
                 </div>
+                <div class="footer-payment-logos">
+                    <img src="assets/mc.png" alt="Mastercard Logo" style="height: 32px; margin-right: 8px;">
+                    <img src="assets/vc.png" alt="Visa Logo" style="height: 32px;">
+                </div>
+                <!-- BEGIN: TrustLock Badge --><a name="trustbadge" href="https://trustlock.co" ><img name="trustseal" alt="Trust Badges" style="border: 0;" src="https://trustlock.co/wp-content/uploads/2019/01/free-website-trust-badges-100-money-back-guarantee.png" width="238" height="44"></a><!-- End: TrustLock Badge -->
             <button id="back-to-top" title="Back to top"
                 style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">↑</button>
             <a href="https://www.checkdomain.de/unternehmen/garantie/ssl/popup/"

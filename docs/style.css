@@ -60,6 +60,33 @@
   color: var(--accent)
 }
 
+/* Mobile Navigation */
+@media (max-width: 768px) {
+  .navbar .container {
+    padding: 12px 16px;
+  }
+
+  .nav-brand {
+    font-size: 1.1rem;
+  }
+
+  .nav-links {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .nav-links a {
+    padding: 6px 8px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .nav-links {
+    display: none;
+  }
+}
+
 .body,
 body {
   margin: 0;
@@ -73,6 +100,19 @@ body {
   max-width: var(--max-width);
   margin: 0 auto;
   padding: 28px
+}
+
+/* Mobile Container */
+@media (max-width: 768px) {
+  .container {
+    padding: 20px 16px;
+  }
+}
+
+@media (max-width: 560px) {
+  .container {
+    padding: 16px 12px;
+  }
 }
 
 .hero {
@@ -97,6 +137,62 @@ body {
   flex: 1;
   display: flex;
   justify-content: center
+}
+
+.hero-banner {
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(2, 6, 23, .15)
+}
+
+/* Mobile Hero Improvements */
+@media (max-width: 900px) {
+  .hero {
+    padding: 32px 0;
+  }
+
+  .hero-inner {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .hero-text {
+    max-width: 100%;
+  }
+
+  .hero h1 {
+    font-size: 1.75rem;
+  }
+
+  .hero .lead {
+    font-size: 1rem;
+  }
+
+  .badges {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .social-proof {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 560px) {
+  .hero h1 {
+    font-size: 1.5rem;
+  }
+
+  .badges .btn {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+
+  .social-badge {
+    font-size: 0.85rem;
+    padding: 8px 12px;
+  }
 }
 
 .hero h1 {
@@ -615,6 +711,19 @@ body {
   box-shadow: 0 16px 40px rgba(255, 255, 255)
 }
 
+/* Mobile Screenshots */
+@media (max-width: 768px) {
+  .shot-row {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .shot-row img {
+    max-width: 100%;
+    width: 100%;
+  }
+}
+
 .op-card {
   background: var(--card);
   padding: 22px;
@@ -626,6 +735,21 @@ body {
 .op-card:hover {
   transform: translateY(-8px);
   box-shadow: 0 18px 45px rgba(255, 255, 255)
+}
+
+/* Mobile Operation Cards */
+@media (max-width: 768px) {
+  .op-card {
+    padding: 18px;
+  }
+
+  .op-card h3 {
+    font-size: 1.1rem;
+  }
+
+  .op-card ul {
+    padding-left: 20px;
+  }
 }
 
 .site-footer {
@@ -650,6 +774,26 @@ body {
   margin-top: 28px;
   padding-top: 14px;
   border-top: 1px solid rgba(15, 23, 36, .03)
+}
+
+/* Mobile Footer */
+@media (max-width: 900px) {
+  .footer-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
 }
 
 .footer-download-buttons {
@@ -930,6 +1074,31 @@ body {
 
   .contact-btn {
     text-align: center
+  }
+
+  .modal-content {
+    width: 95%;
+    padding: 16px;
+    max-height: 95vh;
+  }
+
+  .close {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 560px) {
+  .modal-content {
+    width: 98%;
+    padding: 12px;
+  }
+
+  .modal h2 {
+    font-size: 1.3rem;
+  }
+
+  .contact-option {
+    padding: 16px;
   }
 }
 

@@ -45,9 +45,9 @@
             links: [
                 { href: "#features", text: "Features" },
                 { href: "#comparison", text: "Compare Plans" },
-                { href: "#screenshots", text: "Screenshots" },
-                { href: "#operations", text: "Operations" },
-                { href: "#", text: "Contact", id: "nav-contact-btn" }
+                { href: "downloads.html", text: "Downloads" },
+                { href: "sustainability.html", text: "Sustainability" },
+                { href: "contact.html", text: "Contact" }
             ]
         };
         createNavigation(navConfig);
@@ -391,8 +391,8 @@
                     <div class="testimonial-author">
                         <div class="author-avatar">👨‍💼</div>
                         <div class="author-info">
-                            <div class="author-name">Markus</div>
-                            <div class="author-title">Data Analyst</div>
+                            <div class="author-name">Irem</div>
+                            <div class="author-title">Business Analyst</div>
                         </div>
                     </div>
                 </div>
@@ -400,13 +400,13 @@
                 <div class="testimonial-card">
                     <div class="testimonial-content">
                         <p>"The compression quality is outstanding. I can reduce PDF sizes by 70% without losing
-                            readability. The Pro version's lossless mode is a game-changer."</p>
+                            readability. Highly recommend SafePDF!"</p>
                     </div>
                     <div class="testimonial-author">
                         <div class="author-avatar">👩‍💻</div>
                         <div class="author-info">
-                            <div class="author-name">Sara</div>
-                            <div class="author-title">Graphic Designer</div>
+                            <div class="author-name">Cem</div>
+                            <div class="author-title">Researcher</div>
                         </div>
                     </div>
                 </div>
@@ -414,13 +414,13 @@
                 <div class="testimonial-card">
                     <div class="testimonial-content">
                         <p>"As someone who works with sensitive legal documents, SafePDF gives me peace of mind.
-                            Everything stays on my machine, and the repair feature saved me hours of work."</p>
+                            Everything stays on my machine.."</p>
                     </div>
                     <div class="testimonial-author">
                         <div class="author-avatar">👨‍⚖️</div>
                         <div class="author-info">
-                            <div class="author-name">David</div>
-                            <div class="author-title">Legal Assistant</div>
+                            <div class="author-name">Alp</div>
+                            <div class="author-title">Software Engineer</div>
                         </div>
                     </div>
                 </div>
@@ -506,7 +506,7 @@
         </div>
 
         <p class="small muted" style="text-align: center; margin-top: 10px;">Payments processed securely via Gumroad. No files are uploaded to our servers. Powered by <a href="https://gumroad.com" target="_blank" rel="noopener">Gumroad</a></p>
-
+         <p class="small muted" style="text-align: center;margin-top: 8px;">Regional Prices are calculated based on <a href="https://regionalpricecalculator.com" target="_blank" rel="noopener">regionalpricecalculator.com</a></p>
         <script>
             (function () {
                 function formatPrice(n) { return '€' + n.toFixed(2) }
@@ -557,31 +557,6 @@
     <script src="footer.js"></script>
 
     <script>
-        // Minimal language switcher with flag (flag only in span, not in dropdown)
-        const langSelect = document.getElementById('language-select');
-        const langFlag = document.getElementById('lang-flag');
-        function updateFlag() {
-            // Use a mapping for reliability
-            const flagMap = { en: '🇬🇧', tr: '🇹🇷', de: '🇩🇪' };
-            const lang = langSelect.value;
-            langFlag.textContent = flagMap[lang] || '🌐';
-        }
-        langSelect.addEventListener('change', function () {
-            updateFlag();
-            const lang = langSelect.value;
-            const url = new URL(window.location.href);
-            url.searchParams.set('lang', lang);
-            window.location.href = url.toString();
-        });
-        (function () {
-            const urlLang = new URL(window.location.href).searchParams.get('lang');
-            if (urlLang) {
-                for (let i = 0; i < langSelect.options.length; i++) {
-                    if (langSelect.options[i].value === urlLang) langSelect.selectedIndex = i;
-                }
-            }
-            updateFlag();
-        })();
         // Smooth scroll for Buy Pro button
         document.getElementById('pro').addEventListener('click', function (e) {
             const target = document.getElementById('buy-pro');
@@ -595,7 +570,7 @@
     <!-- Contact Modal -->
     <div id="contact-modal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
+            <span class="close" id="contact-close">&times;</span>
             <h2>Contact & Support</h2>
             <div class="contact-options">
                 <div class="contact-option">
@@ -692,17 +667,22 @@
         // Run on DOMContentLoaded to ensure footer is loaded
         document.addEventListener('DOMContentLoaded', updateCopyright);
 
-        // smooth scroll for nav links
+        // smooth scroll for nav links (only for anchor links, not external pages)
         document.querySelectorAll('.nav-links a').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
+                const href = this.getAttribute('href');
+                // Only prevent default and smooth scroll for anchor links (starting with #)
+                if (href && href.startsWith('#')) {
+                    e.preventDefault();
+                    const target = document.querySelector(href);
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
                 }
+                // Let other links (like .html files) work normally
             });
         });
 
@@ -716,7 +696,7 @@
         var btn = document.getElementById('contact-btn');
         var btnFooter = document.getElementById('contact-btn-footer');
         var btnNav = document.getElementById('nav-contact-btn');
-        var span = document.getElementsByClassName('close')[0];
+        var span = document.getElementById('contact-close');
 
         // Math captcha
         var correctAnswer;
@@ -746,6 +726,8 @@
         }
 
         btn.onclick = openContactModal;
+        if (btnFooter) btnFooter.onclick = openContactModal;
+        if (btnNav) btnNav.onclick = openContactModal;
 
         span.onclick = function () {
             modal.style.display = 'none';
