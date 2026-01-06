@@ -25,8 +25,6 @@
 
 ![SafePDF Interface](img/SafePDF_Ad.avif)
 
-![SafePDF Interface](img/SafePDF_Ad.avif)
-
 ## Features
 
 - **Compress** - Reduce PDF file size with quality control
@@ -44,6 +42,8 @@
 - Real-time progress tracking
 - Multi-language UI
 - Modern, intuitive design
+- 
+![Screenshot](img/UI_v1.avif)
 
 ![How to Use](img/HowToUse.gif)
 
