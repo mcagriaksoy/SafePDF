@@ -88,4 +88,82 @@
   <changefreq>monthly</changefreq>
   <priority>1</priority>
 </url>
+
+<!-- PDF Converter Pages -->
+<url>
+  <loc>https://safepdf.de/pdf-to-word.html</loc>
+  <lastmod>2026-01-12T00:00:00+00:00</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.8</priority>
+</url>
+
+<url>
+  <loc>https://safepdf.de/pdf-to-excel.html</loc>
+  <lastmod>2026-01-12T00:00:00+00:00</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.8</priority>
+</url>
+
+<url>
+  <loc>https://safepdf.de/pdf-to-powerpoint.html</loc>
+  <lastmod>2026-01-12T00:00:00+00:00</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.8</priority>
+</url>
+
+<url>
+  <loc>https://safepdf.de/pdf-to-jpg.html</loc>
+  <lastmod>2026-01-12T00:00:00+00:00</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.8</priority>
+</url>
+
+<url>
+  <loc>https://safepdf.de/pdf-to-png.html</loc>
+  <lastmod>2026-01-12T00:00:00+00:00</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.8</priority>
+</url>
+
+<url>
+  <loc>https://safepdf.de/pdf-to-text.html</loc>
+  <lastmod>2026-01-12T00:00:00+00:00</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.8</priority>
+</url>
+
+<url>
+  <loc>https://safepdf.de/word-to-pdf.html</loc>
+  <lastmod>2026-01-12T00:00:00+00:00</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.8</priority>
+</url>
+
+<url>
+  <loc>https://safepdf.de/excel-to-pdf.html</loc>
+  <lastmod>2026-01-12T00:00:00+00:00</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.8</priority>
+</url>
+
+<url>
+  <loc>https://safepdf.de/powerpoint-to-pdf.html</loc>
+  <lastmod>2026-01-12T00:00:00+00:00</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.8</priority>
+</url>
+
+<url>
+  <loc>https://safepdf.de/jpg-to-pdf.html</loc>
+  <lastmod>2026-01-12T00:00:00+00:00</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.8</priority>
+</url>
+
+<url>
+  <loc>https://safepdf.de/png-to-pdf.html</loc>
+  <lastmod>2026-01-12T00:00:00+00:00</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.8</priority>
+</url>
 </urlset>
