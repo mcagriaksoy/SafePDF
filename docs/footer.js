@@ -11,6 +11,23 @@ function createFooter() {
             </div>
 
             <div class="footer-col">
+                <h4>PDF Converters</h4>
+                <ul class="footer-links">
+                    <li><a href="pdf-to-word.html">PDF to Word</a></li>
+                    <li><a href="pdf-to-excel.html">PDF to Excel</a></li>
+                    <li><a href="pdf-to-powerpoint.html">PDF to PPTX</a></li>
+                    <li><a href="pdf-to-jpg.html">PDF to JPG</a></li>
+                    <li><a href="pdf-to-png.html">PDF to PNG</a></li>
+                    <li><a href="pdf-to-text.html">PDF to Text</a></li>
+                    <li><a href="word-to-pdf.html">Word to PDF</a></li>
+                    <li><a href="excel-to-pdf.html">Excel to PDF</a></li>
+                    <li><a href="powerpoint-to-pdf.html">PPTX to PDF</a></li>
+                    <li><a href="jpg-to-pdf.html">JPG to PDF</a></li>
+                    <li><a href="png-to-pdf.html">PNG to PDF</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
                 <h4>Resources</h4>
                 <ul class="footer-links">
                     <li><a href="downloads.html">Downloads</a></li>
@@ -32,13 +49,13 @@ function createFooter() {
             <div class="footer-col">
                 <h4>Download for</h4>
                 <div class="footer-download-buttons">
-                    <a href="https://github.com/mcagriaksoy/SafePDF/releases/download/v1_0_9/SafePDF_v1.0.9.win64.exe.7z" class="footer-download-btn" title="Download for Windows">
+                    <a href="downloads.html" class="footer-download-btn" title="Download for Windows">
                         <i class="fab fa-windows"></i>
                     </a>
-                    <a href="https://github.com/mcagriaksoy/SafePDF/releases/download/v1.2.0/SafePDF-macOS.dmg" class="footer-download-btn" title="Download for macOS">
+                    <a href="downloads.html" class="footer-download-btn" title="Download for macOS">
                         <i class="fab fa-apple"></i>
                     </a>
-                    <a href="https://github.com/mcagriaksoy/SafePDF/releases/download/v1.2.0/SafePDF-Linux.AppImage" class="footer-download-btn" title="Download for Linux">
+                    <a href="downloads.html" class="footer-download-btn" title="Download for Linux">
                         <i class="fab fa-linux"></i>
                     </a>
                 </div>
@@ -68,8 +85,8 @@ function createFooter() {
                     </a>
                 </div>
                 <div class="footer-payment-logos">
-                    <img src="assets/mc.png" alt="Mastercard Logo" style="height: 32px; margin-right: 8px;">
-                    <img src="assets/vc.png" alt="Visa Logo" style="height: 32px;">
+                    <img src="assets/mc.avif" alt="Mastercard Logo" style="height: 32px; margin-right: 8px;">
+                    <img src="assets/vc.avif" alt="Visa Logo" style="height: 32px;">
                 </div>
                 <!-- BEGIN: TrustLock Badge --><a name="trustbadge" href="https://trustlock.co" ><img name="trustseal" alt="Trust Badges" style="border: 0;" src="https://trustlock.co/wp-content/uploads/2019/01/free-website-trust-badges-100-money-back-guarantee.png" width="238" height="44"></a><!-- End: TrustLock Badge -->
             <button id="back-to-top" title="Back to top"
