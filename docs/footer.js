@@ -65,8 +65,8 @@ function createFooter() {
                 <h4>Contact & Support</h4>
                 <p class="muted">Need help or have feedback?</p>
                 <p class="small"><a href="mailto:info@safepdf.de">info@safepdf.de</a></p>
-                <p class="small"><a href="#" id="contact-btn-footer">Contact Form</a></p>
-                <p class="small"><a href="#" id="cookie-settings-footer">Cookie Settings</a></p>
+                <p class="small"><a href="https://safepdf.de/contact.html" id="contact-btn-footer">Contact Form</a></p>
+                <p class="small"><a href="https://safepdf.de/cookie-policy.html" id="cookie-settings-footer">Cookie Settings</a></p>
             </div>
         </div>
         <div class="container footer-bottom">
