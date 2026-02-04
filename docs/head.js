@@ -13,7 +13,7 @@ function createCommonHead(pageConfig) {
     <meta name="author" content="mcagriaksoy">
     <meta name="robots" content="index,follow">
     <meta name="theme-color" content="#0f1720">
-    <meta name="language" content="English">
+    <meta name="language" content="en">
     <meta name="geo.region" content="DE">
     <meta name="geo.placename" content="Germany">
 
@@ -49,6 +49,10 @@ function createCommonHead(pageConfig) {
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SafePDF">
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-touch-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-touch-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-touch-icon-76x76.png">
     <meta name="msapplication-TileColor" content="#0f1720">
     <meta name="msapplication-TileImage" content="/icons/mstile-150x150.png">
 
@@ -65,11 +69,20 @@ function createCommonHead(pageConfig) {
 
     <!-- Canonical and hreflang tags for multilingual SEO -->
     <script>
-        // Dynamically set canonical and hreflang for each language version
+        // Dynamically set canonical, hreflang, and HTML lang attribute
         (function() {
             var base = '${pageConfig.baseUrl}';
             var url = new URL(window.location.href);
             var lang = url.searchParams.get('lang') || 'en';
+            
+            // Validate language is ISO standard (en, tr, de)
+            if (!['en', 'tr', 'de'].includes(lang)) {
+                lang = 'en';
+            }
+            
+            // Update HTML lang attribute to match
+            document.documentElement.lang = lang;
+            
             var canon = base;
             if(lang === 'tr') canon = base + '?lang=tr';
             else if(lang === 'de') canon = base + '?lang=de';
