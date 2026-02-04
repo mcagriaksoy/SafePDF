@@ -2,21 +2,49 @@
 <html lang="en">
 
 <head>
-    <!-- Common head elements loaded via JavaScript -->
+    <!-- Critical SEO Meta Tags (Static for better SEO) -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>SafePDF: A Privacy-First PDF Toolkit</title>
+    <meta name="description" content="SafePDF : finally a privacy focused offline PDF compression, split, merge, convert, rotate and repair. Data never leaves your device.">
+    <meta name="keywords" content="SafePDF, PDF, compress, split, merge, convert, rotate, repair, offline, privacy, safe pdf operations, privacy-focused, local pdf tool, pdf toolkit, pdf editor, pdf compressor, open soruce pdf app, safe pdf operations, data privacy, document security, pdf management, pdf utilities, pdf processing, pdf manipulation">
+    <meta name="author" content="mcagriaksoy">
+    <meta name="robots" content="index,follow">
+    <meta name="language" content="en">
+    
+    <!-- Open Graph (Critical for social media) -->
+    <meta property="og:title" content="SafePDF : Privacy‑First PDF Toolkit">
+    <meta property="og:description" content="Offline PDF toolkit: compress, split, merge, convert, rotate and repair locally on your device.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://safepdf.de/">
+    <meta property="og:image" content="https://github.com/mcagriaksoy/SafePDF/raw/main/img/SafePDF_Ad.avif">
+    <meta property="og:image:alt" content="SafePDF application banner showing privacy-focused PDF operations">
+    <meta property="og:site_name" content="SafePDF">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <!-- Twitter Card (Critical for Twitter sharing) -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SafePDF : Privacy‑First PDF Toolkit">
+    <meta name="twitter:description" content="Offline PDF toolkit: compress, split, merge, convert, rotate and repair locally on your device.">
+    <meta name="twitter:image" content="https://github.com/mcagriaksoy/SafePDF/raw/main/img/SafePDF_Ad.avif">
+    <meta name="twitter:image:alt" content="SafePDF application banner showing privacy-focused PDF operations">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://safepdf.de/">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="/favicon.ico">
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Additional head elements loaded via JavaScript -->
     <script src="head.js"></script>
     <script>
-        // Page configuration for head.js
+        // Page configuration for head.js (for dynamic/non-critical elements)
         const pageConfig = {
-            title: "SafePDF: A Privacy-First PDF Toolkit",
-            description: "SafePDF : finally a privacy focused offline PDF compression, split, merge, convert, rotate and repair. Data never leaves your device.",
-            keywords: "SafePDF, PDF, compress, split, merge, convert, rotate, repair, offline, privacy, safe pdf operations, privacy-focused, local pdf tool, pdf toolkit, pdf editor, pdf compressor, open soruce pdf app, safe pdf operations, data privacy, document security, pdf management, pdf utilities, pdf processing, pdf manipulation",
-            ogTitle: "SafePDF : Privacy‑First PDF Toolkit",
-            ogDescription: "Offline PDF toolkit: compress, split, merge, convert, rotate and repair locally on your device.",
-            canonicalUrl: "https://safepdf.de/",
-            ogImageAlt: "SafePDF application banner showing privacy-focused PDF operations",
-            twitterTitle: "SafePDF : Privacy‑First PDF Toolkit",
-            twitterDescription: "Offline PDF toolkit: compress, split, merge, convert, rotate and repair locally on your device.",
-            twitterImageAlt: "SafePDF application banner showing privacy-focused PDF operations",
             baseUrl: "https://safepdf.de/"
         };
         createCommonHead(pageConfig);
