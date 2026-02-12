@@ -896,7 +896,7 @@ body {
 /* Converters Section */
 .converters {
   padding: 64px 0;
-  background: linear-gradient(135deg, rgba(220, 38, 38, 0.02), rgba(153, 27, 27, 0.02));
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.02));
 }
 
 .converters h2 {
@@ -1482,11 +1482,36 @@ body {
 
 .buy-pro {
   padding: 56px 0;
-  background: linear-gradient(180deg, rgba(0, 0, 0, .02), transparent);
+  align-items: center;
+  background: linear-gradient(135deg, rgba(255, 255, 255, .02), rgba(255, 255, 255, .02));
   border-radius: 14px;
   margin-top: 32px
 }
 
+.buy-pro .buy-features {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 8px;
+}
+.buy-pro .buy-features ul {
+  flex: 0 1 320px; /* prevents full-width stretching */
+  min-width: 220px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.buy-pro h2 {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.buy-pro .lead {
+  text-align: center;
+  max-width: 760px;
+  margin: 0 auto;
+}
 .buy-pro .container {
   padding: 18px
 }
