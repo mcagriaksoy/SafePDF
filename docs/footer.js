@@ -1,107 +1,73 @@
 // Footer component for SafePDF website
 function createFooter() {
     const footerHTML = `
-    <footer class="site-footer" id="contact">
-        <div class="container footer-grid">
-            <div class="footer-col">
-                <p class="muted">SafePDF is a privacy-focused offline tool for PDF manipulation. Merge, compress, split,
-                    and organize your PDF files securely: No internet required, your documents stay local and safe.</p>
-                <p class="small">Released under <a
-                        href="https://github.com/mcagriaksoy/SafePDF/blob/main/LICENSE">GPL‑3.0</a></p>
-            </div>
+    <div class="container footer-grid">
+        <div class="footer-col footer-brand-col">
+            <h4>SafePDF</h4>
+            <p class="muted">Offline PDF toolkit for secure local processing. Merge, split, compress, convert, and repair without uploading files.</p>
+            <p class="small">Released under <a href="https://github.com/mcagriaksoy/SafePDF/blob/main/LICENSE">GPL-3.0</a></p>
+        </div>
 
-            <div class="footer-col">
-                <h4>PDF Converters</h4>
-                <ul class="footer-links">
-                    <li><a href="pdf-to-word.html">PDF to Word</a></li>
-                    <li><a href="pdf-to-excel.html">PDF to Excel</a></li>
-                    <li><a href="pdf-to-powerpoint.html">PDF to PPTX</a></li>
-                    <li><a href="pdf-to-jpg.html">PDF to JPG</a></li>
-                    <li><a href="pdf-to-png.html">PDF to PNG</a></li>
-                    <li><a href="pdf-to-text.html">PDF to Text</a></li>
-                    <li><a href="word-to-pdf.html">Word to PDF</a></li>
-                    <li><a href="excel-to-pdf.html">Excel to PDF</a></li>
-                    <li><a href="powerpoint-to-pdf.html">PPTX to PDF</a></li>
-                    <li><a href="jpg-to-pdf.html">JPG to PDF</a></li>
-                    <li><a href="png-to-pdf.html">PNG to PDF</a></li>
-                </ul>
-            </div>
+        <div class="footer-col">
+            <h4>Popular Tools</h4>
+            <ul class="footer-links">
+                <li><a href="pdf-to-word.html">PDF to Word</a></li>
+                <li><a href="pdf-to-excel.html">PDF to Excel</a></li>
+                <li><a href="pdf-to-powerpoint.html">PDF to PPTX</a></li>
+                <li><a href="pdf-to-jpg.html">PDF to JPG</a></li>
+                <li><a href="word-to-pdf.html">Word to PDF</a></li>
+                <li><a href="jpg-to-pdf.html">JPG to PDF</a></li>
+            </ul>
+        </div>
 
-            <div class="footer-col">
-                <h4>Resources</h4>
-                <ul class="footer-links">
-                    <li><a href="downloads.html">Downloads</a></li>
-                    <li><a href="sitemap.xml">Sitemap</a></li>
-                    <li><a href="terms.html">Terms of Use</a></li>
-                    <li><a href="privacy.html">Privacy & Consent</a></li>
-                    <li><a href="cookie-policy.html">Cookie Policy</a></li>
-                </ul>
-            </div>
+        <div class="footer-col">
+            <h4>Resources</h4>
+            <ul class="footer-links">
+                <li><a href="downloads.html">Downloads</a></li>
+                <li><a href="sustainability.html">Sustainability</a></li>
+                <li><a href="terms.html">Terms of Use</a></li>
+                <li><a href="privacy.html">Privacy</a></li>
+                <li><a href="cookie-policy.html">Cookie Policy</a></li>
+                <li><a href="sitemap.xml">Sitemap</a></li>
+            </ul>
+        </div>
 
-            <div class="footer-col">
-                <h4>Community</h4>
-                <ul class="footer-links">
-                    <li><a href="https://github.com/mcagriaksoy/SafePDF">Source Code</a></li>
-                    <li><a href="downloads.html">Download Latest Release</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-col">
-                <h4>Download for</h4>
-                <div class="footer-download-buttons">
-                    <a href="downloads.html" class="footer-download-btn" title="Download for Windows">
-                        <i class="fab fa-windows"></i>
-                    </a>
-                    <a href="downloads.html" class="footer-download-btn" title="Download for macOS">
-                        <i class="fab fa-apple"></i>
-                    </a>
-                    <a href="downloads.html" class="footer-download-btn" title="Download for Linux">
-                        <i class="fab fa-linux"></i>
-                    </a>
-                </div>
-            </div>
-
-            <div class="footer-col">
-                <h4>Contact & Support</h4>
-                <p class="muted">Need help or have feedback?</p>
-                <p class="small"><a href="mailto:info@safepdf.de">info@safepdf.de</a></p>
-                <p class="small"><a href="https://safepdf.de/contact.html" id="contact-btn-footer">Contact Form</a></p>
-                <p class="small"><a href="https://safepdf.de/cookie-policy.html" id="cookie-settings-footer">Cookie Settings</a></p>
+        <div class="footer-col">
+            <h4>Contact</h4>
+            <p class="small"><a href="mailto:info@safepdf.de">info@safepdf.de</a></p>
+            <p class="small"><a href="https://safepdf.de/contact.html" id="contact-btn-footer">Contact Form</a></p>
+            <p class="small"><a href="https://safepdf.de/cookie-policy.html" id="cookie-settings-footer">Cookie Settings</a></p>
+            <div class="footer-social-buttons">
+                <a href="https://github.com/mcagriaksoy/SafePDF" class="footer-social-btn" title="GitHub" aria-label="GitHub">
+                    <i class="fab fa-github"></i>
+                </a>
+                <a href="https://linkedin.com/in/mcagriaksoy" class="footer-social-btn" title="LinkedIn" aria-label="LinkedIn">
+                    <i class="fab fa-linkedin-in"></i>
+                </a>
+                <a href="mailto:info@safepdf.de" class="footer-social-btn" title="Email" aria-label="Email">
+                    <i class="fas fa-envelope"></i>
+                </a>
             </div>
         </div>
-        <div class="container footer-bottom">
-            <p class="muted">© <span id="copy-year"></span> SafePDF • Finally, a safe solution. <a
-                    href="https://github.com/mcagriaksoy/SafePDF">Repository</a>
-            </p>
-                <div class="footer-social-buttons">
-                    <a href="https://github.com/mcagriaksoy/SafePDF" class="footer-social-btn" title="GitHub">
-                        <i class="fab fa-github"></i>
-                    </a>
-                    <a href="https://linkedin.com/in/mcagriaksoy" class="footer-social-btn" title="LinkedIn">
-                        <i class="fab fa-linkedin-in"></i>
-                    </a>
-                    <a href="mailto:info@safepdf.de" class="footer-social-btn" title="Email">
-                        <i class="fas fa-envelope"></i>
-                    </a>
-                </div>
-                <div class="footer-payment-logos">
-                    <img src="assets/mc.avif" alt="Mastercard Logo" style="height: 32px; margin-right: 8px;">
-                    <img src="assets/vc.avif" alt="Visa Logo" style="height: 32px;">
-                </div>
-                <!-- BEGIN: TrustLock Badge --><a name="trustbadge" href="https://trustlock.co" ><img name="trustseal" alt="Trust Badges" style="border: 0;" src="https://trustlock.co/wp-content/uploads/2019/01/free-website-trust-badges-100-money-back-guarantee.png" width="238" height="44"></a><!-- End: TrustLock Badge -->
-            <button id="back-to-top" title="Back to top"
-                style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">↑</button>
-            <a href="https://www.checkdomain.de/unternehmen/garantie/ssl/popup/"
-                onclick="window.open(this.href + '?host=' + window.location.host,'','height=600,width=560,scrollbars=yes'); return false;"><img
-                    src="https://www.checkdomain.de/assets/bundles/web/app/widget/seal/img/ssl_certificate/de/150x150.png?20251209-101640"
-                    alt="SSL-Zertifikat" /></a>
+    </div>
+
+    <div class="container footer-bottom">
+        <p class="muted">© <span id="copy-year"></span> SafePDF. All rights reserved. <a href="https://github.com/mcagriaksoy/SafePDF">Repository</a></p>
+        <div class="footer-payment-logos" aria-label="Accepted payment methods">
+            <img src="assets/mc.avif" alt="Mastercard" />
+            <img src="assets/vc.avif" alt="Visa" />
         </div>
-        
-    </footer>
+    </div>
+
+    <button id="back-to-top" class="back-to-top" title="Back to top" aria-label="Back to top">↑</button>
     `;
 
-    // Insert footer before the closing body tag
-    document.body.insertAdjacentHTML('beforeend', footerHTML);
+    const footer = document.querySelector("footer.site-footer#contact");
+    if (footer) {
+        footer.innerHTML = footerHTML;
+    } else {
+        document.body.insertAdjacentHTML("beforeend", `<footer class="site-footer" id="contact">${footerHTML}</footer>`);
+    }
 
     // Initialize footer functionality
     initializeFooter();
@@ -160,7 +126,9 @@ function initializeFooter() {
         cookieSettingsBtn.addEventListener('click', function (e) {
             e.preventDefault();
             // Trigger cookie consent modal if available
-            if (window.showCookieConsent) {
+            if (window.openCookieModal) {
+                window.openCookieModal();
+            } else if (window.showCookieConsent) {
                 window.showCookieConsent();
             }
         });
