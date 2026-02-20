@@ -134,7 +134,7 @@ class HelpUI:
             main_frame.pack(fill="both", expand=True, padx=24, pady=24)
 
             # Add "How to Use", "Contact", and "GitHub Issues" buttons at the top
-            button_frame = tk.Frame(main_frame, bg="#f8f9fa")
+            button_frame = tk.Frame(main_frame, bg=CommonElements.BG_FRAME)
             button_frame.pack(fill="x", pady=(0, 10))
 
             how_to_btn = ttk.Button(
@@ -167,7 +167,7 @@ class HelpUI:
                 main_frame,
                 wrap=tk.WORD,
                 font=(self.font, 10),
-                bg="#f8f9fa",
+                bg=CommonElements.BG_FRAME,
                 fg="#222",
                 borderwidth=1,
                 relief=tk.FLAT,

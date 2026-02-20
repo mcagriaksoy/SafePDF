@@ -413,7 +413,7 @@ class UpdateUI:
                     else "🌐 Get Pro Version Now",
                     command=open_website,
                     font=(CommonElements.FONT, 11, "bold"),
-                    fg="white",
+                    fg=CommonElements.BUTTON_TEXT_DARK,
                     bg="#00b386",
                     bd=0,
                     padx=20,
@@ -471,6 +471,18 @@ class UpdateUI:
 
                     if update_info and update_info.get("available"):
                         self.show_update_dialog(update_info)
+                    elif update_info and update_info.get("error") == "rate_limit":
+                        messagebox.showinfo(
+                            self.language_manager.get("update_limited_title", "Update Check Limited")
+                            if self.language_manager
+                            else "Update Check Limited",
+                            self.language_manager.get(
+                                "update_limited_message",
+                                "GitHub API rate limit reached. Try again later or set checks to weekly/manual.",
+                            )
+                            if self.language_manager
+                            else "GitHub API rate limit reached. Try again later or set checks to weekly/manual.",
+                        )
                     else:
                         messagebox.showinfo(
                             self.language_manager.get("update_up_to_date", "✅ Up to Date")

@@ -17,9 +17,8 @@ try:
     import gnupg
     from github import Github
 except ImportError as e:
-    print(f"Missing required libraries for updates: {e}")
-    print("Please install with: pip install requests PyGitHub python-gnupg")
-    sys.exit(1)
+    gnupg = None
+    Github = None
 
 from SafePDF.logger.logging_config import get_logger
 
@@ -30,21 +29,41 @@ class SafePDFUpdates:
     def __init__(self, repo_owner="mcagriaksoy", repo_name="SafePDF"):
         self.repo_owner = repo_owner
         self.repo_name = repo_name
-        self.github = Github()  # Uses anonymous access for public repos
-        self.repo = self.github.get_repo(f"{repo_owner}/{repo_name}")
+        # Lazy-init GitHub client/repo so app startup never depends on network/API limits.
+        self.github = None
+        self.repo = None
         self.logger = get_logger("SafePDF.Updates")
 
         # Initialize GPG
         try:
+            if gnupg is None:
+                raise ImportError("python-gnupg is not installed")
             self.gpg = gnupg.GPG()
             self.gpg_available = True
-        except (OSError, FileNotFoundError):
+        except (OSError, FileNotFoundError, ImportError):
             self.logger.warning("GPG not available - signature verification disabled")
             self.gpg = None
             self.gpg_available = False
 
         # Get current version
         self.current_version = self._get_current_version()
+
+    def _get_repo(self):
+        """Lazily initialize and return GitHub repository handle."""
+        if self.repo is not None:
+            return self.repo
+
+        try:
+            if Github is None:
+                self.logger.warning("PyGitHub not available - update checks disabled")
+                return None
+            if self.github is None:
+                self.github = Github()  # anonymous/public access
+            self.repo = self.github.get_repo(f"{self.repo_owner}/{self.repo_name}")
+            return self.repo
+        except Exception as e:
+            self.logger.error(f"Failed to initialize GitHub repository client: {e}")
+            return None
 
     def _get_current_version(self):
         """Get current application version"""
@@ -67,8 +86,12 @@ class SafePDFUpdates:
                  or None if no update available or error
         """
         try:
+            repo = self._get_repo()
+            if repo is None:
+                return {"available": False, "error": "repo_unavailable"}
+
             # Get latest release
-            latest_release = self.repo.get_latest_release()
+            latest_release = repo.get_latest_release()
 
             latest_version = latest_release.tag_name.lstrip("v")
             current_version = self.current_version.lstrip("v")
@@ -91,7 +114,10 @@ class SafePDFUpdates:
 
         except Exception as e:
             self.logger.error(f"Error checking for updates: {e}")
-            return None
+            msg = str(e).lower()
+            if "rate limit" in msg or "403" in msg:
+                return {"available": False, "error": "rate_limit"}
+            return {"available": False, "error": "check_failed"}
 
     def _is_newer_version(self, latest, current):
         """Compare version strings"""
@@ -291,10 +317,14 @@ class SafePDFUpdates:
             dict: Release information
         """
         try:
+            repo = self._get_repo()
+            if repo is None:
+                return None
+
             if version:
-                release = self.repo.get_release(version)
+                release = repo.get_release(version)
             else:
-                release = self.repo.get_latest_release()
+                release = repo.get_latest_release()
 
             return {
                 "version": release.tag_name,

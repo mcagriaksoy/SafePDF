@@ -5,13 +5,14 @@ This module contains the SafePDFUI class which manages the user interface.
 @author: Mehmet Cagri Aksoy
 """
 
-import json
 import os
 import sys
 import tkinter as tk
+from datetime import datetime, timedelta
 from pathlib import Path
 from platform import system as platform_system
 from subprocess import run as subprocess_run
+from threading import Thread
 from tkinter import filedialog, messagebox, ttk
 from urllib.parse import urlparse
 from webbrowser import open as webbrowser_open
@@ -173,6 +174,7 @@ class SafePDFUI:
 
         # Operation selection
         self.operation_buttons = []
+        self.operation_cards = []
         self.operation_images = []
 
         # Settings variables
@@ -195,6 +197,7 @@ class SafePDFUI:
         # Application-level settings
         self.language_var = tk.StringVar(value=self._load_language_preference())
         self.theme_var = tk.StringVar(value="system")  # options: system, light, dark
+        self.update_frequency_var = tk.StringVar(value=self._load_update_frequency_preference())
         # Update the global language setting with loaded preference
         CommonElements.SELECTED_LANGUAGE = str(self.language_var.get())
         # Language manager to provide localized UI strings and content
@@ -213,6 +216,7 @@ class SafePDFUI:
 
         # Current tooltip index to prevent flickering
         self.current_tooltip_index = None
+        self.selected_operation_index = None
 
         # Store icon for taskbar window
         self.icon_path = None
@@ -238,6 +242,8 @@ class SafePDFUI:
             self.language_var,
             LOG_FILE_PATH,
             language_manager=self.lang_manager,
+            update_frequency_var=self.update_frequency_var,
+            update_frequency_callback=self._on_update_frequency_change,
         )
 
         # Ensure language changes update UI (language_var stores language code, e.g. 'en')
@@ -249,6 +255,8 @@ class SafePDFUI:
         # Initialize UI
         self.setup_main_window()
         self.create_ui_components()
+        # Run non-blocking auto update check according to user cadence.
+        self.root.after(1500, self._auto_check_updates_if_due)
 
     def setup_main_window(self):
         """Configure the main application window with modern design and custom title bar"""
@@ -326,50 +334,51 @@ class SafePDFUI:
             logger.debug(f"Theme application failed: {e}, continuing with system theme")
             pass
 
-        # Modern rounded style with red theme
-        style.configure("TNotebook", background="#f4f6fb", borderwidth=0, relief="flat")
+        # Professional Windows-like theme
+        style.configure("TNotebook", background=CommonElements.BG_MAIN, borderwidth=0, relief="flat")
         style.configure(
             "TNotebook.Tab",
-            background="#e9ecef",
-            padding=[15, 10],
+            background=CommonElements.TAB_BG,
+            padding=[16, 10],
             font=(CommonElements.FONT, CommonElements.FONT_SIZE),
             borderwidth=0,
             relief="flat",
         )
         style.map(
             "TNotebook.Tab",
-            background=[("selected", "#ffffff"), ("active", "#f8f9fa")],
+            background=[("selected", CommonElements.TAB_SELECTED), ("active", "#f6e9e9")],
             foreground=[
                 ("selected", CommonElements.RED_COLOR),
-                ("active", CommonElements.RED_COLOR),
+                ("active", CommonElements.FG_TEXT),
             ],
             expand=[("selected", [1, 1, 1, 0])],
         )
-        style.configure("TFrame", background="#ffffff")
+        style.configure("TFrame", background=CommonElements.BG_CARD)
         style.configure(
             "TLabel",
-            background="#ffffff",
+            background=CommonElements.BG_CARD,
+            foreground=CommonElements.FG_TEXT,
             font=(CommonElements.FONT, CommonElements.FONT_SIZE),
         )
         style.configure(
             "TButton",
             font=(CommonElements.FONT, CommonElements.FONT_SIZE),
-            padding=10,
-            background="#e9ecef",
-            foreground="#000000",
+            padding=9,
+            background=CommonElements.BUTTON_BG,
+            foreground=CommonElements.BUTTON_FG,
             borderwidth=0,
             relief="flat",
         )
         style.map(
             "TButton",
-            background=[("active", "#d6d8db"), ("!active", "#e9ecef")],
-            foreground=[("active", "#000000"), ("!active", "#000000")],
+            background=[("active", "#d1d5db"), ("!active", CommonElements.BUTTON_BG)],
+            foreground=[("active", CommonElements.BUTTON_FG), ("!active", CommonElements.BUTTON_FG)],
             relief=[("pressed", "flat"), ("!pressed", "flat")],
         )
         style.configure(
             "Accent.TButton",
-            background="#00b386",
-            foreground="#000000",
+            background=CommonElements.RED_COLOR,
+            foreground=CommonElements.BUTTON_TEXT_DARK,
             font=(CommonElements.FONT, 10, "bold"),
             padding=12,
             borderwidth=0,
@@ -377,11 +386,45 @@ class SafePDFUI:
         )
         style.map(
             "Accent.TButton",
-            background=[("active", "#009970"), ("!active", "#00b386")],
-            foreground=[("active", "#000000"), ("!active", "#000000")],
+            background=[("active", "#0b3a64"), ("!active", CommonElements.RED_COLOR)],
+            foreground=[
+                ("active", CommonElements.BUTTON_TEXT_DARK),
+                ("!active", CommonElements.BUTTON_TEXT_DARK),
+            ],
             relief=[("pressed", "flat"), ("!pressed", "flat")],
         )
-        style.configure("Gray.TLabel", foreground="#888", background="#ffffff")
+        style.configure(
+            "Secondary.TButton",
+            font=(CommonElements.FONT, CommonElements.FONT_SIZE, "bold"),
+            padding=10,
+            background="#eadede",
+            foreground=CommonElements.FG_TEXT,
+            borderwidth=0,
+            relief="flat",
+        )
+        style.map(
+            "Secondary.TButton",
+            background=[("active", "#d8c6c6"), ("!active", "#eadede")],
+            foreground=[("active", CommonElements.FG_TEXT), ("!active", CommonElements.FG_TEXT)],
+        )
+        style.configure(
+            "Danger.TButton",
+            font=(CommonElements.FONT, CommonElements.FONT_SIZE, "bold"),
+            padding=10,
+            background="#b42318",
+            foreground=CommonElements.BUTTON_TEXT_DARK,
+            borderwidth=0,
+            relief="flat",
+        )
+        style.map(
+            "Danger.TButton",
+            background=[("active", "#912018"), ("!active", "#b42318")],
+            foreground=[
+                ("active", CommonElements.BUTTON_TEXT_DARK),
+                ("!active", CommonElements.BUTTON_TEXT_DARK),
+            ],
+        )
+        style.configure("Gray.TLabel", foreground="#6b7280", background=CommonElements.BG_CARD)
 
         # Center the window
         self.center_window()
@@ -400,57 +443,6 @@ class SafePDFUI:
         except Exception:
             logger.debug("Icon not found or error occurred while finding icon")
             pass
-
-    def _ensure_taskbar_visibility(self):
-        """Force taskbar icon to appear after window is fully initialized"""
-        try:
-            if platform_system() == "Windows":
-                import ctypes
-
-                # Get window handle
-                hwnd = ctypes.windll.user32.GetParent(self.root.winfo_id())
-                if hwnd == 0:
-                    hwnd = self.root.winfo_id()
-
-                # Windows API constants
-                GWL_EXSTYLE = -20
-                WS_EX_APPWINDOW = 0x00040000
-                WS_EX_TOOLWINDOW = 0x00000080
-                # SW_HIDE = 0
-                # SW_SHOW = 5
-
-                # Get current style
-                style = ctypes.windll.user32.GetWindowLongW(hwnd, GWL_EXSTYLE)
-
-                # Add APPWINDOW, remove TOOLWINDOW
-                new_style = (style | WS_EX_APPWINDOW) & ~WS_EX_TOOLWINDOW
-                ctypes.windll.user32.SetWindowLongW(hwnd, GWL_EXSTYLE, new_style)
-
-                # Force window position update to refresh taskbar
-                SWP_FRAMECHANGED = 0x0020
-                SWP_NOMOVE = 0x0002
-                SWP_NOSIZE = 0x0001
-                SWP_NOZORDER = 0x0004
-                SWP_SHOWWINDOW = 0x0040
-                ctypes.windll.user32.SetWindowPos(
-                    hwnd,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    SWP_FRAMECHANGED
-                    | SWP_NOMOVE
-                    | SWP_NOSIZE
-                    | SWP_NOZORDER
-                    | SWP_SHOWWINDOW,
-                )
-
-                # Final update
-                self.root.update()
-
-        except Exception as e:
-            logger.warning(f"Could not ensure taskbar visibility: {e}")
 
     def center_window(self):
         """Center the window on screen"""
@@ -499,115 +491,167 @@ class SafePDFUI:
         self.update_pro_features()
 
     def create_header(self):
-        """Create the application header with custom title bar controls"""
-        self.header_frame = tk.Frame(self.root, bg=CommonElements.RED_COLOR, height=56)
+        """Create the application header with a guaranteed gradient background."""
+        self._header_gradient_start = "#ffffff"
+        self._header_gradient_end = "#b35656"
+        self._header_control_bg = "#b35656"
+        self._header_height = 50
+
+        self.header_frame = tk.Frame(self.root, height=self._header_height, bd=0, highlightthickness=0)
         self.header_frame.pack(fill="x", side="top")
         self.header_frame.pack_propagate(False)
 
-        # Left side - App title (draggable area)
-        self.title_frame = tk.Frame(self.header_frame, bg=CommonElements.RED_COLOR)
-        self.title_frame.pack(side="left", fill="both", expand=True)
+        self.header_canvas = tk.Canvas(self.header_frame, bd=0, highlightthickness=0, relief=tk.FLAT)
+        self.header_canvas.place(x=0, y=0, relwidth=1, relheight=1)
 
         self.header_label = tk.Label(
-            self.title_frame,
+            self.header_frame,
             text=self.lang_manager.get("app_title", "SafePDF™"),
-            font=(CommonElements.FONT, 18, "bold"),
-            bg=CommonElements.RED_COLOR,
-            fg="#fff",
-            pady=10,
+            font=(CommonElements.FONT, 16, "bold"),
+            fg=CommonElements.RED_COLOR,
+            bd=0,
+            padx=0,
+            pady=0,
         )
-        self.header_label.pack(side="left", padx=(24, 8))
 
-        # Pro status badge in title bar with rounded appearance
         pro_badge_color = CommonElements.URL_COLOR if self.controller.is_pro_activated else "#888888"
         pro_badge_text = (
             self.lang_manager.get("pro_badge_pro", "PRO")
             if self.controller.is_pro_activated
             else self.lang_manager.get("pro_badge_free", "FREE")
         )
-
         self.pro_badge_label = tk.Label(
-            self.title_frame,
+            self.header_frame,
             text=pro_badge_text,
             font=(CommonElements.FONT, 8, "bold"),
             bg=pro_badge_color,
-            fg="white",
+            fg=CommonElements.BUTTON_TEXT_DARK,
             padx=8,
             pady=3,
             cursor="hand2",
-            relief="flat",
+            relief=tk.FLAT,
             bd=0,
         )
-        self.pro_badge_label.pack(side="left", padx=(4, 0))
-        self.pro_badge_label.bind(
-            "<Button-1>", lambda e: self.update_ui.show_pro_dialog(self)
-        )
+        self.pro_badge_label.bind("<Button-1>", lambda e: self.update_ui.show_pro_dialog(self))
 
-        # Make the title area draggable
-        self.bind_drag_events(self.title_frame)
-        self.bind_drag_events(self.header_label)
-        self.bind_drag_events(self.pro_badge_label)
-
-        # Right side - Window controls
-        self.controls_frame = tk.Frame(self.header_frame, bg=CommonElements.RED_COLOR)
-        self.controls_frame.pack(side="right", fill="y")
-
-        # Minimize button
         self.minimize_btn = tk.Button(
-            self.controls_frame,
+            self.header_frame,
             text="−",
-            font=(CommonElements.FONT, 16, "bold"),
-            bg=CommonElements.RED_COLOR,
-            fg="#fff",
+            font=(CommonElements.FONT, 14),
+            bg=self._header_control_bg,
+            fg="#111827",
             bd=0,
             width=3,
             height=1,
             cursor="hand2",
-            activebackground="#a01818",
-            activeforeground="#fff",
+            activebackground="#e9d7d7",
+            activeforeground="#111827",
             relief=tk.FLAT,
             command=self.minimize_window,
         )
-        self.minimize_btn.pack(side="left", fill="y")
-
-        # Fullscreen/Maximize button
         self.maximize_btn = tk.Button(
-            self.controls_frame,
+            self.header_frame,
             text="□",
-            font=(CommonElements.FONT, 14, "bold"),
-            bg=CommonElements.RED_COLOR,
-            fg="#fff",
+            font=(CommonElements.FONT, 12),
+            bg=self._header_control_bg,
+            fg="#111827",
             bd=0,
             width=3,
             height=1,
             cursor="hand2",
-            activebackground="#a01818",
-            activeforeground="#fff",
+            activebackground="#e9d7d7",
+            activeforeground="#111827",
             relief=tk.FLAT,
             command=self.toggle_fullscreen,
         )
-        self.maximize_btn.pack(side="left", fill="y")
-
-        # Close button
         self.close_btn = tk.Button(
-            self.controls_frame,
+            self.header_frame,
             text="×",
-            font=(CommonElements.FONT, 20, "bold"),
-            bg=CommonElements.RED_COLOR,
-            fg="#fff",
+            font=(CommonElements.FONT, 18),
+            bg=self._header_control_bg,
+            fg="#111827",
             bd=0,
             width=3,
             height=1,
             cursor="hand2",
-            activebackground="#d32f2f",
-            activeforeground="#fff",
+            activebackground="#c40e2f",
+            activeforeground=CommonElements.BUTTON_TEXT_DARK,
             relief=tk.FLAT,
             command=self.close_window,
         )
-        self.close_btn.pack(side="right", fill="y")
 
-        # Add hover effects for window control buttons
+        self.header_frame.bind("<Configure>", self._on_header_resize)
+        self.bind_drag_events(self.header_frame)
+        self.bind_drag_events(self.header_canvas)
+        self.bind_drag_events(self.header_label)
+        self.bind_drag_events(self.pro_badge_label)
         self.setup_button_hover_effects()
+
+    def _interpolate_color(self, start_hex, end_hex, t):
+        """Blend two hex colors by factor t in [0,1]."""
+        t = max(0.0, min(1.0, t))
+        s = start_hex.lstrip("#")
+        e = end_hex.lstrip("#")
+        sr, sg, sb = int(s[0:2], 16), int(s[2:4], 16), int(s[4:6], 16)
+        er, eg, eb = int(e[0:2], 16), int(e[2:4], 16), int(e[4:6], 16)
+        r = int(sr + (er - sr) * t)
+        g = int(sg + (eg - sg) * t)
+        b = int(sb + (eb - sb) * t)
+        return f"#{r:02x}{g:02x}{b:02x}"
+
+    def _on_header_resize(self, event):
+        """Redraw header gradient and position header widgets."""
+        width = max(1, int(event.width))
+        height = max(1, int(event.height))
+
+        self.header_canvas.config(width=width, height=height)
+        self.header_canvas.delete("header_gradient")
+        button_w = 34
+        gap = 2
+        right_pad = 2
+        btn_h = max(1, height - 2)
+        close_x = width - right_pad - button_w
+        max_x = close_x - gap - button_w
+        min_x = max_x - gap - button_w
+
+        left_x = 20
+        self.header_label.update_idletasks()
+        title_w = self.header_label.winfo_reqwidth()
+
+        # Gradient starts after title and ends before window control buttons.
+        gradient_start_x = left_x + title_w + 8
+        gradient_end_x = max(gradient_start_x + 1, min_x - 4)
+
+        left_flat_color = self._header_gradient_start
+        right_flat_color = self._header_control_bg
+
+        # Left solid zone
+        self.header_canvas.create_rectangle(
+            0, 0, gradient_start_x, height, fill=left_flat_color, outline="", tags="header_gradient"
+        )
+
+        # Middle gradient zone
+        grad_width = max(1, gradient_end_x - gradient_start_x)
+        for x in range(gradient_start_x, gradient_end_x):
+            t = (x - gradient_start_x) / max(1, grad_width - 1)
+            color = self._interpolate_color(self._header_gradient_start, self._header_gradient_end, t)
+            self.header_canvas.create_line(x, 0, x, height, fill=color, tags="header_gradient")
+
+        # Right solid zone (control button area)
+        self.header_canvas.create_rectangle(
+            gradient_end_x, 0, width, height, fill=right_flat_color, outline="", tags="header_gradient"
+        )
+        self.header_canvas.tag_lower("header_gradient")
+
+        self.header_label.config(bg=left_flat_color)
+        self.header_label.place(x=left_x, y=0, height=height)
+
+        badge_x = left_x + title_w + 12
+        self.pro_badge_label.place(x=badge_x, y=max(2, (height - 22) // 2))
+
+        self.minimize_btn.place(x=min_x, y=1, width=button_w, height=btn_h)
+        self.maximize_btn.place(x=max_x, y=1, width=button_w, height=btn_h)
+        self.close_btn.place(x=close_x, y=1, width=button_w, height=btn_h)
 
     def bind_drag_events(self, widget):
         """Bind drag events to a widget for window dragging"""
@@ -639,22 +683,22 @@ class SafePDFUI:
         """Setup hover effects for window control buttons"""
 
         def on_minimize_enter(event):
-            self.minimize_btn.config(bg="#a01818")
+            self.minimize_btn.config(bg="#e9d7d7")
 
         def on_minimize_leave(event):
-            self.minimize_btn.config(bg=CommonElements.RED_COLOR)
+            self.minimize_btn.config(bg=self._header_control_bg)
 
         def on_maximize_enter(event):
-            self.maximize_btn.config(bg="#a01818")
+            self.maximize_btn.config(bg="#e9d7d7")
 
         def on_maximize_leave(event):
-            self.maximize_btn.config(bg=CommonElements.RED_COLOR)
+            self.maximize_btn.config(bg=self._header_control_bg)
 
         def on_close_enter(event):
-            self.close_btn.config(bg="#d32f2f")
+            self.close_btn.config(bg="#c40e2f", fg=CommonElements.BUTTON_TEXT_DARK)
 
         def on_close_leave(event):
-            self.close_btn.config(bg=CommonElements.RED_COLOR)
+            self.close_btn.config(bg=self._header_control_bg, fg="#111827")
 
         self.minimize_btn.bind("<Enter>", on_minimize_enter)
         self.minimize_btn.bind("<Leave>", on_minimize_leave)
@@ -772,12 +816,12 @@ class SafePDFUI:
     def create_main_card(self):
         """Create the main card-like container with rounded appearance"""
         # Create outer frame for shadow effect
-        shadow_frame = tk.Frame(self.root, bg="#e2e8f0")
-        shadow_frame.pack(fill="both", expand=True, padx=10, pady=(6, 10))
+        shadow_frame = tk.Frame(self.root, bg="#F4F6FB")
+        shadow_frame.pack(fill="both", expand=True, padx=12, pady=(8, 10))
 
         # Create inner card frame with offset for shadow
         self.card_frame = tk.Frame(
-            shadow_frame, bg="#ffffff", bd=0, highlightthickness=0
+            shadow_frame, bg=CommonElements.BG_CARD, bd=0, highlightthickness=1, highlightbackground="#F4F6FB"
         )
         self.card_frame.place(x=2, y=2, relwidth=1, relheight=1, width=-4, height=-4)
         self.card_frame.grid_propagate(False)
@@ -1492,16 +1536,13 @@ class SafePDFUI:
             logger.debug(f"Error updating canvas border color: {e}", exc_info=True)
 
     def create_operation_tab(self):
-        """Optimized operation tab with smaller images"""
-        # Modern group frame optimized for larger image buttons
-        group_frame = tk.Frame(self.operation_frame, bg="#f9f9fa", relief=tk.FLAT)
-        group_frame.pack(fill="both", expand=True, padx=0, pady=0)
+        """Create operation cards with cleaner Windows-style visuals."""
+        group_frame = tk.Frame(self.operation_frame, bg=CommonElements.BG_MAIN, relief=tk.FLAT)
+        group_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
-        # Create container for the operation buttons
-        operations_container = tk.Frame(group_frame, bg="#f9f9fa")
+        operations_container = tk.Frame(group_frame, bg=CommonElements.BG_MAIN)
         operations_container.pack(fill="both", expand=True)
 
-        # Operations with smaller, optimized images
         operations = [
             (
                 self.lang_manager.get("op_compress", "PDF Compress"),
@@ -1560,100 +1601,75 @@ class SafePDFUI:
         ]
 
         self.operation_buttons = []
+        self.operation_cards = []
         self.operation_images = []
 
         for i, (text, description, command, img_path) in enumerate(operations):
             row = i // 3
             col = i % 3
-            tk_img = None
-
-            # Load image with optimization
             tk_img = self._load_operation_image(img_path)
             self.operation_images.append(tk_img)
 
-            # Create clickable image button frame with modern rounded shadow effect
-            shadow_frame = tk.Frame(operations_container, bg="#e2e8f0", relief=tk.FLAT)
-            shadow_frame.grid(row=row, column=col, padx=12, pady=12, sticky="nsew")
+            shadow_frame = tk.Frame(operations_container, bg="#e4d4d4", relief=tk.FLAT)
+            shadow_frame.grid(row=row, column=col, padx=10, pady=10, sticky="nsew")
 
             op_frame = tk.Frame(
                 shadow_frame,
                 relief=tk.FLAT,
                 bd=0,
-                bg="#ffffff",
+                bg=CommonElements.BG_CARD,
                 cursor="hand2",
-                highlightbackground="#cbd5e1",
-                highlightthickness=2,
+                highlightbackground="#d9c2c2",
+                highlightthickness=1,
             )
-            op_frame.place(x=3, y=3, relwidth=1, relheight=1, width=-6, height=-6)
+            op_frame.place(x=2, y=2, relwidth=1, relheight=1, width=-4, height=-4)
+            operations_container.grid_columnconfigure(col, weight=1, uniform="ops")
+            operations_container.grid_rowconfigure(row, weight=1, uniform="ops")
 
-            # Configure grid weights for centered content
-            operations_container.grid_columnconfigure(col, weight=1)
-            operations_container.grid_rowconfigure(row, weight=1)
-
-            # Create the clickable image button with description
             if tk_img:
-                # Create a container for image and text
-                button_container = tk.Frame(op_frame, bg="#ffffff")
-                button_container.pack(expand=True, fill="both", padx=5, pady=5)
-
-                # Image button (clickable)
+                button_container = tk.Frame(op_frame, bg=CommonElements.BG_CARD)
+                button_container.pack(expand=True, fill="both", padx=6, pady=6)
                 img_button = tk.Button(
                     button_container,
                     image=tk_img,
                     relief=tk.FLAT,
                     bd=0,
-                    bg="#ffffff",
+                    bg=CommonElements.BG_CARD,
                     cursor="hand2",
                     pady=5,
                 )
-                img_button.image = tk_img  # Keep a reference
+                img_button.image = tk_img
                 img_button.pack()
 
-                # Title label
                 title_label = tk.Label(
                     button_container,
                     text=text,
                     font=(CommonElements.FONT, 12, "bold"),
-                    bg=CommonElements.BG_FRAME,
+                    bg=CommonElements.BG_CARD,
                     fg=CommonElements.FG_TEXT,
                     cursor="hand2",
                 )
                 title_label.pack(pady=(5, 2))
 
-                # Description label
                 desc_label = tk.Label(
                     button_container,
                     text=description,
                     font=(CommonElements.FONT, 9),
-                    bg=CommonElements.BG_FRAME,
+                    bg=CommonElements.BG_CARD,
                     fg=CommonElements.FG_SECONDARY,
                     cursor="hand2",
                 )
                 desc_label.pack()
-
-                # Make the entire frame clickable
-                op_frame.bind("<Button-1>", lambda e, cmd=command: cmd())
-                button_container.bind("<Button-1>", lambda e, cmd=command: cmd())
-                img_button.bind("<Button-1>", lambda e, cmd=command: cmd())
-                title_label.bind("<Button-1>", lambda e, cmd=command: cmd())
-                desc_label.bind("<Button-1>", lambda e, cmd=command: cmd())
-
-                clickable_widgets = [
-                    button_container,
-                    img_button,
-                    title_label,
-                    desc_label,
-                ]
+                clickable_widgets = [button_container, img_button, title_label, desc_label]
 
             else:
-                # Fallback button without image
                 img_button = tk.Button(
                     op_frame,
                     text=f"{text}\n{description}",
                     command=command,
                     relief=tk.FLAT,
                     bd=0,
-                    bg=CommonElements.BG_FRAME,
+                    bg=CommonElements.BG_CARD,
                     fg=CommonElements.FG_TEXT,
                     font=(CommonElements.FONT, 11, "bold"),
                     cursor="hand2",
@@ -1665,61 +1681,54 @@ class SafePDFUI:
                 img_button.pack(expand=True, fill="both")
                 clickable_widgets = [img_button]
 
-            # Enhanced hover effects for the frame and all clickable elements
-            def create_hover_effect(frame, widgets):
-                def on_enter(event):
-                    frame.config(
-                        relief=tk.FLAT,
-                        bg=CommonElements.HIGHLIGHT_COLOR,
-                        highlightbackground=CommonElements.RED_COLOR,
-                        highlightthickness=2,
-                    )
-                    for widget in widgets:
-                        if hasattr(widget, "config"):
-                            try:
-                                widget.config(bg=CommonElements.HIGHLIGHT_COLOR)
-                            except Exception:
-                                pass
+            self._bind_operation_card_events(op_frame, clickable_widgets, command, i)
+            self.operation_cards.append((op_frame, clickable_widgets))
+            self.operation_buttons.append(op_frame)
+            self._set_operation_card_state(op_frame, clickable_widgets, is_selected=False)
 
-                def on_leave(event):
-                    frame.config(
-                        relief=tk.FLAT,
-                        bg=CommonElements.BG_FRAME,
-                        highlightbackground="#cbd5e1",
-                        highlightthickness=2,
-                    )
-                    for widget in widgets:
-                        if hasattr(widget, "config"):
-                            try:
-                                widget.config(bg=CommonElements.BG_FRAME)
-                            except Exception:
-                                pass
+    def _bind_operation_card_events(self, card_frame, widgets, command, index):
+        """Attach click/hover behavior to operation cards and child widgets."""
+        def on_click(_event=None):
+            command()
+            self.highlight_selected_operation(index)
 
-                # Bind hover events to frame and all widgets
-                frame.bind("<Enter>", on_enter)
-                frame.bind("<Leave>", on_leave)
-                for widget in widgets:
-                    widget.bind("<Enter>", on_enter)
-                    widget.bind("<Leave>", on_leave)
+        def on_enter(_event=None):
+            selected = index == getattr(self, "selected_operation_index", None)
+            if selected:
+                self._set_operation_card_state(card_frame, widgets, is_selected=True, is_hover=False)
+            else:
+                self._set_operation_card_state(card_frame, widgets, is_selected=False, is_hover=True)
 
-            create_hover_effect(op_frame, clickable_widgets)
-            # Store the main clickable element for reference
-            self.operation_buttons.append(
-                clickable_widgets[0] if clickable_widgets else op_frame
-            )
+        def on_leave(_event=None):
+            selected = index == getattr(self, "selected_operation_index", None)
+            self._set_operation_card_state(card_frame, widgets, is_selected=selected)
 
-        # Configure grid weights for 3-column layout (3 rows for 9 operations)
-        for i in range(3):  # 3 columns
-            operations_container.grid_columnconfigure(i, weight=1)
-        for i in range(3):  # 3 rows
-            operations_container.grid_rowconfigure(i, weight=1)
+        for target in [card_frame] + widgets:
+            target.bind("<Button-1>", on_click)
+            target.bind("<Enter>", on_enter)
+            target.bind("<Leave>", on_leave)
 
-        # Apply ttk style for modern look
-        style = ttk.Style()
-        style.configure(
-            "Modern.TLabelframe", background="#f9f9fa", borderwidth=2, relief="groove"
-        )
-        style.configure("Modern.TFrame", background="#f9f9fa", borderwidth=0)
+    def _set_operation_card_state(self, card_frame, widgets, is_selected=False, is_hover=False):
+        """Update operation card visuals for default/hover/selected states."""
+        if is_selected:
+            card_bg = "#fee2e2"
+            border = CommonElements.RED_COLOR
+            border_width = 2
+        elif is_hover:
+            card_bg = CommonElements.HIGHLIGHT_COLOR
+            border = "#c79696"
+            border_width = 1
+        else:
+            card_bg = CommonElements.BG_CARD
+            border = "#d9c2c2"
+            border_width = 1
+
+        card_frame.config(bg=card_bg, highlightbackground=border, highlightthickness=border_width)
+        for widget in widgets:
+            try:
+                widget.config(bg=card_bg)
+            except Exception:
+                pass
 
     def create_settings_tab(self):
         """Create the settings adjustment tab with modern design"""
@@ -1836,6 +1845,70 @@ class SafePDFUI:
             self.apply_language()
         except Exception:
             logger.debug("Error handling language change", exc_info=True)
+
+    def _on_update_frequency_change(self, frequency):
+        """Persist update-check frequency when changed from settings UI."""
+        try:
+            freq = str(frequency or "daily").strip().lower()
+            if freq not in {"daily", "weekly", "manual"}:
+                freq = "daily"
+            self.update_frequency_var.set(freq)
+            self._save_update_frequency_preference(freq)
+            logger.info(f"Update check frequency set to: {freq}")
+        except Exception:
+            logger.debug("Error handling update frequency change", exc_info=True)
+
+    def _auto_check_updates_if_due(self):
+        """Perform a silent, non-blocking update check if cadence requires it."""
+        try:
+            frequency = str(self.update_frequency_var.get() or "daily").lower()
+            if frequency == "manual":
+                return
+
+            if not self._should_check_updates_now(frequency):
+                return
+
+            # Mark attempt immediately to avoid repeated retries on startup loops.
+            self._mark_update_check_attempt()
+
+            def _worker():
+                try:
+                    update_info = self.controller.check_for_updates()
+                    if update_info and update_info.get("available"):
+                        self.root.after(0, lambda: self.update_ui.show_update_dialog(update_info))
+                except Exception:
+                    logger.debug("Silent auto update check failed", exc_info=True)
+
+            Thread(target=_worker, daemon=True).start()
+        except Exception:
+            logger.debug("Error during silent auto update check", exc_info=True)
+
+    def _should_check_updates_now(self, frequency):
+        """Return True when an automatic update check is due."""
+        try:
+            cfg = self._load_app_config()
+            last_raw = cfg.get("last_update_check")
+            if not last_raw:
+                return True
+
+            try:
+                last_dt = datetime.fromisoformat(str(last_raw))
+            except Exception:
+                return True
+
+            delta = timedelta(days=1 if frequency == "daily" else 7)
+            return datetime.utcnow() - last_dt >= delta
+        except Exception:
+            return True
+
+    def _mark_update_check_attempt(self):
+        """Persist current UTC timestamp for last automatic update check attempt."""
+        try:
+            cfg = self._load_app_config()
+            cfg["last_update_check"] = datetime.utcnow().isoformat()
+            self._save_app_config(cfg)
+        except Exception:
+            logger.debug("Error saving last update check timestamp", exc_info=True)
 
     def apply_language(self):
         """Refresh UI parts that depend on language selection.
@@ -2099,12 +2172,8 @@ class SafePDFUI:
 
     def create_bottom_controls(self):
         """Create bottom navigation and control buttons"""
-        control_frame = ttk.Frame(self.root)
-        control_frame.pack(fill="x", padx=10, pady=10)
-
-        # Left side buttons
-        left_frame = ttk.Frame(control_frame)
-        left_frame.pack(side="left")
+        control_frame = ttk.Frame(self.root, style="TFrame")
+        control_frame.pack(fill="x", padx=12, pady=(0, 12))
 
         # Center spacer
         center_frame = ttk.Frame(control_frame)
@@ -2115,7 +2184,7 @@ class SafePDFUI:
         pro_frame.pack(side="left")
 
         # Pro status indicator with modern styling
-        status_color = "#00b386" if self.controller.is_pro_activated else "#888888"
+        status_color = "#b62020" if self.controller.is_pro_activated else "#8b5f5f"
         status_text = (
             self.lang_manager.get("status_pro", "✓ PRO Version")
             if self.controller.is_pro_activated
@@ -2127,11 +2196,11 @@ class SafePDFUI:
             text=status_text,
             command=lambda: self.update_ui.show_pro_dialog(self),
             font=(CommonElements.FONT, 9, "bold"),
-            fg="white",
+            fg=CommonElements.BUTTON_TEXT_DARK,
             bg=status_color,
             bd=0,
-            padx=16,
-            pady=8,
+            padx=14,
+            pady=7,
             cursor="hand2",
             relief=tk.FLAT,
             highlightthickness=0,
@@ -2147,16 +2216,16 @@ class SafePDFUI:
         def on_pro_enter(event):
             try:
                 if self.controller.is_pro_activated:
-                    self.pro_status_btn.config(bg="#009970")  # Darker green
+                    self.pro_status_btn.config(bg="#8f1a1a")
                 else:
-                    self.pro_status_btn.config(bg="#666666")  # Darker gray
+                    self.pro_status_btn.config(bg="#734c4c")
             except Exception:
                 pass
 
         def on_pro_leave(event):
             try:
                 status_color = (
-                    "#00b386" if self.controller.is_pro_activated else "#888888"
+                    "#b62020" if self.controller.is_pro_activated else "#8b5f5f"
                 )
                 self.pro_status_btn.config(bg=status_color)
             except Exception:
@@ -2169,12 +2238,6 @@ class SafePDFUI:
         right_frame = ttk.Frame(control_frame)
         right_frame.pack(side="right")
 
-        # Deactivited for now.
-        # settings_btn = ttk.Button(right_frame, text="Settings", command=lambda: self.notebook.select(self.app_settings_frame), width=10)
-        # settings_btn.pack(side='left', padx=(0, 2))
-        # help_btn = ttk.Button(right_frame, text="Help", command=lambda: self.notebook.select(self.help_frame), width=10)
-        # help_btn.pack(side='left', padx=(0, 50))
-
         # Navigation buttons frame
         nav_frame = ttk.Frame(right_frame)
         nav_frame.pack(side="left")
@@ -2185,6 +2248,7 @@ class SafePDFUI:
             command=self.previous_tab,
             width=10,
             state="disabled",
+            style="Secondary.TButton",
         )
         self.back_btn.pack(side="left", padx=(0, 2))
 
@@ -2193,6 +2257,7 @@ class SafePDFUI:
             text=self.lang_manager.get("nav_next", "Next →"),
             command=self.next_tab,
             width=10,
+            style="Accent.TButton",
         )
         self.next_btn.pack(side="left", padx=2)
 
@@ -2201,6 +2266,7 @@ class SafePDFUI:
             text=self.lang_manager.get("nav_cancel", "Cancel"),
             command=self.cancel_operation,
             width=10,
+            style="Danger.TButton",
         )
         self.cancel_btn.pack(side="left", padx=(10, 0))
 
@@ -2216,7 +2282,7 @@ class SafePDFUI:
     def animate_tab_change(self):
         """Simple animation for tab change"""
         original_bg = self.card_frame.cget("bg")
-        self.card_frame.config(bg="#f0f0f0")
+        self.card_frame.config(bg="#ffffff")
         self.root.after(200, lambda: self.card_frame.config(bg=original_bg))
 
     # Event handlers
@@ -2257,7 +2323,7 @@ class SafePDFUI:
         """Handle drag leave event - restore original appearance"""
         if not self.controller.selected_file:  # Only restore if no file is selected
             self.drop_label.config(
-                bg="#f8f9fa",
+                bg="#FFFFFF",
                 relief=tk.FLAT,
                 highlightbackground="#d1d5db",
                 highlightthickness=3,
@@ -2535,11 +2601,15 @@ class SafePDFUI:
 
     def highlight_selected_operation(self, selected_index):
         """Highlight the selected operation button"""
-        for i, btn in enumerate(self.operation_buttons):
-            if i == selected_index:
-                btn.config(relief=tk.SUNKEN, bg="#e8f5e8")
-            else:
-                btn.config(relief=tk.RAISED, bg="SystemButtonFace")
+        self.selected_operation_index = selected_index
+        for i, card in enumerate(self.operation_cards):
+            frame, widgets = card
+            self._set_operation_card_state(
+                frame,
+                widgets,
+                is_selected=(i == selected_index),
+                is_hover=False,
+            )
 
     def update_settings_for_operation(self):
         """Update settings tab based on selected operation - delegated to OperationSettingsUI"""
@@ -2845,6 +2915,7 @@ class SafePDFUI:
         """Reset for a new operation"""
         # Reset controller state
         self.controller.selected_operation = None
+        self.selected_operation_index = None
         self.controller.selected_file = None
         self.controller.current_output = None
 
@@ -2874,6 +2945,9 @@ class SafePDFUI:
         self.notebook.tab(2, state="disabled")
         self.notebook.tab(3, state="disabled")
         self.notebook.tab(4, state="disabled")
+
+        for frame, widgets in getattr(self, "operation_cards", []):
+            self._set_operation_card_state(frame, widgets, is_selected=False, is_hover=False)
 
         # Go to operation selection tab
         self.notebook.select(1)
@@ -3437,7 +3511,7 @@ class SafePDFUI:
                         text=self.lang_manager.get(
                             "drop_pdf_file", "📄 Drop PDF File Here\n\nClick to browse"
                         ),
-                        bg="#f8f9fa",
+                        bg="#FFFFFF",
                         fg="#666",
                         relief=tk.RIDGE,
                         bd=2,
@@ -3455,17 +3529,8 @@ class SafePDFUI:
     def _load_language_preference(self):
         """Load saved language preference from config file"""
         try:
-            import json
-            from pathlib import Path
-
-            config_dir = Path.home() / ".safepdf"
-            config_dir.mkdir(exist_ok=True)
-            config_file = config_dir / "config.json"
-
-            if config_file.exists():
-                with open(config_file, "r", encoding="utf-8") as f:
-                    config = json.load(f)
-                    return config.get("language", "en")
+            config = self._load_app_config()
+            return config.get("language", "en")
         except Exception as e:
             logger.debug(f"Error loading language preference: {e}", exc_info=True)
         return "en"
@@ -3473,25 +3538,54 @@ class SafePDFUI:
     def _save_language_preference(self, language_code):
         """Save language preference to config file"""
         try:
-            import json
-            from pathlib import Path
-
-            config_dir = Path.home() / ".safepdf"
-            config_dir.mkdir(exist_ok=True)
-            config_file = config_dir / "config.json"
-
-            # Load existing config or create new
-            config = {}
-            if config_file.exists():
-                with open(config_file, "r", encoding="utf-8") as f:
-                    config = json.load(f)
-
-            # Update language
+            config = self._load_app_config()
             config["language"] = language_code
-
-            # Save back
-            with open(config_file, "w", encoding="utf-8") as f:
-                json.dump(config, f, indent=2)
-
+            self._save_app_config(config)
         except Exception as e:
             logger.debug(f"Error saving language preference: {e}", exc_info=True)
+
+    def _load_update_frequency_preference(self):
+        """Load saved update-check cadence from config file."""
+        try:
+            config = self._load_app_config()
+            value = str(config.get("update_frequency", "daily")).lower()
+            return value if value in {"daily", "weekly", "manual"} else "daily"
+        except Exception:
+            logger.debug("Error loading update frequency preference", exc_info=True)
+            return "daily"
+
+    def _save_update_frequency_preference(self, frequency):
+        """Save update-check cadence to config file."""
+        try:
+            value = str(frequency or "daily").lower()
+            if value not in {"daily", "weekly", "manual"}:
+                value = "daily"
+            config = self._load_app_config()
+            config["update_frequency"] = value
+            self._save_app_config(config)
+        except Exception as e:
+            logger.debug(f"Error saving update frequency preference: {e}", exc_info=True)
+
+    def _load_app_config(self):
+        """Load app config JSON from ~/.safepdf/config.json."""
+        import json
+
+        config_dir = Path.home() / ".safepdf"
+        config_dir.mkdir(exist_ok=True)
+        config_file = config_dir / "config.json"
+        if not config_file.exists():
+            return {}
+
+        with open(config_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return data if isinstance(data, dict) else {}
+
+    def _save_app_config(self, config):
+        """Persist app config JSON to ~/.safepdf/config.json."""
+        import json
+
+        config_dir = Path.home() / ".safepdf"
+        config_dir.mkdir(exist_ok=True)
+        config_file = config_dir / "config.json"
+        with open(config_file, "w", encoding="utf-8") as f:
+            json.dump(config, f, indent=2)

@@ -54,8 +54,13 @@ class SafePDFController:
         # PDF operations handler
         self.pdf_ops = PDFOperations(progress_callback=progress_callback, language_manager=language_manager)
 
-        # Updates handler for GitHub releases and signed keys
-        self.updates = SafePDFUpdates()
+        # Updates handler for GitHub releases and signed keys.
+        # Never let update subsystem failures block app startup.
+        try:
+            self.updates = SafePDFUpdates()
+        except Exception as e:
+            self.logger.error(f"Failed to initialize update subsystem: {e}", exc_info=True)
+            self.updates = None
 
         # Callbacks for UI updates
         self.progress_callback = progress_callback
@@ -337,14 +342,20 @@ class SafePDFController:
 
     def check_for_updates(self):
         """Check for available updates from GitHub Releases"""
+        if not self.updates:
+            return {"available": False, "error": "updates_unavailable"}
         return self.updates.check_for_updates()
 
     def download_update(self, download_url, signature_url):
         """Download and verify an update"""
+        if not self.updates:
+            return False, None, "Update subsystem unavailable."
         return self.updates.download_and_verify(download_url, signature_url)
 
     def get_release_info(self, version=None):
         """Get information about a specific release"""
+        if not self.updates:
+            return None
         return self.updates.get_release_info(version)
 
     def apply_settings(self, settings_dict):

@@ -14,10 +14,11 @@ class CommonElements:
     TAB_BG = "#e9ecef"
     TAB_SELECTED = "#ffffff"
     HIGHLIGHT_COLOR = "#f8f9fa"
-    TEXT_BG = "#f8f9fa"
+    TEXT_BG = "#ffffff"
     TEXT_FG = "#222"
     BUTTON_BG = "#e9ecef"
     BUTTON_FG = "#000000"
+    BUTTON_TEXT_DARK = "#1f2933"
     ENTRY_BG = "#ffffff"
     ENTRY_FG = "#000000"
 
@@ -28,8 +29,8 @@ class CommonElements:
     FONT_SIZE = 10
 
     # Sizes
-    SIZE_STR = "1000x660"
-    SIZE_LIST = (1000, 660)
+    SIZE_STR = "1000x640"
+    SIZE_LIST = (1000, 640)
     PADDING = 10
 
     PRO_POPUP_SIZE = "550x550"

@@ -18,7 +18,16 @@ class SettingsUI:
     """Handles settings UI: language, theme and log actions."""
 
     def __init__(
-        self, root, controller, theme_var, language_var, log_file_path, font=CommonElements.FONT, language_manager=None
+        self,
+        root,
+        controller,
+        theme_var,
+        language_var,
+        log_file_path,
+        font=CommonElements.FONT,
+        language_manager=None,
+        update_frequency_var=None,
+        update_frequency_callback=None,
     ):
         self.root = root
         self.controller = controller
@@ -27,6 +36,59 @@ class SettingsUI:
         self.log_file_path = Path(log_file_path)
         self.font = font
         self.language_manager = language_manager
+        self.update_frequency_var = update_frequency_var
+        self.update_frequency_callback = update_frequency_callback
+
+    def _create_update_controls(self, parent):
+        """Create update-check frequency controls."""
+        if self.update_frequency_var is None:
+            return
+
+        label_text = (
+            self.language_manager.get("settings_update_frequency", "Update checks:")
+            if self.language_manager
+            else "Update checks:"
+        )
+        ttk.Label(parent, text=label_text, font=(self.font, CommonElements.FONT_SIZE, "bold")).pack(
+            anchor="w", pady=(12, 4)
+        )
+
+        freq_daily = self.language_manager.get("update_daily", "Daily") if self.language_manager else "Daily"
+        freq_weekly = self.language_manager.get("update_weekly", "Weekly") if self.language_manager else "Weekly"
+        freq_manual = self.language_manager.get("update_manual", "Manual") if self.language_manager else "Manual"
+        display_to_code = {freq_daily: "daily", freq_weekly: "weekly", freq_manual: "manual"}
+        code_to_display = {v: k for k, v in display_to_code.items()}
+
+        combo = ttk.Combobox(parent, values=list(display_to_code.keys()), state="readonly", width=14)
+        current_code = str(self.update_frequency_var.get() or "daily").lower()
+        combo.set(code_to_display.get(current_code, freq_daily))
+
+        def on_frequency_change(event=None):
+            sel = combo.get()
+            code = display_to_code.get(sel, "daily")
+            try:
+                self.update_frequency_var.set(code)
+                if callable(self.update_frequency_callback):
+                    self.update_frequency_callback(code)
+                if hasattr(self.controller, "apply_settings"):
+                    self.controller.apply_settings({"update_frequency": code})
+            except Exception:
+                logger.debug("Error setting update frequency", exc_info=True)
+
+        combo.bind("<<ComboboxSelected>>", on_frequency_change)
+        combo.pack(anchor="w", pady=4)
+
+        hint_text = (
+            self.language_manager.get(
+                "settings_update_frequency_hint",
+                "Manual disables startup checks. Daily/Weekly run in background only.",
+            )
+            if self.language_manager
+            else "Manual disables startup checks. Daily/Weekly run in background only."
+        )
+        ttk.Label(parent, text=hint_text, font=(self.font, CommonElements.FONT_SIZE), foreground="#666").pack(
+            anchor="w", pady=(4, 0)
+        )
 
     def _create_theme_controls(self, parent):
         theme_label_text = (
@@ -133,6 +195,7 @@ class SettingsUI:
 
             # Theme / Log
             self._create_theme_controls(content)
+            self._create_update_controls(content)
             self._create_log_controls(content)
 
             # Buttons
@@ -381,6 +444,7 @@ class SettingsUI:
 
         # Theme / Log
         self._create_theme_controls(main_frame)
+        self._create_update_controls(main_frame)
         self._create_log_controls(main_frame)
 
         return main_frame
