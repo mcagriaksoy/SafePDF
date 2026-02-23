@@ -7,12 +7,12 @@ import os
 import sys
 
 # Add parent directory to sys.path so SafePDF package imports work
-parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if parent_dir not in sys.path:
-    sys.path.insert(0, parent_dir)
+repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if repo_root not in sys.path:
+    sys.path.insert(0, repo_root)
 
 try:
-    from ctrl.safe_pdf_controller import SafePDFController
+    from SafePDF.ctrl.safe_pdf_controller import SafePDFController
 
     print("✓ Controller import successful")
 
@@ -24,7 +24,8 @@ try:
     # Test activation with valid license file
     import tempfile
 
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".license", delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".lic", delete=False) as f:
+        # Intentionally not a real signed license payload; verifies graceful failure path
         f.write("SAFEPRO2025")
         temp_license = f.name
 
