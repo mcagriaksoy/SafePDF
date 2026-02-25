@@ -20,10 +20,17 @@ if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
 import tkinter as tk  # noqa: E402
-from ctypes import windll  # noqa: E402
 from pathlib import Path  # noqa: E402
 
-from tkinterdnd2 import TkinterDnD  # noqa: E402
+try:  # noqa: E402
+    from ctypes import windll
+except ImportError:  # Non-Windows platforms
+    windll = None
+
+try:  # noqa: E402
+    from tkinterdnd2 import TkinterDnD
+except ImportError:
+    TkinterDnD = None
 
 from SafePDF.ctrl.safe_pdf_controller import SafePDFController  # noqa: E402
 from SafePDF.logger.logging_config import get_logger  # noqa: E402
@@ -68,7 +75,8 @@ class SafePDFApp:
         # Only on Windows: set AppUserModelID for proper taskbar grouping & icon
         if sys.platform == "win32":
             try:
-                windll.shell32.SetCurrentProcessExplicitAppUserModelID("com.mca.safepdf")
+                if windll is not None:
+                    windll.shell32.SetCurrentProcessExplicitAppUserModelID("com.mca.safepdf")
             except Exception:
                 self.logger.debug("Error setting AppUserModelID", exc_info=True)
                 pass
@@ -109,6 +117,8 @@ class SafePDFApp:
 def main():
     """Main application entry point"""
     try:
+        if TkinterDnD is None:
+            raise ImportError
         root = TkinterDnD.Tk()  # Use TkinterDnD root for drag-and-drop support
     except Exception:
         root = tk.Tk()  # Fallback if tkinterdnd2 is not available
