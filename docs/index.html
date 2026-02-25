@@ -7,9 +7,9 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>SafePDF: A Privacy-First PDF Toolkit</title>
     <meta name="description"
-        content="SafePDF : finally a privacy focused offline PDF compression, split, merge, convert, rotate and repair. Data never leaves your device.">
+        content="SafePDF is a privacy-first offline PDF toolkit to compress, split, merge, convert, rotate, and repair PDF files locally. Your data never leaves your device.">
     <meta name="keywords"
-        content="SafePDF, PDF, compress, split, merge, convert, rotate, repair, offline, privacy, safe pdf operations, privacy-focused, local pdf tool, pdf toolkit, pdf editor, pdf compressor, open soruce pdf app, safe pdf operations, data privacy, document security, pdf management, pdf utilities, pdf processing, pdf manipulation">
+        content="SafePDF, offline PDF toolkit, privacy-first PDF software, local PDF converter, PDF compressor, merge PDF offline, split PDF offline, PDF to Word, PDF to Excel, PDF to JPG, Word to PDF, JPG to PDF, secure PDF processing, open source PDF app">
     <meta name="author" content="mcagriaksoy">
     <meta name="robots" content="index,follow">
     <meta name="language" content="en">
@@ -119,7 +119,7 @@
     <main class="container">
         <section class="features" id="features">
             <h2>Key features</h2>
-            <div class="grid features-grid">
+            <div class="features-top-grid">
                 <div class="feature-card">
                     <div class="feature-icon">OFF</div>
                     <h3 class="feature-title">Offline Processing</h3>
@@ -143,7 +143,13 @@
                         the GPL‑3.0 license, allowing anyone to review, audit, and contribute to the project's
                         development.</p>
                 </div>
+            </div>
 
+            <div class="features-slider-wrap" aria-label="More SafePDF features">
+                <button class="features-nav-btn" type="button" id="features-prev" aria-label="Previous features">
+                    ←
+                </button>
+                <div class="features-slider" id="features-slider">
                 <div class="feature-card">
                     <div class="feature-icon">CMP</div>
                     <h3 class="feature-title">Smart Compression</h3>
@@ -214,7 +220,12 @@
                         scripts, perfect for batch processing large numbers of documents or integrating into existing
                         workflows.</p>
                 </div>
+                </div>
+                <button class="features-nav-btn" type="button" id="features-next" aria-label="Next features">
+                    →
+                </button>
             </div>
+            <p class="features-hint">Swipe or use arrows to browse all features.</p>
         </section>
 
         <!-- Screenshots Section -->
@@ -579,6 +590,53 @@
         }
 
         // Cookie consent is handled by cookie-consent.js
+    </script>
+    <script>
+        (function () {
+            const slider = document.getElementById('features-slider');
+            const prevBtn = document.getElementById('features-prev');
+            const nextBtn = document.getElementById('features-next');
+            if (!slider || !prevBtn || !nextBtn) return;
+
+            function slideByDirection(direction) {
+                const firstCard = slider.querySelector('.feature-card');
+                if (!firstCard) return;
+                const cardWidth = firstCard.getBoundingClientRect().width;
+                const gap = parseFloat(getComputedStyle(slider).columnGap || getComputedStyle(slider).gap || 0);
+                const step = cardWidth + gap;
+                slider.scrollBy({ left: direction * step, behavior: 'smooth' });
+            }
+
+            prevBtn.addEventListener('click', function () { slideByDirection(-1); });
+            nextBtn.addEventListener('click', function () { slideByDirection(1); });
+
+            let autoSlideId;
+            function startAutoSlide() {
+                stopAutoSlide();
+                autoSlideId = window.setInterval(function () {
+                    const maxScrollLeft = slider.scrollWidth - slider.clientWidth;
+                    const isAtEnd = slider.scrollLeft >= maxScrollLeft - 4;
+                    if (isAtEnd) {
+                        slider.scrollTo({ left: 0, behavior: 'smooth' });
+                        return;
+                    }
+                    slideByDirection(1);
+                }, 4200);
+            }
+            function stopAutoSlide() {
+                if (autoSlideId) {
+                    window.clearInterval(autoSlideId);
+                    autoSlideId = null;
+                }
+            }
+
+            slider.addEventListener('mouseenter', stopAutoSlide);
+            slider.addEventListener('mouseleave', startAutoSlide);
+            slider.addEventListener('focusin', stopAutoSlide);
+            slider.addEventListener('focusout', startAutoSlide);
+
+            startAutoSlide();
+        })();
     </script>
     <script>
             // --- Improved machine translation using Google Translate API (client-side) ---

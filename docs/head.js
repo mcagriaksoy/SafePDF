@@ -1,6 +1,7 @@
 // Common head elements for SafePDF website
 // Note: Critical SEO meta tags are now in static HTML for better SEO
-function createCommonHead(pageConfig) {
+function createCommonHead(pageConfig = {}) {
+    const canonicalUrl = pageConfig.canonicalUrl || `${window.location.origin}${window.location.pathname}`;
     const headContent = `
     <!-- Theme and UI Meta Tags -->
     <meta name="theme-color" content="#0f1720">
@@ -39,11 +40,11 @@ function createCommonHead(pageConfig) {
     <!-- Preload hero image to improve LCP -->
     <link rel="preload" as="image" href="https://github.com/mcagriaksoy/SafePDF/raw/main/img/SafePDF_Ad.avif">
 
-    <!-- Canonical and hreflang tags for multilingual SEO -->
+    <!-- Hreflang tags and HTML language attribute -->
     <script>
-        // Dynamically set canonical, hreflang, and HTML lang attribute
+        // Dynamically set hreflang and HTML lang attribute
         (function() {
-            var base = '${pageConfig.baseUrl}';
+            var base = '${canonicalUrl}';
             var url = new URL(window.location.href);
             var lang = url.searchParams.get('lang') || 'en';
             
@@ -55,33 +56,27 @@ function createCommonHead(pageConfig) {
             // Update HTML lang attribute to match
             document.documentElement.lang = lang;
             
-            var canon = base;
-            if(lang === 'tr') canon = base + '?lang=tr';
-            else if(lang === 'de') canon = base + '?lang=de';
-            // Canonical
-            var linkCanon = document.createElement('link');
-            linkCanon.rel = 'canonical';
-            linkCanon.href = canon;
-            document.head.appendChild(linkCanon);
-            // Hreflang alternates
-            var langs = [
-                {code:'en', url: base},
-                {code:'tr', url: base+'?lang=tr'},
-                {code:'de', url: base+'?lang=de'}
-            ];
-            langs.forEach(function(l) {
-                var link = document.createElement('link');
-                link.rel = 'alternate';
-                link.hreflang = l.code;
-                link.href = l.url;
-                document.head.appendChild(link);
-            });
-            // x-default
-            var linkDef = document.createElement('link');
-            linkDef.rel = 'alternate';
-            linkDef.hreflang = 'x-default';
-            linkDef.href = base;
-            document.head.appendChild(linkDef);
+            // Avoid duplicate alternates when static tags already exist.
+            if (!document.querySelector('link[rel="alternate"][hreflang="en"]')) {
+                var langs = [
+                    {code:'en', url: base},
+                    {code:'tr', url: base+'?lang=tr'},
+                    {code:'de', url: base+'?lang=de'}
+                ];
+                langs.forEach(function(l) {
+                    var link = document.createElement('link');
+                    link.rel = 'alternate';
+                    link.hreflang = l.code;
+                    link.href = l.url;
+                    document.head.appendChild(link);
+                });
+                // x-default
+                var linkDef = document.createElement('link');
+                linkDef.rel = 'alternate';
+                linkDef.hreflang = 'x-default';
+                linkDef.href = base;
+                document.head.appendChild(linkDef);
+            }
         })();
     </script>
 
@@ -91,7 +86,8 @@ function createCommonHead(pageConfig) {
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
       "name": "SafePDF",
-      "url": "${pageConfig.canonicalUrl}",
+      "@id": "${canonicalUrl}#softwareapplication",
+      "url": "${canonicalUrl}",
       "description": "Privacy-first offline PDF toolkit for compressing, splitting, merging, converting, rotating and repairing PDF documents.",
       "author": { "@type": "Person", "name": "mcagriaksoy", "url": "https://github.com/mcagriaksoy" },
       "publisher": {
@@ -111,13 +107,6 @@ function createCommonHead(pageConfig) {
         "@type": "Offer",
         "price": "0",
         "priceCurrency": "USD"
-      },
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "4.9",
-        "ratingCount": "127",
-        "bestRating": "5",
-        "worstRating": "1"
       },
       "featureList": [
         "Offline PDF processing",

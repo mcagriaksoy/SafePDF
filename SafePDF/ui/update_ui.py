@@ -387,7 +387,7 @@ class UpdateUI:
                     try:
                         import webbrowser
 
-                        webbrowser.open("https://github.com/mcagriaksoy/SafePDF")
+                        webbrowser.open("https://safepdf.de/")
                         messagebox.showinfo(
                             self.language_manager.get("pro_redirecting", "Redirecting")
                             if self.language_manager
