@@ -2,6 +2,8 @@
 // Note: Critical SEO meta tags are now in static HTML for better SEO
 function createCommonHead(pageConfig = {}) {
     const canonicalUrl = pageConfig.canonicalUrl || `${window.location.origin}${window.location.pathname}`;
+    const analyticsId = pageConfig.analyticsId || 'G-FRC3NLZG1V';
+    const includeAnalytics = pageConfig.analytics !== false;
     const headContent = `
     <!-- Theme and UI Meta Tags -->
     <meta name="theme-color" content="#0f1720">
@@ -102,7 +104,7 @@ function createCommonHead(pageConfig = {}) {
         "contactType": "customer support"
       },
       "operatingSystem": "Windows, macOS, Linux",
-      "applicationCategory": "DeveloperTool",
+      "applicationCategory": "UtilitiesApplication",
       "offers": {
         "@type": "Offer",
         "price": "0",
@@ -120,13 +122,20 @@ function createCommonHead(pageConfig = {}) {
       ]
     }
     </script>
+    ${includeAnalytics ? `
+    <!-- Consent-gated analytics -->
+    <script type="text/plain" data-cookiecategory="analytics" src="https://www.googletagmanager.com/gtag/js?id=${analyticsId}" async></script>
+    <script type="text/plain" data-cookiecategory="analytics">
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){ dataLayer.push(arguments); }
+      gtag('js', new Date());
+      gtag('config', '${analyticsId}');
+    </script>` : ''}
     `;
 
     // Insert into head
     document.head.insertAdjacentHTML('beforeend', headContent);
 
-    // Load deferred fonts
-    loadDeferredFonts();
 }
 
 function loadDeferredFonts() {

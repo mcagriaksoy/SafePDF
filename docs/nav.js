@@ -1,19 +1,46 @@
 // Common navigation for SafePDF website
+const flagMap = {
+    en: "assets/flag-en.svg",
+    tr: "assets/flag-tr.svg",
+    de: "assets/flag-de.svg"
+};
+
 function createNavigation(navConfig) {
+    const isHomePage = window.location.pathname.endsWith('/') || window.location.pathname.endsWith('/index.html') || window.location.pathname.endsWith('index.html');
+    const sharedLinks = isHomePage ? [
+        { href: "#features", text: "Features" },
+        { href: "#converters", text: "Converters" },
+        { href: "#why-offline", text: "Why Offline" },
+        { href: "#buy-pro", text: "Compare Plans" },
+        { href: "downloads.html", text: "Downloads" },
+        { href: "offline-pdf-tools.html", text: "Guides" },
+        { href: "sustainability.html", text: "Sustainability" },
+        { href: "contact.html", text: "Contact" }
+    ] : [
+        { href: "index.html#features", text: "Features" },
+        { href: "index.html#converters", text: "Converters" },
+        { href: "index.html#why-offline", text: "Why Offline" },
+        { href: "index.html#buy-pro", text: "Compare Plans" },
+        { href: "downloads.html", text: "Downloads" },
+        { href: "offline-pdf-tools.html", text: "Guides" },
+        { href: "sustainability.html", text: "Sustainability" },
+        { href: "contact.html", text: "Contact" }
+    ];
+    const brandLink = isHomePage ? "" : "index.html";
     const navContent = `
     <nav class="navbar">
         <div class="container">
-            <a href="${navConfig.brandLink}" class="nav-brand">SafePDF™</a>
+            <a href="${brandLink}" class="nav-brand">SafePDF™</a>
             <ul class="nav-links">
-                ${navConfig.links.map(link => `<li><a href="${link.href}" ${link.id ? `id="${link.id}"` : ''}>${link.text}</a></li>`).join('')}
+                ${sharedLinks.map(link => `<li><a href="${link.href}">${link.text}</a></li>`).join('')}
             </ul>
             <div class="lang-selector" style="display:flex;align-items:center;gap:6px">
-                <span id="lang-flag" style="font-size:1.3em;font-family:'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol','Noto Color Emoji',sans-serif;">🇬🇧</span>
+                <img id="lang-flag" src="${flagMap.en}" alt="Selected language flag" width="24" height="16" style="display:block;border-radius:2px;box-shadow:0 0 0 1px rgba(15,23,36,.12)">
                 <label for="language-select" style="display:none">Language</label>
                 <select class="language-select" id="language-select" aria-label="Language" style="background:#fff;color:#0f1724;border:1px solid #ddd;padding:4px 8px;border-radius:6px;">
-                    <option value="en" data-flag="🇬🇧">English</option>
-                    <option value="tr" data-flag="🇹🇷">Türkçe</option>
-                    <option value="de" data-flag="🇩🇪">Deutsch</option>
+                    <option value="en">English</option>
+                    <option value="tr">Türkçe</option>
+                    <option value="de">Deutsch</option>
                 </select>
             </div>
         </div>
@@ -34,9 +61,9 @@ function initializeNavigation() {
 
     if (langSelect && langFlag) {
         function updateFlag() {
-            const flagMap = { en: '🇬🇧', tr: '🇹🇷', de: '🇩🇪' };
             const lang = langSelect.value;
-            langFlag.textContent = flagMap[lang] || '🌐';
+            langFlag.src = flagMap[lang] || flagMap.en;
+            langFlag.alt = `${langSelect.options[langSelect.selectedIndex].text} flag`;
         }
 
         langSelect.addEventListener('change', function() {
@@ -60,26 +87,4 @@ function initializeNavigation() {
         updateFlag();
     }
 
-    // Contact button functionality (only for nav contact button)
-    const contactBtn = document.getElementById('nav-contact-btn');
-    if (contactBtn) {
-        contactBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            // Show contact modal instead of scrolling
-            const modal = document.getElementById('contact-modal');
-            if (modal) {
-                modal.style.display = 'block';
-                // Generate captcha if function exists
-                if (typeof generateCaptcha === 'function') {
-                    generateCaptcha();
-                }
-            } else {
-                // Fallback: scroll to contact section
-                const contactSection = document.getElementById('contact');
-                if (contactSection) {
-                    contactSection.scrollIntoView({ behavior: 'smooth' });
-                }
-            }
-        });
-    }
 }
