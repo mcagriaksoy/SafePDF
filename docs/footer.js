@@ -24,6 +24,8 @@ function createFooter() {
             <h4>Resources</h4>
             <ul class="footer-links">
                 <li><a href="downloads.html">Downloads</a></li>
+                <li><a href="offline-pdf-tools.html">Offline PDF Guide</a></li>
+                <li><a href="secure-pdf-processing.html">Secure PDF Processing</a></li>
                 <li><a href="sustainability.html">Sustainability</a></li>
                 <li><a href="terms.html">Terms of Use</a></li>
                 <li><a href="privacy.html">Privacy</a></li>
@@ -35,7 +37,7 @@ function createFooter() {
         <div class="footer-col">
             <h4>Contact</h4>
             <p class="small"><a href="mailto:info@safepdf.de">info@safepdf.de</a></p>
-            <p class="small"><a href="https://safepdf.de/contact.html" id="contact-btn-footer">Contact Form</a></p>
+            <p class="small"><a href="https://safepdf.de/contact.html">Contact Form</a></p>
             <p class="small"><a href="https://safepdf.de/cookie-policy.html" id="cookie-settings-footer">Cookie Settings</a></p>
             <div class="footer-social-buttons">
                 <a href="https://github.com/mcagriaksoy/SafePDF" class="footer-social-btn" title="GitHub" aria-label="GitHub">
@@ -93,29 +95,6 @@ function initializeFooter() {
                 backToTopBtn.style.display = 'block';
             } else {
                 backToTopBtn.style.display = 'none';
-            }
-        });
-    }
-
-    // Contact button functionality
-    const contactBtn = document.getElementById('contact-btn-footer');
-    if (contactBtn) {
-        contactBtn.addEventListener('click', function (e) {
-            e.preventDefault();
-            // Show contact modal instead of scrolling
-            const modal = document.getElementById('contact-modal');
-            if (modal) {
-                modal.style.display = 'block';
-                // Generate captcha if function exists
-                if (typeof generateCaptcha === 'function') {
-                    generateCaptcha();
-                }
-            } else {
-                // Fallback: scroll to contact section
-                const contactSection = document.getElementById('contact');
-                if (contactSection) {
-                    contactSection.scrollIntoView({ behavior: 'smooth' });
-                }
             }
         });
     }

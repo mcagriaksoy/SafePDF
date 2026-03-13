@@ -2,15 +2,62 @@
   const KEY = 'safepdf_cookie_prefs';
   const COOKIE_NAME = 'safepdf_cookie_consent';
   const COOKIE_MAX_AGE = 31536000; // 1 year
+  const CONSENT_VERSION = 2;
+
+  function ensureCookieUi(){
+    if(!document.getElementById('cookie-modal')){
+      document.body.insertAdjacentHTML('beforeend', `
+        <div id="cookie-modal" class="modal" aria-hidden="true">
+          <div class="modal-content">
+            <span class="cookie-close close" role="button" tabindex="0" aria-label="Close cookie settings">&times;</span>
+            <h2>Cookie Preferences</h2>
+            <p class="muted">Choose whether SafePDF may use optional cookies for preferences and analytics. Necessary cookies stay enabled so the site can work.</p>
+            <form id="cookie-form">
+              <label><input type="checkbox" name="necessary" checked disabled> Necessary (required)</label>
+              <label><input type="checkbox" name="preferences"> Preferences (fonts and UI choices)</label>
+              <label><input type="checkbox" name="analytics"> Analytics (Google Analytics)</label>
+              <label><input type="checkbox" name="marketing"> Marketing (currently unused)</label>
+              <div style="margin-top:16px;text-align:right;">
+                <button type="button" class="contact-btn secondary" onclick="rejectAllCookies()">Reject All</button>
+                <button type="button" class="contact-btn primary" onclick="saveCookiePreferences()">Save Preferences</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      `);
+    }
+
+    if(!document.getElementById('cookie-banner')){
+      document.body.insertAdjacentHTML('beforeend', `
+        <div id="cookie-banner" aria-live="polite" style="display:none">
+          <div class="container cookie-inner">
+            <div>
+              <p class="muted">SafePDF uses necessary storage for site behavior and optional analytics only if you agree. You can change this any time in Cookie Settings.</p>
+            </div>
+            <div class="cookie-actions">
+              <button class="btn" type="button" onclick="openCookieModal()">Cookie Settings</button>
+              <button class="btn" type="button" onclick="rejectAllCookies()">Reject All</button>
+              <button class="btn primary" type="button" onclick="acceptAllCookies()">Accept All</button>
+            </div>
+          </div>
+        </div>
+      `);
+    }
+  }
 
   function getPrefs(){
-    try{ return JSON.parse(localStorage.getItem(KEY)) || null; }catch(e){return null}
+    try{
+      const prefs = JSON.parse(localStorage.getItem(KEY)) || null;
+      if(!prefs) return null;
+      if(prefs.version !== CONSENT_VERSION) return null;
+      return prefs;
+    }catch(e){return null}
   }
 
   function savePrefs(p){
     const prefs = Object.assign({ necessary:true, preferences:false, analytics:false, marketing:false }, p);
     prefs.ts = new Date().toISOString();
-    prefs.version = 1;
+    prefs.version = CONSENT_VERSION;
     localStorage.setItem(KEY, JSON.stringify(prefs));
     document.cookie = COOKIE_NAME + '=' + encodeURIComponent(JSON.stringify({ts:prefs.ts,version:prefs.version})) + '; path=/; max-age=' + COOKIE_MAX_AGE + '; SameSite=Lax';
     applyPrefs(prefs);
@@ -107,6 +154,7 @@
   }
 
   function init(){
+    ensureCookieUi();
     const prefs = getPrefs();
     if(!prefs){
       // show banner after small delay

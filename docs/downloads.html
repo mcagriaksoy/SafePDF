@@ -110,10 +110,10 @@
             brandLink: "index.html",
             links: [
                 { href: "index.html#features", text: "Features" },
-                { href: "index.html#comparison", text: "Compare Plans" },
+                { href: "index.html#buy-pro", text: "Compare Plans" },
                 { href: "index.html#screenshots", text: "Screenshots" },
-                { href: "index.html#operations", text: "Operations" },
-                { href: "index.html#contact", text: "Contact", id: "nav-contact-btn" }
+                { href: "index.html#converters", text: "Operations" },
+                { href: "contact.html", text: "Contact" }
             ]
         };
         createNavigation(navConfig);
@@ -302,7 +302,7 @@
                 </div>
                 <div class="pro-cta-actions">
                     <a href="index.html#buy-pro" class="btn primary">View Pro Plans</a>
-                    <a href="index.html#comparison" class="btn">Compare Free vs Pro</a>
+                    <a href="index.html#buy-pro" class="btn">Compare Free vs Pro</a>
                 </div>
             </div>
         </section>
@@ -329,26 +329,6 @@
         </div>
     </div>
 
-    <!-- Contact Modal -->
-    <div id="contact-modal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Contact & Support</h2>
-            <div class="contact-options">
-                <div class="contact-option">
-                    <h3>✉️ Email Us</h3>
-                    <p>Send us an email for support or inquiries.</p>
-                    <a href="mailto:info@safepdf.de" class="contact-btn primary">info@safepdf.de</a>
-                </div>
-                <div class="contact-option">
-                    <h3>📄 Contact Form</h3>
-                    <p>Use our main contact form for detailed inquiries.</p>
-                    <a href="https://safepdf.de/contact.html" class="contact-btn secondary" onclick="document.getElementById('contact-modal').style.display='none'">Go to Contact Form</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- small scripts for footer -->
     <script>
         // update copyright year
@@ -359,22 +339,8 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
-        // Modal functionality (simplified for downloads page)
-        var modal = document.getElementById('contact-modal');
-        if (modal) {
-            var span = document.getElementsByClassName('close')[0];
-            if (span) {
-                span.onclick = function () {
-                    modal.style.display = 'none';
-                }
-            }
-            window.onclick = function (event) {
-                if (event.target == modal) {
-                    modal.style.display = 'none';
-                }
-            }
-        }
     </script>
+    <script src="cookie-consent.js"></script>
 </body>
 
 </html>
