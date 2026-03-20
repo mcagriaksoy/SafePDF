@@ -16,7 +16,7 @@ from urllib.request import urlopen
 try:
     import gnupg
     from github import Github
-except ImportError as e:
+except ImportError:
     gnupg = None
     Github = None
 

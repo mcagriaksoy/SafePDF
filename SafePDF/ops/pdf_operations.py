@@ -45,7 +45,7 @@ except ImportError:
 class PDFOperations:
     """Class containing all PDF manipulation operations"""
 
-    def __init__(self, progress_callback=None, language_manager=None):
+    def __init__(self, progress_callback=None, language_manager=None, status_callback=None):
         """
         Initialize PDF operations handler
 
@@ -55,6 +55,7 @@ class PDFOperations:
         """
         self.progress_callback = progress_callback
         self.language_manager = language_manager
+        self.status_callback = status_callback
         # Cancellation flag that can be set by controller/UI
         self._cancel_requested = False
 
@@ -80,6 +81,8 @@ class PDFOperations:
             language_manager=self.language_manager,
             atomic_write_via_path=self._atomic_write_via_path,
         )
+
+        self.ocr_converter = None
 
         # Initialize PDF splitter
         self.splitter = PDFSplitter(
@@ -211,9 +214,37 @@ class PDFOperations:
         if self.progress_callback:
             self.progress_callback(value)
 
+    def update_status(self, message):
+        """Forward live status updates if callback is available."""
+        if self.status_callback and message:
+            self.status_callback(message)
+
+    def _get_ocr_converter(self):
+        """Create the OCR converter only when an OCR operation is actually used."""
+        if self.ocr_converter is None:
+            from SafePDF.ops.pdf_ocr import PDFOCRConverter
+
+            self.ocr_converter = PDFOCRConverter(
+                progress_callback=self.update_progress,
+                status_callback=self.update_status,
+                language_manager=self.language_manager,
+                atomic_write_file=self._atomic_write_file,
+                atomic_write_via_path=self._atomic_write_via_path,
+            )
+        return self.ocr_converter
+
     def request_cancel(self):
         """Request cancellation of a running operation."""
         self._cancel_requested = True
+        try:
+            self.word_converter.request_cancel()
+        except Exception:
+            pass
+        try:
+            if self.ocr_converter is not None:
+                self.ocr_converter.request_cancel()
+        except Exception:
+            pass
 
     def validate_pdf(self, file_path: str) -> bool:
         """
@@ -460,7 +491,7 @@ class PDFOperations:
                             "op_word_cancelled", "Operation cancelled"
                         ) if self.language_manager else "Operation cancelled"
 
-                    text_content += page.extract_text() + "\n\n"
+                    text_content += (page.extract_text() or "") + "\n\n"
 
             def _write_text(tmpf):
                 tmpf.write(text_content.encode("utf-8"))
@@ -480,6 +511,14 @@ class PDFOperations:
                 else "Text extraction failed: {error}"
             )
             return False, error_msg.format(error=str(e))
+
+    def pdf_ocr_to_txt(self, input_path: str, output_path: str) -> Tuple[bool, str]:
+        """Extract text from image-based PDFs using OCR."""
+        return self._get_ocr_converter().pdf_ocr_to_txt(input_path, output_path)
+
+    def pdf_ocr_to_docx(self, input_path: str, output_path: str) -> Tuple[bool, str]:
+        """Extract text from image-based PDFs using OCR and save as DOCX."""
+        return self._get_ocr_converter().pdf_ocr_to_docx(input_path, output_path)
 
     def extract_hidden_info(self, input_path: str, output_path: str) -> Tuple[bool, str]:
         """

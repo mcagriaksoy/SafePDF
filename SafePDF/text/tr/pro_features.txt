@@ -1,5 +1,6 @@
 • Ultra Yüksek Kaliteli Sıkıştırma (300 DPI %95 JPEG kalitesi)
 • Maksimum kalite koruması için kayıpsız sıkıştırma
+• Goruntu tabanli PDF'ler icin OCR tarama ve metin cikarma
 • Öncelikli müşteri desteği ve daha hızlı yanıt süreleri
 • Yeni özellikler ve iyileştirmelerle düzenli güncellemeler
 • İmzalı doğrulama ile otomatik güncelleme kontrolü
