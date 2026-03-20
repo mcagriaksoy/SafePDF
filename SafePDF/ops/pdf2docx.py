@@ -88,7 +88,7 @@ class PDFToWordConverter:
                         ) if self.language_manager else "Operation cancelled"
 
                     page = reader.pages[page_num]
-                    text = page.extract_text()
+                    text = page.extract_text() or ""
 
                     # Add page content to document
                     doc.add_heading(f"Page {page_num + 1}", level=1)

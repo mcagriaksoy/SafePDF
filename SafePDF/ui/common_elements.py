@@ -1,6 +1,7 @@
 # define color, font, size, and layout for common UI elements
 from typing import ClassVar
 
+
 class CommonElements:
     # Colors
     BG_COLOR = "#f0f0f0"

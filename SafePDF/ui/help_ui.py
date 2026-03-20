@@ -36,7 +36,7 @@ class HelpUI:
         gif_url = "https://raw.githubusercontent.com/mcagriaksoy/SafePDF/main/img/HowToUse.gif"
         try:
             webbrowser_open(gif_url)
-        except Exception as e:
+        except Exception:
             try:
                 messagebox.showerror(
                     self._get_lang_text("error_title", "Error"),

@@ -32,6 +32,7 @@ class OperationSettingsUI:
         self.page_range_var = None
         self.repair_var = None
         self.merge_var = None
+        self.ocr_output_format_var = None
         self.use_default_output = None
         self.output_path_var = None
 
@@ -253,48 +254,167 @@ class OperationSettingsUI:
         """Create settings for PDF to Word conversion"""
         ttk.Label(
             self.settings_container,
-            text="Convert PDF to Microsoft Word document (.docx)",
+            text=self.lang_manager.get(
+                "settings_to_word_intro",
+                "Convert a text-based PDF into an editable DOCX document",
+            ),
         ).pack(anchor="w", pady=5)
 
         info_frame = ttk.Frame(self.settings_container)
         info_frame.pack(anchor="w", pady=5, fill="x")
 
         ttk.Label(
-            info_frame, text="• Extracts text content from PDF", foreground="#666"
-        ).pack(anchor="w")
-        ttk.Label(
             info_frame,
-            text="• Attempts to preserve basic formatting",
+            text=self.lang_manager.get(
+                "settings_to_word_bullet_extracts",
+                "• Extracts embedded text from PDF",
+            ),
             foreground="#666",
         ).pack(anchor="w")
         ttk.Label(
-            info_frame, text="• Includes images where possible", foreground="#666"
+            info_frame,
+            text=self.lang_manager.get(
+                "settings_to_word_bullet_formatting",
+                "• Attempts to preserve basic formatting",
+            ),
+            foreground="#666",
         ).pack(anchor="w")
         ttk.Label(
-            info_frame, text="• Requires python-docx and pypdfium2", foreground="#666"
+            info_frame,
+            text=self.lang_manager.get(
+                "settings_to_word_bullet_images",
+                "• Includes images where possible",
+            ),
+            foreground="#666",
+        ).pack(anchor="w")
+        ttk.Label(
+            info_frame,
+            text=self.lang_manager.get(
+                "settings_to_word_bullet_requires",
+                "• Requires python-docx and pypdfium2",
+            ),
+            foreground="#666",
         ).pack(anchor="w")
 
     def create_to_txt_settings(self):
         """Create settings for PDF to TXT conversion"""
         ttk.Label(
             self.settings_container,
-            text="Extract text content from PDF to plain text file",
+            text=self.lang_manager.get(
+                "settings_to_txt_intro",
+                "Extract selectable text from a PDF into a plain text file",
+            ),
         ).pack(anchor="w", pady=5)
 
         info_frame = ttk.Frame(self.settings_container)
         info_frame.pack(anchor="w", pady=5, fill="x")
 
         ttk.Label(
-            info_frame, text="• Extracts all readable text from PDF", foreground="#666"
+            info_frame,
+            text=self.lang_manager.get(
+                "settings_to_txt_bullet_extracts",
+                "• Extracts all readable text from PDF",
+            ),
+            foreground="#666",
         ).pack(anchor="w")
         ttk.Label(
             info_frame,
-            text="• Preserves page breaks with line separators",
+            text=self.lang_manager.get(
+                "settings_to_txt_bullet_selectable",
+                "• Works on PDFs that already contain selectable text",
+            ),
             foreground="#666",
         ).pack(anchor="w")
-        ttk.Label(info_frame, text="• UTF-8 encoded output", foreground="#666").pack(
-            anchor="w"
+        ttk.Label(
+            info_frame,
+            text=self.lang_manager.get(
+                "settings_to_txt_bullet_no_ocr",
+                "• Does not perform OCR on scanned/image-only PDFs",
+            ),
+            foreground="#666",
+        ).pack(anchor="w")
+        ttk.Label(
+            info_frame,
+            text=self.lang_manager.get(
+                "settings_to_txt_bullet_utf8",
+                "• UTF-8 encoded output",
+            ),
+            foreground="#666",
+        ).pack(anchor="w")
+
+    def create_to_ocr_settings(self, ocr_output_format_var):
+        """Create settings for OCR-based PDF to TXT conversion."""
+        self.ocr_output_format_var = ocr_output_format_var
+        ttk.Label(
+            self.settings_container,
+            text=self.lang_manager.get(
+                "settings_to_ocr_intro",
+                "Run OCR on scanned or image-only PDFs and choose how to save the detected text",
+            ),
+        ).pack(anchor="w", pady=5)
+
+        info_frame = ttk.Frame(self.settings_container)
+        info_frame.pack(anchor="w", pady=5, fill="x")
+
+        ttk.Label(
+            info_frame,
+            text=self.lang_manager.get(
+                "settings_to_ocr_bullet_best",
+                "• Best for scanned or image-only PDFs",
+            ),
+            foreground="#666",
+        ).pack(anchor="w")
+        ttk.Label(
+            info_frame,
+            text=self.lang_manager.get(
+                "settings_to_ocr_bullet_language",
+                "• Uses the app language when an OCR language pack is available",
+            ),
+            foreground="#666",
+        ).pack(anchor="w")
+        ttk.Label(
+            info_frame,
+            text=self.lang_manager.get(
+                "settings_to_ocr_bullet_output_hint",
+                "• TXT is best for quick copy/edit, DOCX is better for sharing",
+            ),
+            foreground="#666",
+        ).pack(anchor="w")
+        ttk.Label(
+            info_frame,
+            text=self.lang_manager.get(
+                "settings_to_ocr_bullet_future_pdf",
+                "• Searchable OCR PDF can be added later as a separate export option",
+            ),
+            foreground="#666",
+        ).pack(anchor="w")
+        ttk.Label(
+            info_frame,
+            text=self.lang_manager.get(
+                "settings_to_ocr_bullet_requires",
+                "• Requires EasyOCR and pypdfium2",
+            ),
+            foreground="#666",
+        ).pack(anchor="w")
+
+        format_frame = ttk.LabelFrame(
+            self.settings_container,
+            text=self.lang_manager.get("settings_ocr_output_format", "OCR Output Format"),
+            padding="10",
         )
+        format_frame.pack(anchor="w", pady=(10, 5), fill="x")
+        ttk.Radiobutton(
+            format_frame,
+            text=self.lang_manager.get("settings_ocr_output_txt", "TXT (Recommended)"),
+            variable=self.ocr_output_format_var,
+            value="txt",
+        ).pack(anchor="w")
+        ttk.Radiobutton(
+            format_frame,
+            text=self.lang_manager.get("settings_ocr_output_docx", "DOCX"),
+            variable=self.ocr_output_format_var,
+            value="docx",
+        ).pack(anchor="w")
 
     def create_extract_info_settings(self):
         """Create settings for PDF information extraction"""
@@ -333,14 +453,18 @@ class OperationSettingsUI:
             pass
 
         output_frame = ttk.LabelFrame(
-            self.settings_container, text="Output Location", padding="10"
+            self.settings_container,
+            text=self.lang_manager.get("settings_output_location", "Output Location"),
+            padding="10",
         )
         output_frame.pack(fill="x", pady=(10, 5))
 
         # Default option
         default_cb = ttk.Checkbutton(
             output_frame,
-            text="Use default output location",
+            text=self.lang_manager.get(
+                "settings_use_default_output", "Use default output location"
+            ),
             variable=use_default_output,
         )
         default_cb.pack(anchor="w", pady=2)
@@ -349,21 +473,27 @@ class OperationSettingsUI:
         self.custom_output_frame = ttk.Frame(output_frame)
         self.custom_output_frame.pack(fill="x", pady=5)
 
-        ttk.Label(self.custom_output_frame, text="Custom path:").pack(anchor="w")
+        ttk.Label(
+            self.custom_output_frame,
+            text=self.lang_manager.get("settings_output_path", "Custom path:"),
+        ).pack(anchor="w")
 
         path_frame = ttk.Frame(self.custom_output_frame)
         path_frame.pack(fill="x", pady=2)
 
         path_label = ttk.Label(
             path_frame,
-            text=output_path_var.get() or "No path selected",
+            text=output_path_var.get()
+            or self.lang_manager.get("settings_no_path_selected", "No path selected"),
             foreground="#666",
         )
         path_label.pack(side="left", fill="x", expand=True)
 
         browse_btn = ttk.Button(
             path_frame,
-            text="Browse..." if is_directory else "Browse File...",
+            text=self.lang_manager.get("settings_browse_directory", "Browse...")
+            if is_directory
+            else self.lang_manager.get("settings_browse_file", "Browse File..."),
             command=browse_callback,
             width=15,
         )
@@ -371,7 +501,10 @@ class OperationSettingsUI:
 
         # Bind variable to update label
         def update_label(*args):
-            path_label.config(text=output_path_var.get() or "No path selected")
+            path_label.config(
+                text=output_path_var.get()
+                or self.lang_manager.get("settings_no_path_selected", "No path selected")
+            )
 
         output_path_var.trace("w", update_label)
         self.output_path_var = output_path_var

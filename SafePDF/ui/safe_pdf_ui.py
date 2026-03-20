@@ -19,7 +19,7 @@ from webbrowser import open as webbrowser_open
 
 from SafePDF import __version__ as SAFEPDF_VERSION
 from SafePDF.ctrl.language_manager import LanguageManager
-from SafePDF.logger.logging_config import setup_logging, get_logger
+from SafePDF.logger.logging_config import get_logger, setup_logging
 
 from .common_elements import CommonElements  # Common UI elements
 from .help_ui import HelpUI  # Delegated Help UI module
@@ -185,6 +185,7 @@ class SafePDFUI:
         self.page_range_var = tk.StringVar()
         self.repair_var = tk.BooleanVar(value=True)
         self.merge_var = tk.BooleanVar(value=True)
+        self.ocr_output_format_var = tk.StringVar(value="txt")
         # Merge-specific UI state: second file path and order (end/beginning)
         self.merge_second_file_var = tk.StringVar(value="")
         self.merge_order_var = tk.StringVar(value="end")  # 'end' or 'beginning'
@@ -226,6 +227,7 @@ class SafePDFUI:
         self.controller.set_ui_callbacks(
             update_ui_callback=self.update_ui,
             completion_callback=self.operation_completed,
+            status_callback=self.operation_status_updated,
         )
 
         # Instantiate UpdateUI with root and controller
@@ -261,15 +263,15 @@ class SafePDFUI:
     def setup_main_window(self):
         """Configure the main application window with modern design and custom title bar"""
         self.root.title("SafePDF - A tool for PDF Manipulation")
-        
+
         # Set window size based on screen resolution
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
-        
+
         # Use default size but ensure it fits on screen (80% max)
         window_width = min(SIZE_LIST[0], int(screen_width * 0.8))
         window_height = min(SIZE_LIST[1], int(screen_height * 0.8))
-        
+
         self.root.geometry(f"{window_width}x{window_height}")
         self.root.minsize(900, 650)  # Set absolute minimum size
         self.root.configure(bg=CommonElements.BG_MAIN)
@@ -451,20 +453,20 @@ class SafePDFUI:
         height = self.root.winfo_height()
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
-        
+
         # Ensure window fits on screen with some padding
         if width > screen_width - 100:
             width = screen_width - 100
         if height > screen_height - 100:
             height = screen_height - 100
-        
+
         x = (screen_width // 2) - (width // 2)
         y = (screen_height // 2) - (height // 2)
-        
+
         # Ensure window is not positioned off-screen
         x = max(0, min(x, screen_width - width))
         y = max(0, min(y, screen_height - height))
-        
+
         self.root.geometry(f"{width}x{height}+{x}+{y}")
 
     def create_ui_components(self):
@@ -926,7 +928,7 @@ class SafePDFUI:
             """Show tooltip on hover"""
             if text is None:
                 text = ""
-                
+
             if not self.tooltip_window:
                 self.tooltip_window = tk.Toplevel(self.root)
                 self.tooltip_window.wm_overrideredirect(True)
@@ -1549,64 +1551,81 @@ class SafePDFUI:
                 self.lang_manager.get("op_compress_desc", "Reduce file size"),
                 self.select_compress,
                 "assets/compress.png",
+                True,
             ),
             (
                 self.lang_manager.get("op_split", "PDF Split"),
                 self.lang_manager.get("op_split_desc", "Separate pages"),
                 self.select_split,
                 "assets/split.png",
+                True,
             ),
             (
                 self.lang_manager.get("op_merge", "PDF Merge"),
                 self.lang_manager.get("op_merge_desc", "Combine files"),
                 self.select_merge,
                 "assets/merge.png",
+                True,
             ),
             (
                 self.lang_manager.get("op_to_jpg", "PDF to JPG"),
                 self.lang_manager.get("op_to_jpg_desc", "Convert to images"),
                 self.select_to_jpg,
                 "assets/pdf2jpg.png",
+                True,
             ),
             (
                 self.lang_manager.get("op_rotate", "PDF Rotate"),
                 self.lang_manager.get("op_rotate_desc", "Rotate pages"),
                 self.select_rotate,
                 "assets/rotate.png",
+                True,
             ),
             (
                 self.lang_manager.get("op_repair", "PDF Repair"),
                 self.lang_manager.get("op_repair_desc", "Fix corrupted files"),
                 self.select_repair,
                 "assets/repair.png",
+                True,
             ),
             (
-                self.lang_manager.get("op_to_word", "PDF to Word"),
+                self.lang_manager.get("op_to_word", "PDF to DOCX"),
                 self.lang_manager.get("op_to_word_desc", "Convert to document"),
                 self.select_to_word,
                 "assets/pdf2word.png",
+                True,
             ),
             (
                 self.lang_manager.get("op_to_txt", "PDF to TXT"),
                 self.lang_manager.get("op_to_txt_desc", "Extract text"),
                 self.select_to_txt,
                 "assets/pdf2txt.png",
+                True,
             ),
             (
-                self.lang_manager.get("op_extract", "Extract Info"),
+                self.lang_manager.get("op_to_ocr", "OCR Scan"),
+                self.lang_manager.get("op_to_ocr_desc", "Scanned PDF text"),
+                self.select_to_ocr,
+                "assets/pdf2ocr.png",
+                False,
+            ),
+            (
+                self.lang_manager.get("op_extract", "Extract Hidden Info"),
                 self.lang_manager.get("op_extract_desc", "Hidden PDF data"),
                 self.select_extract_info,
                 "assets/extract.png",
+                True,
             ),
         ]
 
         self.operation_buttons = []
         self.operation_cards = []
         self.operation_images = []
+        columns = 4 if len(operations) >= 8 else 3
 
-        for i, (text, description, command, img_path) in enumerate(operations):
-            row = i // 3
-            col = i % 3
+        for i, (text, description, command, img_path, is_enabled) in enumerate(operations):
+            row = i // columns
+            col = i % columns
             tk_img = self._load_operation_image(img_path)
             self.operation_images.append(tk_img)
 
@@ -1618,7 +1637,7 @@ class SafePDFUI:
                 relief=tk.FLAT,
                 bd=0,
                 bg=CommonElements.BG_CARD,
-                cursor="hand2",
+                cursor="hand2" if is_enabled else "arrow",
                 highlightbackground="#d9c2c2",
                 highlightthickness=1,
             )
@@ -1635,8 +1654,8 @@ class SafePDFUI:
                     relief=tk.FLAT,
                     bd=0,
                     bg=CommonElements.BG_CARD,
-                    cursor="hand2",
-                    pady=5,
+                    cursor="hand2" if is_enabled else "arrow",
+                    pady=3,
                 )
                 img_button.image = tk_img
                 img_button.pack()
@@ -1647,7 +1666,9 @@ class SafePDFUI:
                     font=(CommonElements.FONT, 12, "bold"),
                     bg=CommonElements.BG_CARD,
                     fg=CommonElements.FG_TEXT,
-                    cursor="hand2",
+                    cursor="hand2" if is_enabled else "arrow",
+                    wraplength=130,
+                    justify="center",
                 )
                 title_label.pack(pady=(5, 2))
 
@@ -1657,7 +1678,9 @@ class SafePDFUI:
                     font=(CommonElements.FONT, 9),
                     bg=CommonElements.BG_CARD,
                     fg=CommonElements.FG_SECONDARY,
-                    cursor="hand2",
+                    cursor="hand2" if is_enabled else "arrow",
+                    wraplength=130,
+                    justify="center",
                 )
                 desc_label.pack()
                 clickable_widgets = [button_container, img_button, title_label, desc_label]
@@ -1672,7 +1695,7 @@ class SafePDFUI:
                     bg=CommonElements.BG_CARD,
                     fg=CommonElements.FG_TEXT,
                     font=(CommonElements.FONT, 11, "bold"),
-                    cursor="hand2",
+                    cursor="hand2" if is_enabled else "arrow",
                     padx=15,
                     pady=30,
                     width=15,
@@ -1681,18 +1704,23 @@ class SafePDFUI:
                 img_button.pack(expand=True, fill="both")
                 clickable_widgets = [img_button]
 
-            self._bind_operation_card_events(op_frame, clickable_widgets, command, i)
+            self._bind_operation_card_events(op_frame, clickable_widgets, command, i, is_enabled)
             self.operation_cards.append((op_frame, clickable_widgets))
             self.operation_buttons.append(op_frame)
-            self._set_operation_card_state(op_frame, clickable_widgets, is_selected=False)
+            self._set_operation_card_state(op_frame, clickable_widgets, is_selected=False, is_disabled=not is_enabled)
 
-    def _bind_operation_card_events(self, card_frame, widgets, command, index):
+    def _bind_operation_card_events(self, card_frame, widgets, command, index, is_enabled=True):
         """Attach click/hover behavior to operation cards and child widgets."""
         def on_click(_event=None):
+            if not is_enabled:
+                self.show_locked_ocr_message()
+                return
             command()
             self.highlight_selected_operation(index)
 
         def on_enter(_event=None):
+            if not is_enabled:
+                return
             selected = index == getattr(self, "selected_operation_index", None)
             if selected:
                 self._set_operation_card_state(card_frame, widgets, is_selected=True, is_hover=False)
@@ -1700,6 +1728,9 @@ class SafePDFUI:
                 self._set_operation_card_state(card_frame, widgets, is_selected=False, is_hover=True)
 
         def on_leave(_event=None):
+            if not is_enabled:
+                self._set_operation_card_state(card_frame, widgets, is_selected=False, is_hover=False, is_disabled=True)
+                return
             selected = index == getattr(self, "selected_operation_index", None)
             self._set_operation_card_state(card_frame, widgets, is_selected=selected)
 
@@ -1708,20 +1739,28 @@ class SafePDFUI:
             target.bind("<Enter>", on_enter)
             target.bind("<Leave>", on_leave)
 
-    def _set_operation_card_state(self, card_frame, widgets, is_selected=False, is_hover=False):
+    def _set_operation_card_state(self, card_frame, widgets, is_selected=False, is_hover=False, is_disabled=False):
         """Update operation card visuals for default/hover/selected states."""
-        if is_selected:
+        if is_disabled:
+            card_bg = "#f2eeee"
+            border = "#d8cfcf"
+            border_width = 1
+            text_color = "#9a8f8f"
+        elif is_selected:
             card_bg = "#fee2e2"
             border = CommonElements.RED_COLOR
             border_width = 2
+            text_color = CommonElements.FG_TEXT
         elif is_hover:
             card_bg = CommonElements.HIGHLIGHT_COLOR
             border = "#c79696"
             border_width = 1
+            text_color = CommonElements.FG_TEXT
         else:
             card_bg = CommonElements.BG_CARD
             border = "#d9c2c2"
             border_width = 1
+            text_color = CommonElements.FG_TEXT
 
         card_frame.config(bg=card_bg, highlightbackground=border, highlightthickness=border_width)
         for widget in widgets:
@@ -1729,6 +1768,19 @@ class SafePDFUI:
                 widget.config(bg=card_bg)
             except Exception:
                 pass
+            try:
+                widget.config(fg=text_color)
+            except Exception:
+                pass
+
+    def show_locked_ocr_message(self):
+        """Inform the user that OCR is not available yet."""
+        title = self.lang_manager.get("ocr_locked_title", "OCR Locked")
+        message = self.lang_manager.get(
+            "ocr_locked_message",
+            "OCR is currently locked. This feature is reserved for Pro and will be available soon.",
+        )
+        messagebox.showinfo(title, message)
 
     def create_settings_tab(self):
         """Create the settings adjustment tab with modern design"""
@@ -2046,7 +2098,8 @@ class SafePDFUI:
                         "repair": 5,
                         "to_word": 6,
                         "to_txt": 7,
-                        "extract_info": 8,
+                        "to_ocr": 8,
+                        "extract_info": 9,
                     }
                     idx = op_to_index.get(
                         getattr(self.controller, "selected_operation", None)
@@ -2614,14 +2667,14 @@ class SafePDFUI:
     def update_settings_for_operation(self):
         """Update settings tab based on selected operation - delegated to OperationSettingsUI"""
         from .operation_settings import OperationSettingsUI
-        
+
         # Clear existing settings
         for widget in self.settings_container.winfo_children():
             widget.destroy()
 
         # Create operation settings manager
         ops_ui = OperationSettingsUI(self.settings_container, self.lang_manager, self.controller)
-        
+
         # Assign variables to the manager
         ops_ui.quality_var = self.quality_var
         ops_ui.rotation_var = self.rotation_var
@@ -2630,65 +2683,72 @@ class SafePDFUI:
         ops_ui.page_range_var = self.page_range_var
         ops_ui.repair_var = self.repair_var
         ops_ui.merge_var = self.merge_var
+        ops_ui.ocr_output_format_var = self.ocr_output_format_var
         ops_ui.use_default_output = self.use_default_output
         ops_ui.output_path_var = self.output_path_var
 
         # Create appropriate settings based on operation
         if self.controller.selected_operation == "compress":
             ops_ui.create_compress_settings(
-                self.quality_var, 
+                self.quality_var,
                 lambda: ops_ui.update_compression_visual(self.quality_var)
             )
             ops_ui.create_output_path_selection(
-                False, self.use_default_output, self.output_path_var, 
+                False, self.use_default_output, self.output_path_var,
                 self._on_browse_output
             )
         elif self.controller.selected_operation == "rotate":
             ops_ui.create_rotate_settings(self.rotation_var)
             ops_ui.create_output_path_selection(
-                False, self.use_default_output, self.output_path_var, 
+                False, self.use_default_output, self.output_path_var,
                 self._on_browse_output
             )
         elif self.controller.selected_operation == "split":
             ops_ui.create_split_settings(self.split_var, self.page_range_var)
             ops_ui.create_output_path_selection(
-                True, self.use_default_output, self.output_path_var, 
+                True, self.use_default_output, self.output_path_var,
                 self._on_browse_output
             )
         elif self.controller.selected_operation == "to_jpg":
             ops_ui.create_to_jpg_settings(self.img_quality_var)
             ops_ui.create_output_path_selection(
-                True, self.use_default_output, self.output_path_var, 
+                True, self.use_default_output, self.output_path_var,
                 self._on_browse_output
             )
         elif self.controller.selected_operation == "repair":
             ops_ui.create_repair_settings(self.repair_var)
             ops_ui.create_output_path_selection(
-                False, self.use_default_output, self.output_path_var, 
+                False, self.use_default_output, self.output_path_var,
                 self._on_browse_output
             )
         elif self.controller.selected_operation == "merge":
             ops_ui.create_merge_settings(self.merge_var, self.controller.selected_files)
             ops_ui.create_output_path_selection(
-                False, self.use_default_output, self.output_path_var, 
+                False, self.use_default_output, self.output_path_var,
                 self._on_browse_output
             )
         elif self.controller.selected_operation == "to_word":
             ops_ui.create_to_word_settings()
             ops_ui.create_output_path_selection(
-                False, self.use_default_output, self.output_path_var, 
+                False, self.use_default_output, self.output_path_var,
                 self._on_browse_output
             )
         elif self.controller.selected_operation == "to_txt":
             ops_ui.create_to_txt_settings()
             ops_ui.create_output_path_selection(
-                False, self.use_default_output, self.output_path_var, 
+                False, self.use_default_output, self.output_path_var,
+                self._on_browse_output
+            )
+        elif self.controller.selected_operation == "to_ocr":
+            ops_ui.create_to_ocr_settings(self.ocr_output_format_var)
+            ops_ui.create_output_path_selection(
+                False, self.use_default_output, self.output_path_var,
                 self._on_browse_output
             )
         elif self.controller.selected_operation == "extract_info":
             ops_ui.create_extract_info_settings()
             ops_ui.create_output_path_selection(
-                False, self.use_default_output, self.output_path_var, 
+                False, self.use_default_output, self.output_path_var,
                 self._on_browse_output
             )
 
@@ -2766,11 +2826,40 @@ class SafePDFUI:
         file_path = filedialog.asksaveasfilename(
             title="Select Output File",
             initialdir=initial_dir,
-            initialfile=f"{base_name}_{self.controller.selected_operation}.pdf",
-            filetypes=[("PDF files", "*.pdf"), ("All files", "*.*")],
+            initialfile=self._get_default_output_filename(base_name),
+            filetypes=self._get_output_filetypes(),
         )
         if file_path:
             self.output_path_var.set(file_path)
+
+    def _get_default_output_filename(self, base_name):
+        """Return a sensible default output name for the selected operation."""
+        operation = self.controller.selected_operation
+        if operation == "to_word":
+            return f"{base_name}.docx"
+        if operation == "to_txt":
+            return f"{base_name}.txt"
+        if operation == "to_ocr":
+            extension = ".docx" if self.ocr_output_format_var.get() == "docx" else ".txt"
+            return f"{base_name}_ocr{extension}"
+        if operation == "extract_info":
+            return f"{base_name}_info.txt"
+        return f"{base_name}_{operation}.pdf"
+
+    def _get_output_filetypes(self):
+        """Return save dialog file types for the selected operation."""
+        operation = self.controller.selected_operation
+        if operation == "to_word":
+            return [("DOCX files", "*.docx"), ("All files", "*.*")]
+        if operation == "to_txt":
+            return [("Text files", "*.txt"), ("All files", "*.*")]
+        if operation == "to_ocr":
+            if self.ocr_output_format_var.get() == "docx":
+                return [("DOCX files", "*.docx"), ("All files", "*.*")]
+            return [("Text files", "*.txt"), ("All files", "*.*")]
+        if operation == "extract_info":
+            return [("Text files", "*.txt"), ("All files", "*.*")]
+        return [("PDF files", "*.pdf"), ("All files", "*.*")]
 
     def browse_output_directory(self):
         """Browse for output directory location"""
@@ -3032,24 +3121,45 @@ class SafePDFUI:
             second = self.merge_second_file_var.get().strip()
             settings["second_file"] = second if second else None
             settings["merge_order"] = self.merge_order_var.get()  # 'end' or 'beginning'
+        elif self.controller.selected_operation == "to_ocr":
+            settings["ocr_output_format"] = self.ocr_output_format_var.get()
 
         self.controller.set_operation_settings(settings)
 
     def update_progress(self, value):
         """Update progress bar (callback from controller)"""
         if hasattr(self, "progress"):
-            # Stop indeterminate mode and set to determinate with value
+            self.root.after(0, lambda: self._apply_progress_update(value))
+
+    def _apply_progress_update(self, value):
+        """Apply a progress update on the Tk main thread."""
+        if hasattr(self, "progress"):
             self.progress.stop()
             self.progress.config(mode="determinate", value=value)
             self.root.update_idletasks()
 
+    def _append_results_line(self, message):
+        """Append a line to the results box on the Tk main thread."""
+        if not message or not getattr(self, "results_text", None):
+            return
+        self.results_text.config(state=tk.NORMAL)
+        self.results_text.insert(tk.END, f"{message}\n")
+        self.results_text.see(tk.END)
+        self.results_text.config(state=tk.DISABLED)
+
+    def operation_status_updated(self, message):
+        """Handle live status updates from long-running operations."""
+        self.root.after(0, lambda: self._append_results_line(message))
+
     def operation_completed(self, success, message, output_location):
         """Handle operation completion (callback from controller)"""
-        # Stop progress animation
+        self.root.after(0, lambda: self._apply_operation_completed(success, message, output_location))
+
+    def _apply_operation_completed(self, success, message, output_location):
+        """Apply operation completion updates on the Tk main thread."""
         self.progress.stop()
         self.progress.config(mode="determinate", value=100 if success else 0)
 
-        # Update results text
         self.results_text.config(state=tk.NORMAL)
         self.results_text.insert(
             tk.END,
@@ -3072,13 +3182,11 @@ class SafePDFUI:
             tk.END,
             f"{self.lang_manager.get('results_details', 'Details:')} {message}\n",
         )
-
+        self.results_text.see(tk.END)
         self.results_text.config(state=tk.DISABLED)
 
-        # Update navigation buttons to show "Open Output" if successful
         self.update_navigation_buttons()
 
-        # Show completion message
         if success:
             messagebox.showinfo(
                 self.lang_manager.get("success", "Success"),
@@ -3434,9 +3542,12 @@ class SafePDFUI:
             self.notebook.tab(2, state="normal")
             self.notebook.select(2)
 
+    def select_to_ocr(self):
+        self.show_locked_ocr_message()
+
     def select_extract_info(self):
         self.controller.select_operation("extract_info")
-        self.highlight_selected_operation(8)
+        self.highlight_selected_operation(9)
         self.update_settings_for_operation()
         self.update_file_tab_ui()
         if self.notebook is not None:

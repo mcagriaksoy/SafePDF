@@ -52,7 +52,11 @@ class SafePDFController:
         self._load_pro_status()
 
         # PDF operations handler
-        self.pdf_ops = PDFOperations(progress_callback=progress_callback, language_manager=language_manager)
+        self.pdf_ops = PDFOperations(
+            progress_callback=progress_callback,
+            language_manager=language_manager,
+            status_callback=self._emit_status,
+        )
 
         # Updates handler for GitHub releases and signed keys.
         # Never let update subsystem failures block app startup.
@@ -66,11 +70,18 @@ class SafePDFController:
         self.progress_callback = progress_callback
         self.update_ui_callback = None
         self.completion_callback = None
+        self.status_callback = None
 
-    def set_ui_callbacks(self, update_ui_callback=None, completion_callback=None):
+    def set_ui_callbacks(self, update_ui_callback=None, completion_callback=None, status_callback=None):
         """Set callback functions for UI updates"""
         self.update_ui_callback = update_ui_callback
         self.completion_callback = completion_callback
+        self.status_callback = status_callback
+
+    def _emit_status(self, message):
+        """Send a live status update to the UI if available."""
+        if self.status_callback and message:
+            self.status_callback(message)
 
     def select_file(self, file_path):
         """Select and validate PDF file(s)"""
@@ -109,6 +120,7 @@ class SafePDFController:
             "repair",
             "to_word",
             "to_txt",
+            "to_ocr",
             "extract_info",
         ]
         if operation in valid_operations:
@@ -142,12 +154,16 @@ class SafePDFController:
                 return custom_output_path, None
 
         # Default paths with minimal processing
-        if self.selected_operation in ["compress", "rotate", "repair", "to_word", "to_txt", "extract_info", "merge"]:
+        if self.selected_operation in ["compress", "rotate", "repair", "to_word", "to_txt", "to_ocr", "extract_info", "merge"]:
             base_name = os_path.splitext(self.selected_file)[0]
             if self.selected_operation == "to_word":
                 return f"{base_name}.docx", None
             elif self.selected_operation == "to_txt":
                 return f"{base_name}.txt", None
+            elif self.selected_operation == "to_ocr":
+                ocr_format = self.operation_settings.get("ocr_output_format", "txt")
+                extension = ".docx" if ocr_format == "docx" else ".txt"
+                return f"{base_name}_ocr{extension}", None
             elif self.selected_operation == "extract_info":
                 return f"{base_name}_info.txt", None
             elif self.selected_operation == "merge":
@@ -224,20 +240,54 @@ class SafePDFController:
 
             elif self.selected_operation == "to_word":
                 # PDF to Word conversion
-                base_name = os_path.splitext(self.selected_file)[0]
-                output_path = f"{base_name}.docx"
+                self._emit_status(
+                    self.language_manager.get(
+                        "status_to_word_running",
+                        "Converting PDF text to DOCX...",
+                    )
+                    if self.language_manager
+                    else "Converting PDF text to DOCX..."
+                )
                 success, message = self.pdf_ops.pdf_to_word(self.selected_file, output_path)
 
             elif self.selected_operation == "to_txt":
                 # PDF to TXT conversion
-                base_name = os_path.splitext(self.selected_file)[0]
-                output_path = f"{base_name}.txt"
+                self._emit_status(
+                    self.language_manager.get(
+                        "status_to_txt_running",
+                        "Extracting selectable text from PDF...",
+                    )
+                    if self.language_manager
+                    else "Extracting selectable text from PDF..."
+                )
                 success, message = self.pdf_ops.pdf_to_txt(self.selected_file, output_path)
+
+            elif self.selected_operation == "to_ocr":
+                # OCR-based PDF conversion
+                self._emit_status(
+                    self.language_manager.get(
+                        "status_to_ocr_running",
+                        "Preparing OCR engine...",
+                    )
+                    if self.language_manager
+                    else "Preparing OCR engine..."
+                )
+                ocr_format = self.operation_settings.get("ocr_output_format", "txt")
+                if ocr_format == "docx":
+                    success, message = self.pdf_ops.pdf_ocr_to_docx(self.selected_file, output_path)
+                else:
+                    success, message = self.pdf_ops.pdf_ocr_to_txt(self.selected_file, output_path)
 
             elif self.selected_operation == "extract_info":
                 # Extract hidden information
-                base_name = os_path.splitext(self.selected_file)[0]
-                output_path = f"{base_name}_info.txt"
+                self._emit_status(
+                    self.language_manager.get(
+                        "status_extract_info_running",
+                        "Extracting PDF metadata and hidden information...",
+                    )
+                    if self.language_manager
+                    else "Extracting PDF metadata and hidden information..."
+                )
                 success, message = self.pdf_ops.extract_hidden_info(self.selected_file, output_path)
 
             # Store current output location
