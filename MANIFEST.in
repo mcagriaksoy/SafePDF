@@ -1,1 +1,5 @@
+recursive-include SafePDF/text *.txt *.json *.md
+recursive-include SafePDF/assets *
+include SafePDF/version.txt
+global-exclude __pycache__
 include requirements.txt

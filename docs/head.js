@@ -90,7 +90,7 @@ function createCommonHead(pageConfig = {}) {
       "name": "SafePDF",
       "@id": "${canonicalUrl}#softwareapplication",
       "url": "${canonicalUrl}",
-      "description": "Privacy-first offline PDF toolkit for compressing, splitting, merging, converting, rotating and repairing PDF documents.",
+      "description": "Open source privacy-first offline PDF toolkit for compressing, splitting, merging, converting, rotating and repairing PDF documents locally.",
       "author": { "@type": "Person", "name": "mcagriaksoy", "url": "https://github.com/mcagriaksoy" },
       "publisher": {
         "@type": "Person",
@@ -112,6 +112,7 @@ function createCommonHead(pageConfig = {}) {
       },
       "featureList": [
         "Offline PDF processing",
+        "Open source PDF software",
         "Privacy-focused operations",
         "PDF compression",
         "Split and merge PDFs",

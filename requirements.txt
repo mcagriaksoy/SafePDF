@@ -20,8 +20,7 @@ PyGitHub>=1.55.0
 # For GPG signature verification
 python-gnupg>=0.4.8
 
-# For OCR
-easyocr
+
 # Notes:
 # - `tkinter` is part of the Python standard library (ensure your Python build includes Tk)
 # - pypdfium2 includes all necessary binaries for PDF rendering (no Poppler needed)
