@@ -197,9 +197,7 @@ class PDFCompressor:
                 raster_path = os_path.join(temp_dir, "raster_compressed.pdf")
 
                 stream_success, _ = self._compress_streams_only(input_path, stream_path)
-                raster_success, raster_result = self._compress_by_rasterizing(
-                    input_path, raster_path, quality
-                )
+                raster_success, raster_result = self._compress_by_rasterizing(input_path, raster_path, quality)
                 if not raster_success:
                     return False, raster_result
 

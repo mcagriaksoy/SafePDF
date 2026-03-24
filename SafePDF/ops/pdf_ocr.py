@@ -54,6 +54,12 @@ class PDFOCRConverter:
         if self.status_callback:
             self.status_callback(message)
 
+    def _lang_text(self, key: str, default: str) -> str:
+        """Return a localized string when a language manager is available."""
+        if self.language_manager:
+            return self.language_manager.get(key, default)
+        return default
+
     def request_cancel(self):
         """Request cancellation of a running operation."""
         self._cancel_requested = True
@@ -87,18 +93,10 @@ class PDFOCRConverter:
         if self._tesseract_checked:
             return
 
-        self.update_status(
-            self.language_manager.get("ocr_status_loading_model", "Loading OCR model...")
-            if self.language_manager
-            else "Loading OCR model..."
-        )
+        self.update_status(self._lang_text("ocr_status_loading_model", "Loading OCR model..."))
         pytesseract.get_tesseract_version()
         self._tesseract_checked = True
-        self.update_status(
-            self.language_manager.get("ocr_status_model_ready", "OCR model ready.")
-            if self.language_manager
-            else "OCR model ready."
-        )
+        self.update_status(self._lang_text("ocr_status_model_ready", "OCR model ready."))
 
     def _extract_page_text_chunks(self, input_path: str, dpi: int = 300):
         """Run OCR on each PDF page and return per-page text chunks."""
@@ -113,31 +111,21 @@ class PDFOCRConverter:
             for page_num in range(total_pages):
                 page_index = page_num + 1
                 self.update_status(
-                    (
-                        self.language_manager.get(
-                            "ocr_status_rendering_page",
-                            "Rendering page {page} of {total}...",
-                        )
-                        if self.language_manager
-                        else "Rendering page {page} of {total}..."
+                    self._lang_text(
+                        "ocr_status_rendering_page",
+                        "Rendering page {page} of {total}...",
                     ).format(page=page_index, total=total_pages)
                 )
                 self.update_progress(int((page_num / total_pages) * 100))
                 if self._cancel_requested:
-                    return False, self.language_manager.get(
-                        "op_word_cancelled", "Operation cancelled"
-                    ) if self.language_manager else "Operation cancelled"
+                    return False, self._lang_text("op_word_cancelled", "Operation cancelled")
 
                 page = pdf[page_num]
                 pil_image = page.render(scale=scale).to_pil()
                 self.update_status(
-                    (
-                        self.language_manager.get(
-                            "ocr_status_recognizing_page",
-                            "Recognizing text on page {page} of {total}...",
-                        )
-                        if self.language_manager
-                        else "Recognizing text on page {page} of {total}..."
+                    self._lang_text(
+                        "ocr_status_recognizing_page",
+                        "Recognizing text on page {page} of {total}...",
                     ).format(page=page_index, total=total_pages)
                 )
                 text = pytesseract.image_to_string(pil_image, lang=ocr_langs).strip()
@@ -150,14 +138,10 @@ class PDFOCRConverter:
 
     def _save_text_output(self, text_chunks, output_path: str):
         """Write OCR text output to a TXT file."""
-        self.update_status(
-            self.language_manager.get("ocr_status_saving_txt", "Saving OCR text as TXT...")
-            if self.language_manager
-            else "Saving OCR text as TXT..."
+        self.update_status(self._lang_text("ocr_status_saving_txt", "Saving OCR text as TXT..."))
+        text_content = (
+            "\n".join(f"--- Page {page_num} ---\n{text.strip()}\n" for page_num, text in text_chunks).strip() + "\n"
         )
-        text_content = "\n".join(
-            f"--- Page {page_num} ---\n{text.strip()}\n" for page_num, text in text_chunks
-        ).strip() + "\n"
 
         def _write_text(tmpf):
             tmpf.write(text_content.encode("utf-8"))
@@ -170,17 +154,14 @@ class PDFOCRConverter:
 
     def _save_docx_output(self, text_chunks, output_path: str):
         """Write OCR text output to a DOCX file."""
-        self.update_status(
-            self.language_manager.get("ocr_status_saving_docx", "Saving OCR text as DOCX...")
-            if self.language_manager
-            else "Saving OCR text as DOCX..."
-        )
+        self.update_status(self._lang_text("ocr_status_saving_docx", "Saving OCR text as DOCX..."))
         try:
             from docx import Document
         except ImportError:
-            return False, self.language_manager.get(
-                "op_docx_unavailable", "python-docx not installed. Please install with: pip install python-docx"
-            ) if self.language_manager else "python-docx not installed. Please install with: pip install python-docx"
+            return False, self._lang_text(
+                "op_docx_unavailable",
+                "python-docx not installed. Please install with: pip install python-docx",
+            )
 
         doc = Document()
         doc.add_heading("OCR Output", level=1)
@@ -200,16 +181,12 @@ class PDFOCRConverter:
     def pdf_ocr_to_txt(self, input_path: str, output_path: str, dpi: int = 300) -> Tuple[bool, str]:
         """Run OCR on each PDF page and save the extracted text to a TXT file."""
         if not pdfium:
-            return False, self.language_manager.get(
-                "op_pdfium_unavailable", "pypdfium2 not available"
-            ) if self.language_manager else "pypdfium2 not available"
+            return False, self._lang_text("op_pdfium_unavailable", "pypdfium2 not available")
 
         if pytesseract is None:
-            return False, self.language_manager.get(
+            return False, self._lang_text(
                 "op_ocr_unavailable",
                 "OCR dependencies missing. Install with: pip install SafePDF[ocr] and install Tesseract OCR.",
-            ) if self.language_manager else (
-                "OCR dependencies missing. Install with: pip install SafePDF[ocr] and install Tesseract OCR."
             )
 
         try:
@@ -218,39 +195,25 @@ class PDFOCRConverter:
                 return False, result
             self._save_text_output(result, output_path)
 
-            success_msg = (
-                self.language_manager.get("op_ocr_success", "OCR text extracted to {output_path}")
-                if self.language_manager
-                else "OCR text extracted to {output_path}"
-            )
+            success_msg = self._lang_text("op_ocr_success", "OCR text extracted to {output_path}")
             return True, success_msg.format(output_path=output_path)
 
         except TesseractNotFoundError:
-            return False, self.language_manager.get(
-                "op_ocr_engine_missing", "OCR engine not found."
-            ) if self.language_manager else "OCR engine not found."
+            return False, self._lang_text("op_ocr_engine_missing", "OCR engine not found.")
         except Exception as e:
             self.logger.error("OCR conversion failed", exc_info=True)
-            error_msg = (
-                self.language_manager.get("op_ocr_failed", "PDF OCR failed: {error}")
-                if self.language_manager
-                else "PDF OCR failed: {error}"
-            )
+            error_msg = self._lang_text("op_ocr_failed", "PDF OCR failed: {error}")
             return False, error_msg.format(error=str(e))
 
     def pdf_ocr_to_docx(self, input_path: str, output_path: str, dpi: int = 300) -> Tuple[bool, str]:
         """Run OCR on each PDF page and save the extracted text to a DOCX file."""
         if not pdfium:
-            return False, self.language_manager.get(
-                "op_pdfium_unavailable", "pypdfium2 not available"
-            ) if self.language_manager else "pypdfium2 not available"
+            return False, self._lang_text("op_pdfium_unavailable", "pypdfium2 not available")
 
         if pytesseract is None:
-            return False, self.language_manager.get(
+            return False, self._lang_text(
                 "op_ocr_unavailable",
                 "OCR dependencies missing. Install with: pip install SafePDF[ocr] and install Tesseract OCR.",
-            ) if self.language_manager else (
-                "OCR dependencies missing. Install with: pip install SafePDF[ocr] and install Tesseract OCR."
             )
 
         try:
@@ -261,21 +224,11 @@ class PDFOCRConverter:
             if not success:
                 return False, error
 
-            success_msg = (
-                self.language_manager.get("op_word_success", "PDF converted to DOCX document: {output_path}")
-                if self.language_manager
-                else "PDF converted to DOCX document: {output_path}"
-            )
+            success_msg = self._lang_text("op_word_success", "PDF converted to DOCX document: {output_path}")
             return True, success_msg.format(output_path=output_path)
         except TesseractNotFoundError:
-            return False, self.language_manager.get(
-                "op_ocr_engine_missing", "OCR engine not found."
-            ) if self.language_manager else "OCR engine not found."
+            return False, self._lang_text("op_ocr_engine_missing", "OCR engine not found.")
         except Exception as e:
             self.logger.error("OCR DOCX conversion failed", exc_info=True)
-            error_msg = (
-                self.language_manager.get("op_ocr_failed", "PDF OCR failed: {error}")
-                if self.language_manager
-                else "PDF OCR failed: {error}"
-            )
+            error_msg = self._lang_text("op_ocr_failed", "PDF OCR failed: {error}")
             return False, error_msg.format(error=str(e))

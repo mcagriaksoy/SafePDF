@@ -98,17 +98,11 @@ class OperationSettingsUI:
         )
         self.ultra_radio.pack(anchor="w")
         # Enable/disable based on pro status
-        self.ultra_radio.config(
-            state="normal" if self.controller.is_pro_activated else "disabled"
-        )
+        self.ultra_radio.config(state="normal" if self.controller.is_pro_activated else "disabled")
 
         # Right side - visual indicator
-        self.compression_visual_frame = tk.Frame(
-            quality_frame, bg="#ffffff", relief=tk.RIDGE, bd=1
-        )
-        self.compression_visual_frame.pack(
-            side="right", padx=(20, 0), fill="both", expand=True
-        )
+        self.compression_visual_frame = tk.Frame(quality_frame, bg="#ffffff", relief=tk.RIDGE, bd=1)
+        self.compression_visual_frame.pack(side="right", padx=(20, 0), fill="both", expand=True)
 
         # Create visual indicator label
         self.compression_indicator = tk.Label(
@@ -165,24 +159,18 @@ class OperationSettingsUI:
         """Create settings for PDF rotation"""
         self.rotation_var = rotation_var
 
-        ttk.Label(self.settings_container, text="Rotation Angle:").pack(
-            anchor="w", pady=5
-        )
+        ttk.Label(self.settings_container, text="Rotation Angle:").pack(anchor="w", pady=5)
         rotation_frame = ttk.Frame(self.settings_container)
         rotation_frame.pack(anchor="w", pady=5)
 
         for angle in ["90", "180", "270"]:
-            ttk.Radiobutton(
-                rotation_frame, text=f"{angle}°", variable=self.rotation_var, value=angle
-            ).pack(anchor="w")
+            ttk.Radiobutton(rotation_frame, text=f"{angle}°", variable=self.rotation_var, value=angle).pack(anchor="w")
 
     def create_to_jpg_settings(self, img_quality_var):
         """Create settings for PDF to JPG conversion"""
         self.img_quality_var = img_quality_var
 
-        ttk.Label(self.settings_container, text="Image Quality:").pack(
-            anchor="w", pady=5
-        )
+        ttk.Label(self.settings_container, text="Image Quality:").pack(anchor="w", pady=5)
         img_quality_frame = ttk.Frame(self.settings_container)
         img_quality_frame.pack(anchor="w", pady=5)
 
@@ -247,9 +235,7 @@ class OperationSettingsUI:
         """Create settings for PDF repair"""
         self.repair_var = repair_var
 
-        ttk.Label(self.settings_container, text="Repair Options:").pack(
-            anchor="w", pady=5
-        )
+        ttk.Label(self.settings_container, text="Repair Options:").pack(anchor="w", pady=5)
         repair_frame = ttk.Frame(self.settings_container)
         repair_frame.pack(anchor="w", pady=5)
 
@@ -263,49 +249,35 @@ class OperationSettingsUI:
         """Create settings for PDF merging"""
         self.merge_var = merge_var
 
-        ttk.Label(self.settings_container, text="Merge Options:").pack(
-            anchor="w", pady=5
-        )
+        ttk.Label(self.settings_container, text="Merge Options:").pack(anchor="w", pady=5)
         merge_frame = ttk.Frame(self.settings_container)
         merge_frame.pack(anchor="w", pady=5)
 
-        ttk.Checkbutton(
-            merge_frame, text="Add page numbers to merged PDF", variable=self.merge_var
-        ).pack(anchor="w")
+        ttk.Checkbutton(merge_frame, text="Add page numbers to merged PDF", variable=self.merge_var).pack(anchor="w")
 
         # Show selected files
-        files_frame = ttk.LabelFrame(
-            self.settings_container, text="Files to Merge (in order)", padding="10"
-        )
+        files_frame = ttk.LabelFrame(self.settings_container, text="Files to Merge (in order)", padding="10")
         files_frame.pack(fill="x", pady=(8, 6))
 
         if selected_files:
             for file_path in selected_files:
-                ttk.Label(files_frame, text=f"  • {file_path}", foreground="#666").pack(
-                    anchor="w", padx=10
-                )
+                ttk.Label(files_frame, text=f"  • {file_path}", foreground="#666").pack(anchor="w", padx=10)
         else:
-            ttk.Label(
-                files_frame, text="No files selected", foreground="#999", style="Gray.TLabel"
-            ).pack(anchor="w", padx=10)
+            ttk.Label(files_frame, text="No files selected", foreground="#999", style="Gray.TLabel").pack(
+                anchor="w", padx=10
+            )
 
     def create_split_settings(self, split_var, page_range_var):
         """Create settings for PDF splitting"""
         self.split_var = split_var
         self.page_range_var = page_range_var
 
-        ttk.Label(self.settings_container, text="Split Method:").pack(
-            anchor="w", pady=5
-        )
+        ttk.Label(self.settings_container, text="Split Method:").pack(anchor="w", pady=5)
         split_frame = ttk.Frame(self.settings_container)
         split_frame.pack(anchor="w", pady=5)
 
-        ttk.Radiobutton(
-            split_frame, text="Split by pages", variable=self.split_var, value="pages"
-        ).pack(anchor="w")
-        ttk.Radiobutton(
-            split_frame, text="Split by range", variable=self.split_var, value="range"
-        ).pack(anchor="w")
+        ttk.Radiobutton(split_frame, text="Split by pages", variable=self.split_var, value="pages").pack(anchor="w")
+        ttk.Radiobutton(split_frame, text="Split by range", variable=self.split_var, value="range").pack(anchor="w")
 
         # Add range entry for custom ranges
         range_frame = ttk.Frame(self.settings_container)
@@ -507,9 +479,7 @@ class OperationSettingsUI:
             foreground="#666",
         ).pack(anchor="w")
 
-    def create_output_path_selection(
-        self, is_directory, use_default_output, output_path_var, browse_callback
-    ):
+    def create_output_path_selection(self, is_directory, use_default_output, output_path_var, browse_callback):
         """Create output path selection UI"""
         # If an earlier output_frame exists (from previous settings render), destroy it
         try:
@@ -527,9 +497,7 @@ class OperationSettingsUI:
         # Default option
         default_cb = ttk.Checkbutton(
             output_frame,
-            text=self.lang_manager.get(
-                "settings_use_default_output", "Use default output location"
-            ),
+            text=self.lang_manager.get("settings_use_default_output", "Use default output location"),
             variable=use_default_output,
         )
         default_cb.pack(anchor="w", pady=2)
@@ -548,8 +516,7 @@ class OperationSettingsUI:
 
         path_label = ttk.Label(
             path_frame,
-            text=output_path_var.get()
-            or self.lang_manager.get("settings_no_path_selected", "No path selected"),
+            text=output_path_var.get() or self.lang_manager.get("settings_no_path_selected", "No path selected"),
             foreground="#666",
         )
         path_label.pack(side="left", fill="x", expand=True)
@@ -567,8 +534,7 @@ class OperationSettingsUI:
         # Bind variable to update label
         def update_label(*args):
             path_label.config(
-                text=output_path_var.get()
-                or self.lang_manager.get("settings_no_path_selected", "No path selected")
+                text=output_path_var.get() or self.lang_manager.get("settings_no_path_selected", "No path selected")
             )
 
         output_path_var.trace("w", update_label)

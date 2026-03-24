@@ -5,10 +5,10 @@ This module contains the SafePDFUI class which manages the user interface.
 @author: Mehmet Cagri Aksoy
 """
 
+import math
 import os
 import sys
 import tkinter as tk
-import math
 from datetime import datetime, timedelta
 from pathlib import Path
 from platform import system as platform_system
@@ -234,9 +234,7 @@ class SafePDFUI:
         )
 
         # Instantiate UpdateUI with root and controller
-        self.update_ui = UpdateUI(
-            root, controller, CommonElements.FONT, language_manager=self.lang_manager
-        )
+        self.update_ui = UpdateUI(root, controller, CommonElements.FONT, language_manager=self.lang_manager)
 
         # Instantiate delegated UI helpers
         self.help_ui = HelpUI(root, controller, CommonElements.FONT, lang_manager=self.lang_manager)
@@ -335,9 +333,7 @@ class SafePDFUI:
                 )
 
         except Exception as e:
-            logger.warning(
-                f"Could not set taskbar visibility: {e}"
-            )  # Final update to apply changes
+            logger.warning(f"Could not set taskbar visibility: {e}")  # Final update to apply changes
         self.root.update_idletasks()
 
         # Apply ttk theme for modern look
@@ -775,9 +771,7 @@ class SafePDFUI:
 
             # NOW bind the restore event AFTER iconifying to avoid immediate trigger
             # Use after() to delay binding slightly
-            self.taskbar_window.after(
-                100, lambda: self.taskbar_window.bind("<Map>", self.on_taskbar_restore)
-            )
+            self.taskbar_window.after(100, lambda: self.taskbar_window.bind("<Map>", self.on_taskbar_restore))
 
         except Exception as e:
             print(f"Error creating taskbar window: {e}")
@@ -850,9 +844,7 @@ class SafePDFUI:
         """Create all application tabs with content"""
         # Create tab frames
         self.welcome_frame = ttk.Frame(self.notebook)
-        self.notebook.add(
-            self.welcome_frame, text=self.lang_manager.get("tab_welcome", "1. Welcome")
-        )
+        self.notebook.add(self.welcome_frame, text=self.lang_manager.get("tab_welcome", "1. Welcome"))
         self.create_welcome_tab()
 
         # Tab 2: Select Operation
@@ -865,9 +857,7 @@ class SafePDFUI:
 
         # Tab 3: Select File
         self.file_frame = ttk.Frame(self.notebook)
-        self.notebook.add(
-            self.file_frame, text=self.lang_manager.get("tab_file", "3. Select File")
-        )
+        self.notebook.add(self.file_frame, text=self.lang_manager.get("tab_file", "3. Select File"))
         self.create_file_tab()
 
         # Tab 4: Adjust Settings
@@ -880,9 +870,7 @@ class SafePDFUI:
 
         # Tab 5: Results
         self.results_frame = ttk.Frame(self.notebook)
-        self.notebook.add(
-            self.results_frame, text=self.lang_manager.get("tab_results", "5. Results")
-        )
+        self.notebook.add(self.results_frame, text=self.lang_manager.get("tab_results", "5. Results"))
         self.create_results_tab()
 
         # Settings
@@ -895,9 +883,7 @@ class SafePDFUI:
 
         # Help
         self.help_frame = ttk.Frame(self.notebook)
-        self.notebook.add(
-            self.help_frame, text=self.lang_manager.get("tab_help", "Help")
-        )
+        self.notebook.add(self.help_frame, text=self.lang_manager.get("tab_help", "Help"))
         self.create_help_tab()
 
         # Disable workflow tabs that require prerequisites
@@ -912,24 +898,12 @@ class SafePDFUI:
         """Setup tooltips for notebook tabs"""
         # Define tooltips for each tab
         tooltips = {
-            0: self.lang_manager.get(
-                "tooltip_welcome", "Start here - Welcome and introduction to SafePDF"
-            ) or "",
-            1: self.lang_manager.get(
-                "tooltip_operation", "Choose the PDF operation you want to perform"
-            ) or "",
-            2: self.lang_manager.get(
-                "tooltip_file", "Select the PDF file(s) you want to process"
-            ) or "",
-            3: self.lang_manager.get(
-                "tooltip_settings", "Configure operation-specific settings"
-            ) or "",
-            4: self.lang_manager.get(
-                "tooltip_results", "View the results of your PDF operation"
-            ) or "",
-            5: self.lang_manager.get(
-                "tooltip_app_settings", "Application settings and preferences"
-            ) or "",
+            0: self.lang_manager.get("tooltip_welcome", "Start here - Welcome and introduction to SafePDF") or "",
+            1: self.lang_manager.get("tooltip_operation", "Choose the PDF operation you want to perform") or "",
+            2: self.lang_manager.get("tooltip_file", "Select the PDF file(s) you want to process") or "",
+            3: self.lang_manager.get("tooltip_settings", "Configure operation-specific settings") or "",
+            4: self.lang_manager.get("tooltip_results", "View the results of your PDF operation") or "",
+            5: self.lang_manager.get("tooltip_app_settings", "Application settings and preferences") or "",
             6: self.lang_manager.get("tooltip_help", "Help and documentation") or "",
         }
 
@@ -983,9 +957,7 @@ class SafePDFUI:
         try:
             self.notebook.bind(
                 "<Motion>",
-                lambda e: self.check_tab_hover(
-                    e, tooltips, show_tooltip, hide_tooltip, move_tooltip
-                ),
+                lambda e: self.check_tab_hover(e, tooltips, show_tooltip, hide_tooltip, move_tooltip),
             )
             self.notebook.bind("<Leave>", hide_tooltip)
         except Exception as e:
@@ -1115,9 +1087,7 @@ class SafePDFUI:
                             content = content.replace("{VERSION}", f"v{SAFEPDF_VERSION}")
                             return content
                 except Exception:
-                    logger.debug(
-                        f"Error reading welcome file {welcome_txt_path}", exc_info=True
-                    )
+                    logger.debug(f"Error reading welcome file {welcome_txt_path}", exc_info=True)
                     continue
         except Exception:
             logger.debug("Error loading welcome content from file", exc_info=True)
@@ -1135,12 +1105,10 @@ class SafePDFUI:
             font=(CommonElements.FONT, 14, "bold"),
             justify="center",
         )
-        text_widget.tag_configure(
-            "step", foreground=CommonElements.URL_COLOR, font=(CommonElements.FONT, 10, "bold")
-        )
+        text_widget.tag_configure("step", foreground=CommonElements.URL_COLOR, font=(CommonElements.FONT, 10, "bold"))
         text_widget.tag_configure(
             "update_link",
-            foreground= CommonElements.URL_COLOR,
+            foreground=CommonElements.URL_COLOR,
             underline=True,
             font=(CommonElements.FONT, 10, "bold"),
         )
@@ -1182,17 +1150,13 @@ class SafePDFUI:
                     f"1.0+{update_line_start}c",
                     f"1.0+{line_end}c",
                 )
-                text_widget.tag_bind(
-                    "update_link", "<Button-1>", self.update_ui.check_for_updates
-                )
+                text_widget.tag_bind("update_link", "<Button-1>", self.update_ui.check_for_updates)
                 text_widget.tag_bind(
                     "update_link",
                     "<Enter>",
                     lambda e: text_widget.config(cursor="hand2"),
                 )
-                text_widget.tag_bind(
-                    "update_link", "<Leave>", lambda e: text_widget.config(cursor="")
-                )
+                text_widget.tag_bind("update_link", "<Leave>", lambda e: text_widget.config(cursor=""))
         except Exception:
             pass
 
@@ -1221,9 +1185,7 @@ class SafePDFUI:
                         f"1.0+{adjusted_idx}c",
                         f"1.0+{adjusted_idx + len(marker)}c",
                     )
-                    text_widget.tag_bind(
-                        "contact_link", "<Button-1>", lambda e: self.open_contact_us()
-                    )
+                    text_widget.tag_bind("contact_link", "<Button-1>", lambda e: self.open_contact_us())
                     text_widget.tag_bind(
                         "contact_link",
                         "<Enter>",
@@ -1244,9 +1206,7 @@ class SafePDFUI:
             if section in content:
                 start = content.find(section)
                 if start != -1:
-                    text_widget.tag_add(
-                        "info", f"1.0+{start}c", f"1.0+{start + len(section)}c"
-                    )
+                    text_widget.tag_add("info", f"1.0+{start}c", f"1.0+{start + len(section)}c")
 
     def create_file_tab(self):
         """Create the file selection tab with modern design and PDF preview"""
@@ -1258,21 +1218,15 @@ class SafePDFUI:
         file_tab_container.pack(fill="both", expand=True)
 
         # Left: Drop zone
-        drop_frame = tk.Frame(
-            file_tab_container, bg=CommonElements.TEXT_BG, relief=tk.FLAT, bd=0
-        )
+        drop_frame = tk.Frame(file_tab_container, bg=CommonElements.TEXT_BG, relief=tk.FLAT, bd=0)
         drop_frame.pack(side="left", fill="both", expand=True, pady=(0, 12))
 
-        self.drop_canvas = tk.Canvas(
-            drop_frame, bg=CommonElements.TEXT_BG, highlightthickness=0, relief=tk.FLAT
-        )
+        self.drop_canvas = tk.Canvas(drop_frame, bg=CommonElements.TEXT_BG, highlightthickness=0, relief=tk.FLAT)
         self.drop_canvas.pack(fill="both", expand=True)
 
         self.drop_label = tk.Label(
             self.drop_canvas,
-            text=self.lang_manager.get(
-                "drop_pdf_file", "📄 Drop PDF File Here\n\nClick to browse"
-            ) or "",
+            text=self.lang_manager.get("drop_pdf_file", "📄 Drop PDF File Here\n\nClick to browse") or "",
             relief=tk.FLAT,
             bd=0,
             bg=CommonElements.TEXT_BG,
@@ -1287,9 +1241,7 @@ class SafePDFUI:
         self.setup_drag_drop()
 
         # Right: PDF preview area
-        preview_frame = tk.Frame(
-            file_tab_container, bg=CommonElements.TEXT_BG, relief=tk.FLAT, bd=0
-        )
+        preview_frame = tk.Frame(file_tab_container, bg=CommonElements.TEXT_BG, relief=tk.FLAT, bd=0)
         preview_frame.pack(side="right", fill="y", padx=(16, 0), pady=(0, 12))
         self.preview_label = tk.Label(
             preview_frame,
@@ -1313,9 +1265,7 @@ class SafePDFUI:
         self.pdf_preview_image = None
 
         # Or label and browse button below
-        self.or_label = ttk.Label(
-            main_frame, text=self.lang_manager.get("or_label", "or"), style="TLabel"
-        )
+        self.or_label = ttk.Label(main_frame, text=self.lang_manager.get("or_label", "or"), style="TLabel")
         self.or_label.pack(pady=4)
         self.browse_btn = ttk.Button(
             main_frame,
@@ -1339,9 +1289,7 @@ class SafePDFUI:
             self.pdf_preview_canvas.create_text(
                 canvas_w // 2,
                 canvas_h // 2,
-                text=self.lang_manager.get(
-                    "preview_no_file_selected", "No file\nselected"
-                ),
+                text=self.lang_manager.get("preview_no_file_selected", "No file\nselected"),
                 fill="#888",
                 font=(CommonElements.FONT, 10),
             )
@@ -1377,17 +1325,13 @@ class SafePDFUI:
             img.thumbnail((canvas_w, canvas_h), Image.LANCZOS)
 
             self.pdf_preview_image = ImageTk.PhotoImage(img)
-            self.pdf_preview_canvas.create_image(
-                canvas_w // 2, canvas_h // 2, image=self.pdf_preview_image
-            )
+            self.pdf_preview_canvas.create_image(canvas_w // 2, canvas_h // 2, image=self.pdf_preview_image)
         except Exception:
             self.pdf_preview_canvas.delete("all")
             self.pdf_preview_canvas.create_text(
                 canvas_w // 2,
                 canvas_h // 2,
-                text=self.lang_manager.get(
-                    "preview_unavailable", "Preview\nUnavailable"
-                ),
+                text=self.lang_manager.get("preview_unavailable", "Preview\nUnavailable"),
                 fill="#888",
                 font=(CommonElements.FONT, 10),
             )
@@ -1398,20 +1342,14 @@ class SafePDFUI:
             return
 
         if self.controller.selected_operation == "merge":
-            self.drop_label.config(
-                text=self.lang_manager.get("drop_pdf_files", "📄 Drop PDF Files Here!")
-            )
+            self.drop_label.config(text=self.lang_manager.get("drop_pdf_files", "📄 Drop PDF Files Here!"))
         elif self.controller.selected_operation == "jpg_to_pdf":
             self.drop_label.config(
-                text=self.lang_manager.get(
-                    "drop_jpg_file", "🖼️ Drop JPG File Here\n\nClick to browse"
-                )
+                text=self.lang_manager.get("drop_jpg_file", "🖼️ Drop JPG File Here\n\nClick to browse")
             )
         else:
             self.drop_label.config(
-                text=self.lang_manager.get(
-                    "drop_pdf_file", "📄 Drop PDF File Here\n\nClick to browse"
-                )
+                text=self.lang_manager.get("drop_pdf_file", "📄 Drop PDF File Here\n\nClick to browse")
             )
 
     def setup_drag_drop(self):
@@ -1542,9 +1480,7 @@ class SafePDFUI:
 
             # Position the label in the center
             if hasattr(self, "drop_label") and self.drop_label:
-                self.drop_canvas.create_window(
-                    width // 2, height // 2, window=self.drop_label, tags="label"
-                )
+                self.drop_canvas.create_window(width // 2, height // 2, window=self.drop_label, tags="label")
 
         except Exception as e:
             logger.debug(f"Error drawing dashed border: {e}", exc_info=True)
@@ -1739,6 +1675,7 @@ class SafePDFUI:
 
     def _bind_operation_card_events(self, card_frame, widgets, command, index, is_enabled=True):
         """Attach click/hover behavior to operation cards and child widgets."""
+
         def on_click(_event=None):
             if not is_enabled:
                 self.show_locked_ocr_message()
@@ -1818,9 +1755,7 @@ class SafePDFUI:
         # Settings will be populated based on selected operation
         self.settings_label = ttk.Label(
             main_frame,
-            text=self.lang_manager.get(
-                "select_settings", "Select an operation first to see available settings"
-            ),
+            text=self.lang_manager.get("select_settings", "Select an operation first to see available settings"),
             style="TLabel",
             font=(CommonElements.FONT, 12, "bold"),
             foreground=CommonElements.RED_COLOR,
@@ -1861,9 +1796,7 @@ class SafePDFUI:
         self.results_text.config(state=tk.DISABLED)
 
         # Progress bar - initialize to 0
-        self.progress = ttk.Progressbar(
-            main_frame, mode="determinate", style="TProgressbar", value=0
-        )
+        self.progress = ttk.Progressbar(main_frame, mode="determinate", style="TProgressbar", value=0)
 
         self.progress.pack(fill="x", pady=(0, 10))
         self.results_text.pack(fill="both", expand=True, pady=(0, 10))
@@ -1886,9 +1819,7 @@ class SafePDFUI:
             main_frame.pack(fill="both", expand=True, padx=24, pady=24)
             ttk.Label(
                 main_frame,
-                text=self.lang_manager.get(
-                    "help_unavailable", "Help content is unavailable."
-                ),
+                text=self.lang_manager.get("help_unavailable", "Help content is unavailable."),
                 font=(CommonElements.FONT, CommonElements.FONT_SIZE),
             ).pack(fill="both", expand=True)
 
@@ -1902,9 +1833,7 @@ class SafePDFUI:
             main_frame.pack(fill="both", expand=True, padx=24, pady=24)
             ttk.Label(
                 main_frame,
-                text=self.lang_manager.get(
-                    "settings_unavailable", "Settings are unavailable."
-                ),
+                text=self.lang_manager.get("settings_unavailable", "Settings are unavailable."),
                 font=(CommonElements.FONT, CommonElements.FONT_SIZE),
             ).pack(fill="both", expand=True)
 
@@ -2212,7 +2141,9 @@ class SafePDFUI:
             getattr(self, "help_frame", None),
         ):
             if widget is not None:
-                self._update_widget_colors(widget, palette["bg_card"], palette["fg_text"], palette["text_bg"], palette["text_fg"])
+                self._update_widget_colors(
+                    widget, palette["bg_card"], palette["fg_text"], palette["text_bg"], palette["text_fg"]
+                )
 
         try:
             if getattr(self, "operation_cards", None):
@@ -2359,9 +2290,7 @@ class SafePDFUI:
             # Update header and top-level UI elements
             try:
                 if hasattr(self, "header_label") and self.header_label:
-                    self.header_label.config(
-                        text=self.lang_manager.get("app_title", "SafePDF™")
-                    )
+                    self.header_label.config(text=self.lang_manager.get("app_title", "SafePDF™"))
             except Exception:
                 pass
 
@@ -2391,9 +2320,7 @@ class SafePDFUI:
                     self.app_settings_frame,
                     text=self.lang_manager.get("tab_app_settings", "Settings"),
                 )
-                self.notebook.tab(
-                    self.help_frame, text=self.lang_manager.get("tab_help", "Help")
-                )
+                self.notebook.tab(self.help_frame, text=self.lang_manager.get("tab_help", "Help"))
             except Exception:
                 pass
 
@@ -2410,9 +2337,7 @@ class SafePDFUI:
                     status_text = (
                         self.lang_manager.get("status_pro", "✓ PRO Version")
                         if self.controller.is_pro_activated
-                        else self.lang_manager.get(
-                            "status_free", "FREE Version - Upgrade now!"
-                        )
+                        else self.lang_manager.get("status_free", "FREE Version - Upgrade now!")
                     )
                     self.pro_status_btn.config(text=status_text)
             except Exception:
@@ -2442,9 +2367,7 @@ class SafePDFUI:
                         "to_ocr": 9,
                         "extract_info": 10,
                     }
-                    idx = op_to_index.get(
-                        getattr(self.controller, "selected_operation", None)
-                    )
+                    idx = op_to_index.get(getattr(self.controller, "selected_operation", None))
                     if idx is not None:
                         try:
                             self.highlight_selected_operation(idx)
@@ -2472,17 +2395,11 @@ class SafePDFUI:
             # Update file tab labels/buttons without recreating the tab (keeps DnD bindings intact)
             try:
                 if hasattr(self, "preview_label") and self.preview_label:
-                    self.preview_label.config(
-                        text=self.lang_manager.get("preview", "Preview:")
-                    )
+                    self.preview_label.config(text=self.lang_manager.get("preview", "Preview:"))
                 if hasattr(self, "or_label") and self.or_label:
                     self.or_label.config(text=self.lang_manager.get("or_label", "or"))
                 if hasattr(self, "browse_btn") and self.browse_btn:
-                    self.browse_btn.config(
-                        text=self.lang_manager.get(
-                            "btn_load_file", "Load File from Disk"
-                        )
-                    )
+                    self.browse_btn.config(text=self.lang_manager.get("btn_load_file", "Load File from Disk"))
                 self.update_file_tab_ui()
                 self.update_file_display()
             except Exception:
@@ -2491,28 +2408,18 @@ class SafePDFUI:
             # Update results tab static strings (avoid clobbering existing results)
             try:
                 if hasattr(self, "start_new_btn") and self.start_new_btn:
-                    self.start_new_btn.config(
-                        text=self.lang_manager.get(
-                            "btn_start_new", "Start New Operation"
-                        )
-                    )
+                    self.start_new_btn.config(text=self.lang_manager.get("btn_start_new", "Start New Operation"))
             except Exception:
                 pass
 
             # Update navigation buttons
             try:
                 if hasattr(self, "back_btn") and self.back_btn:
-                    self.back_btn.config(
-                        text=self.lang_manager.get("nav_back", "← Back")
-                    )
+                    self.back_btn.config(text=self.lang_manager.get("nav_back", "← Back"))
                 if hasattr(self, "next_btn") and self.next_btn:
-                    self.next_btn.config(
-                        text=self.lang_manager.get("nav_next", "Next →")
-                    )
+                    self.next_btn.config(text=self.lang_manager.get("nav_next", "Next →"))
                 if hasattr(self, "cancel_btn") and self.cancel_btn:
-                    self.cancel_btn.config(
-                        text=self.lang_manager.get("nav_cancel", "Cancel")
-                    )
+                    self.cancel_btn.config(text=self.lang_manager.get("nav_cancel", "Cancel"))
             except Exception:
                 pass
 
@@ -2561,9 +2468,7 @@ class SafePDFUI:
                 try:
                     # Don't update header labels (with RED_COLOR bg)
                     current_bg = widget.cget("bg")
-                    if current_bg != CommonElements.RED_COLOR and current_bg not in [
-                        CommonElements.RED_COLOR
-                    ]:
+                    if current_bg != CommonElements.RED_COLOR and current_bg not in [CommonElements.RED_COLOR]:
                         widget.configure(background=bg_color, foreground=fg_color)
                 except Exception:
                     pass
@@ -2624,9 +2529,7 @@ class SafePDFUI:
         self.pro_status_btn.pack()
 
         # Add a subtle border/shadow effect
-        self.pro_status_btn.config(
-            highlightbackground=status_color, highlightcolor=status_color
-        )
+        self.pro_status_btn.config(highlightbackground=status_color, highlightcolor=status_color)
 
         # Hover effect for pro status button
         def on_pro_enter(event):
@@ -2640,9 +2543,7 @@ class SafePDFUI:
 
         def on_pro_leave(event):
             try:
-                status_color = (
-                    "#b62020" if self.controller.is_pro_activated else "#8b5f5f"
-                )
+                status_color = "#b62020" if self.controller.is_pro_activated else "#8b5f5f"
                 self.pro_status_btn.config(bg=status_color)
             except Exception:
                 pass
@@ -2714,70 +2615,14 @@ class SafePDFUI:
             self._tab_transition_overlay = None
 
     def animate_tab_change(self, old_tab, new_tab):
-        """Animate a subtle directional sweep across the top edge of the selected tab."""
+        """No-op for tab changes.
+
+        Tkinter notebook pages do not support true composited crossfades, and
+        overlay-based approximations looked distracting. Keeping tab switches
+        immediate feels cleaner and more native here.
+        """
         self._clear_tab_transition_overlay()
-
-        if self.notebook is None:
-            return
-
-        try:
-            selected_widget = self.notebook.nametowidget(self.notebook.select())
-        except Exception:
-            return
-
-        try:
-            selected_widget.update_idletasks()
-            width = max(int(selected_widget.winfo_width()), 1)
-            height = max(int(selected_widget.winfo_height()), 1)
-        except Exception:
-            return
-
-        if width < 20 or height < 20:
-            return
-
-        direction = 1 if new_tab >= old_tab else -1
-        overlay_height = 10
-        overlay = tk.Canvas(selected_widget, bg=CommonElements.BG_CARD, highlightthickness=0, bd=0)
-        overlay.place(x=0, y=0, width=width, height=overlay_height)
-        self._tab_transition_overlay = overlay
-
-        soft_band = 72
-        bright_band = 28
-        stripe_color = "#3b4758" if CommonElements.BG_CARD != "#ffffff" else "#f6e6e6"
-        highlight_color = "#55657a" if CommonElements.BG_CARD != "#ffffff" else "#fbf3f3"
-        overlay.create_rectangle(0, overlay_height - 1, width, overlay_height, fill=highlight_color, outline="")
-
-        if direction > 0:
-            soft = overlay.create_rectangle(0, 0, soft_band, overlay_height - 1, fill=stripe_color, outline="")
-            bright = overlay.create_rectangle(0, 0, bright_band, overlay_height - 1, fill=highlight_color, outline="")
-        else:
-            soft = overlay.create_rectangle(width - soft_band, 0, width, overlay_height - 1, fill=stripe_color, outline="")
-            bright = overlay.create_rectangle(width - bright_band, 0, width, overlay_height - 1, fill=highlight_color, outline="")
-
-        total_steps = 18
-        duration_ms = 220
-        step_delay = max(duration_ms // total_steps, 10)
-        start_x = -soft_band if direction > 0 else width
-        end_x = width if direction > 0 else -soft_band
-
-        def step(index):
-            if not overlay.winfo_exists():
-                return
-            progress = index / total_steps
-            eased = 0.5 - (math.cos(progress * math.pi) / 2)
-            current_x = int(start_x + ((end_x - start_x) * eased))
-            if direction > 0:
-                overlay.coords(soft, current_x, 0, current_x + soft_band, overlay_height - 1)
-                overlay.coords(bright, current_x, 0, current_x + bright_band, overlay_height - 1)
-            else:
-                overlay.coords(soft, current_x, 0, current_x + soft_band, overlay_height - 1)
-                overlay.coords(bright, current_x + soft_band - bright_band, 0, current_x + soft_band, overlay_height - 1)
-            if index < total_steps:
-                self._tab_transition_after_id = self.root.after(step_delay, lambda: step(index + 1))
-            else:
-                self._clear_tab_transition_overlay()
-
-        step(0)
+        return
 
     # Event handlers
     def on_tab_changed(self, event):
@@ -2788,9 +2633,7 @@ class SafePDFUI:
         if self.notebook.tab(new_tab, "state") == "disabled":
             messagebox.showinfo(
                 self.lang_manager.get("tab_locked", "Tab Locked"),
-                self.lang_manager.get(
-                    "tab_locked_msg", "Please select an operation and file first."
-                ),
+                self.lang_manager.get("tab_locked_msg", "Please select an operation and file first."),
             )
             # fall back to the last valid tab index
             try:
@@ -2834,9 +2677,7 @@ class SafePDFUI:
                     file_paths = [f.strip('"{}') for f in files]
                     if len(file_paths) < 2:
                         messagebox.showwarning(
-                            self.lang_manager.get(
-                                "not_enough_files", "Not enough files"
-                            ),
+                            self.lang_manager.get("not_enough_files", "Not enough files"),
                             self.lang_manager.get(
                                 "not_enough_merge",
                                 "Please drop at least 2 PDF files to merge.",
@@ -2895,9 +2736,7 @@ class SafePDFUI:
                     # Enable settings tab
                     self.notebook.tab(3, state="normal")
                 else:
-                    messagebox.showwarning(
-                        self.lang_manager.get("invalid_file", "Invalid File"), message
-                    )
+                    messagebox.showwarning(self.lang_manager.get("invalid_file", "Invalid File"), message)
                     if hasattr(self, "drop_label") and self.drop_label:
                         self.on_drag_leave(None)  # Restore original appearance
             else:
@@ -2952,9 +2791,7 @@ class SafePDFUI:
                     # Show preview of first file
                     self.show_pdf_preview(file_paths[0])
                 else:
-                    messagebox.showerror(
-                        self.lang_manager.get("error", "Error"), message
-                    )
+                    messagebox.showerror(self.lang_manager.get("error", "Error"), message)
         elif self.controller.selected_operation == "jpg_to_pdf":
             file_path = filedialog.askopenfilename(
                 title=self.lang_manager.get("select_jpg", "Select JPG File"),
@@ -2985,9 +2822,7 @@ class SafePDFUI:
                     self.show_pdf_preview(file_path)
                     self.notebook.tab(3, state="normal")
                 else:
-                    messagebox.showerror(
-                        self.lang_manager.get("error", "Error"), message
-                    )
+                    messagebox.showerror(self.lang_manager.get("error", "Error"), message)
         else:
             file_path = filedialog.askopenfilename(
                 title=self.lang_manager.get("select_pdf", "Select PDF File"),
@@ -3020,16 +2855,12 @@ class SafePDFUI:
                     # Enable settings tab
                     self.notebook.tab(3, state="normal")
                 else:
-                    messagebox.showerror(
-                        self.lang_manager.get("error", "Error"), message
-                    )
+                    messagebox.showerror(self.lang_manager.get("error", "Error"), message)
 
     def browse_merge_second_file(self):
         """Browse for the second PDF to merge"""
         file_path = filedialog.askopenfilename(
-            title=self.lang_manager.get(
-                "select_second_merge_pdf", "Select Second PDF File to Merge"
-            ),
+            title=self.lang_manager.get("select_second_merge_pdf", "Select Second PDF File to Merge"),
             filetypes=[("PDF files", "*.pdf"), ("All files", "*.*")],
             defaultextension=".pdf",
         )
@@ -3039,34 +2870,30 @@ class SafePDFUI:
             if not file_path.lower().endswith(".pdf"):
                 messagebox.showwarning(
                     self.lang_manager.get("invalid_file", "Invalid File"),
-                    self.lang_manager.get(
-                        "invalid_pdf", "Please select a .pdf file for merging."
-                    ),
+                    self.lang_manager.get("invalid_pdf", "Please select a .pdf file for merging."),
                 )
                 return
 
             # Update UI and internal variable
             self.merge_second_file_var.set(file_path)
-            self.merge_second_label.config(
-                text=os.path.basename(file_path), foreground="green"
-            )
+            self.merge_second_label.config(text=os.path.basename(file_path), foreground="green")
 
     def show_pdf_info(self):
         """Show information about the selected PDF"""
         info = self.controller.get_pdf_info()
         if info and "error" not in info:
-            info_text = self.lang_manager.get(
-                "pdf_info_pages", "Pages: {pages}"
-            ).format(pages=info.get("pages", "Unknown"))
-            info_text += "\n" + self.lang_manager.get(
-                "pdf_info_size", "Size: {size} KB"
-            ).format(size=f"{info.get('file_size', 0) / 1024:.1f}")
+            info_text = self.lang_manager.get("pdf_info_pages", "Pages: {pages}").format(
+                pages=info.get("pages", "Unknown")
+            )
+            info_text += "\n" + self.lang_manager.get("pdf_info_size", "Size: {size} KB").format(
+                size=f"{info.get('file_size', 0) / 1024:.1f}"
+            )
             if hasattr(self, "file_label") and self.file_label:
                 current_text = self.file_label.cget("text")
                 self.file_label.config(
-                    text=self.lang_manager.get(
-                        "file_info_format", "{current}\n{info}"
-                    ).format(current=current_text, info=info_text)
+                    text=self.lang_manager.get("file_info_format", "{current}\n{info}").format(
+                        current=current_text, info=info_text
+                    )
                 )
         elif info and "error" in info:
             messagebox.showerror(
@@ -3176,72 +3003,60 @@ class SafePDFUI:
         # Create appropriate settings based on operation
         if self.controller.selected_operation == "compress":
             ops_ui.create_compress_settings(
-                self.quality_var,
-                lambda: ops_ui.update_compression_visual(self.quality_var)
+                self.quality_var, lambda: ops_ui.update_compression_visual(self.quality_var)
             )
             ops_ui.create_output_path_selection(
-                False, self.use_default_output, self.output_path_var,
-                self._on_browse_output
+                False, self.use_default_output, self.output_path_var, self._on_browse_output
             )
         elif self.controller.selected_operation == "rotate":
             ops_ui.create_rotate_settings(self.rotation_var)
             ops_ui.create_output_path_selection(
-                False, self.use_default_output, self.output_path_var,
-                self._on_browse_output
+                False, self.use_default_output, self.output_path_var, self._on_browse_output
             )
         elif self.controller.selected_operation == "split":
             ops_ui.create_split_settings(self.split_var, self.page_range_var)
             ops_ui.create_output_path_selection(
-                True, self.use_default_output, self.output_path_var,
-                self._on_browse_output
+                True, self.use_default_output, self.output_path_var, self._on_browse_output
             )
         elif self.controller.selected_operation == "jpg_to_pdf":
             ops_ui.create_jpg_to_pdf_settings()
             ops_ui.create_output_path_selection(
-                False, self.use_default_output, self.output_path_var,
-                self._on_browse_output
+                False, self.use_default_output, self.output_path_var, self._on_browse_output
             )
         elif self.controller.selected_operation == "to_jpg":
             ops_ui.create_to_jpg_settings(self.img_quality_var)
             ops_ui.create_output_path_selection(
-                True, self.use_default_output, self.output_path_var,
-                self._on_browse_output
+                True, self.use_default_output, self.output_path_var, self._on_browse_output
             )
         elif self.controller.selected_operation == "repair":
             ops_ui.create_repair_settings(self.repair_var)
             ops_ui.create_output_path_selection(
-                False, self.use_default_output, self.output_path_var,
-                self._on_browse_output
+                False, self.use_default_output, self.output_path_var, self._on_browse_output
             )
         elif self.controller.selected_operation == "merge":
             ops_ui.create_merge_settings(self.merge_var, self.controller.selected_files)
             ops_ui.create_output_path_selection(
-                False, self.use_default_output, self.output_path_var,
-                self._on_browse_output
+                False, self.use_default_output, self.output_path_var, self._on_browse_output
             )
         elif self.controller.selected_operation == "to_word":
             ops_ui.create_to_word_settings()
             ops_ui.create_output_path_selection(
-                False, self.use_default_output, self.output_path_var,
-                self._on_browse_output
+                False, self.use_default_output, self.output_path_var, self._on_browse_output
             )
         elif self.controller.selected_operation == "to_txt":
             ops_ui.create_to_txt_settings()
             ops_ui.create_output_path_selection(
-                False, self.use_default_output, self.output_path_var,
-                self._on_browse_output
+                False, self.use_default_output, self.output_path_var, self._on_browse_output
             )
         elif self.controller.selected_operation == "to_ocr":
             ops_ui.create_to_ocr_settings(self.ocr_output_format_var)
             ops_ui.create_output_path_selection(
-                False, self.use_default_output, self.output_path_var,
-                self._on_browse_output
+                False, self.use_default_output, self.output_path_var, self._on_browse_output
             )
         elif self.controller.selected_operation == "extract_info":
             ops_ui.create_extract_info_settings()
             ops_ui.create_output_path_selection(
-                False, self.use_default_output, self.output_path_var,
-                self._on_browse_output
+                False, self.use_default_output, self.output_path_var, self._on_browse_output
             )
 
         operation_name = self.controller.selected_operation.replace("_", " ").title()
@@ -3283,13 +3098,9 @@ class SafePDFUI:
                         "w", lambda *args: self._update_execute_button_state()
                     )
             except Exception:
-                logger.debug(
-                    "Error setting trace for merge second file variable", exc_info=True
-                )
+                logger.debug("Error setting trace for merge second file variable", exc_info=True)
         except Exception:
-            logger.debug(
-                "Unexpected error handling merge second file trace", exc_info=True
-            )
+            logger.debug("Unexpected error handling merge second file trace", exc_info=True)
 
     def _on_browse_output(self):
         """Unified browse handler that picks file or directory depending on operation."""
@@ -3308,9 +3119,7 @@ class SafePDFUI:
         """Browse for output file location"""
         if self.controller.selected_file:
             initial_dir = os.path.dirname(self.controller.selected_file)
-            base_name = os.path.splitext(
-                os.path.basename(self.controller.selected_file)
-            )[0]
+            base_name = os.path.splitext(os.path.basename(self.controller.selected_file))[0]
         else:
             initial_dir = os.path.expanduser("~")
             base_name = "output"
@@ -3370,9 +3179,6 @@ class SafePDFUI:
         if dir_path:
             self.output_path_var.set(dir_path)
 
-
-
-
     # Navigation methods
     def next_tab(self):
         """Move to next tab, execute operation, or open output file"""
@@ -3428,9 +3234,7 @@ class SafePDFUI:
                     if not safe_open_file_or_folder(output_path):
                         messagebox.showerror(
                             self.lang_manager.get("error", "Error"),
-                            self.lang_manager.get(
-                                "could_not_open", "Could not open output file/folder."
-                            ),
+                            self.lang_manager.get("could_not_open", "Could not open output file/folder."),
                         )
                 else:
                     messagebox.showwarning(
@@ -3446,9 +3250,7 @@ class SafePDFUI:
         else:
             messagebox.showwarning(
                 self.lang_manager.get("no_output", "No Output"),
-                self.lang_manager.get(
-                    "no_output_msg", "No output file available to open."
-                ),
+                self.lang_manager.get("no_output_msg", "No output file available to open."),
             )
 
     def update_navigation_buttons(self):
@@ -3466,31 +3268,19 @@ class SafePDFUI:
 
         # If on settings tab, change Next to Execute
         if current_tab == 3:
-            self.next_btn.config(
-                text=self.lang_manager.get("nav_execute", "Execute"), state="normal"
-            )
+            self.next_btn.config(text=self.lang_manager.get("nav_execute", "Execute"), state="normal")
         # If on results tab with successful output, change to "Open Output"
         elif current_tab == 4 and self.controller.current_output:
-            self.next_btn.config(
-                text=self.lang_manager.get("nav_open_output", "📂 Open"), state="normal"
-            )
+            self.next_btn.config(text=self.lang_manager.get("nav_open_output", "📂 Open"), state="normal")
         elif current_tab == 0:
-            self.next_btn.config(
-                text=self.lang_manager.get("nav_next", "Next →"), state="normal"
-            )
+            self.next_btn.config(text=self.lang_manager.get("nav_next", "Next →"), state="normal")
         elif current_tab == 1:
             if self.controller.selected_operation:
-                self.next_btn.config(
-                    text=self.lang_manager.get("nav_next", "Next →"), state="normal"
-                )
+                self.next_btn.config(text=self.lang_manager.get("nav_next", "Next →"), state="normal")
             else:
-                self.next_btn.config(
-                    text=self.lang_manager.get("nav_next", "Next →"), state="disabled"
-                )
+                self.next_btn.config(text=self.lang_manager.get("nav_next", "Next →"), state="disabled")
         elif current_tab == 2:
-            self.next_btn.config(
-                text=self.lang_manager.get("nav_next", "Next →"), state="normal"
-            )
+            self.next_btn.config(text=self.lang_manager.get("nav_next", "Next →"), state="normal")
         else:
             self.next_btn.config(state="disabled")
 
@@ -3540,18 +3330,14 @@ class SafePDFUI:
         if not self.controller.selected_file or not self.controller.selected_operation:
             messagebox.showwarning(
                 self.lang_manager.get("warning", "Warning"),
-                self.lang_manager.get(
-                    "select_first", "Please select a file and operation first!"
-                ),
+                self.lang_manager.get("select_first", "Please select a file and operation first!"),
             )
             return
 
         if self.controller.operation_running:
             messagebox.showinfo(
                 self.lang_manager.get("info", "Info"),
-                self.lang_manager.get(
-                    "already_running", "Operation is already running!"
-                ),
+                self.lang_manager.get("already_running", "Operation is already running!"),
             )
             return
 
@@ -3563,9 +3349,7 @@ class SafePDFUI:
         self.progress.config(mode="determinate", value=0)
         self.results_text.config(state=tk.NORMAL)
         self.results_text.delete("1.0", tk.END)
-        self.results_text.insert(
-            "1.0", self.lang_manager.get("results_starting", "Starting operation...\n")
-        )
+        self.results_text.insert("1.0", self.lang_manager.get("results_starting", "Starting operation...\n"))
         self.results_text.config(state=tk.DISABLED)
 
         # Start progress animation
@@ -3578,14 +3362,10 @@ class SafePDFUI:
         # Prepare output paths
         use_default = self.use_default_output.get()
         custom_path = self.output_path_var.get().strip() if not use_default else None
-        output_path, output_dir = self.controller.prepare_output_paths(
-            custom_path, use_default
-        )
+        output_path, output_dir = self.controller.prepare_output_paths(custom_path, use_default)
 
         # Start operation
-        success, message = self.controller.execute_operation_async(
-            output_path, output_dir
-        )
+        success, message = self.controller.execute_operation_async(output_path, output_dir)
 
         if not success:
             messagebox.showerror(self.lang_manager.get("error", "Error"), message)
@@ -3657,11 +3437,7 @@ class SafePDFUI:
         self.results_text.config(state=tk.NORMAL)
         self.results_text.insert(
             tk.END,
-            "\n"
-            + self.lang_manager.get(
-                "results_operation_completed", "Operation completed!"
-            )
-            + "\n",
+            "\n" + self.lang_manager.get("results_operation_completed", "Operation completed!") + "\n",
         )
         status_value = (
             self.lang_manager.get("results_success", "Success")
@@ -3719,9 +3495,7 @@ class SafePDFUI:
             if self.controller.selected_operation == "merge":
                 # Require a second file to be selected
                 second = (
-                    self.merge_second_file_var.get().strip()
-                    if getattr(self, "merge_second_file_var", None)
-                    else ""
+                    self.merge_second_file_var.get().strip() if getattr(self, "merge_second_file_var", None) else ""
                 )
                 if not second:
                     enabled = False
@@ -3908,17 +3682,11 @@ class SafePDFUI:
             self.results_text.config(state=tk.NORMAL)
             self.results_text.insert(
                 tk.END,
-                "\n"
-                + self.lang_manager.get(
-                    "operation_cancelled", "Operation cancelled by user."
-                )
-                + "\n",
+                "\n" + self.lang_manager.get("operation_cancelled", "Operation cancelled by user.") + "\n",
             )
             self.results_text.config(state=tk.DISABLED)
         except Exception:
-            logger.debug(
-                "Error updating UI after operation cancellation", exc_info=True
-            )
+            logger.debug("Error updating UI after operation cancellation", exc_info=True)
             pass
 
     def save_results(self):
@@ -3940,9 +3708,7 @@ class SafePDFUI:
                     messagebox.showinfo("Saved", f"File saved to {save_path}")
             else:
                 # Directory output
-                save_dir = filedialog.askdirectory(
-                    title="Select folder to copy results"
-                )
+                save_dir = filedialog.askdirectory(title="Select folder to copy results")
                 if save_dir:
                     import shutil
 
@@ -3978,9 +3744,7 @@ class SafePDFUI:
 
                     rect = RECT()
                     SPI_GETWORKAREA = 0x0030
-                    if ctypes.windll.user32.SystemParametersInfoW(
-                        SPI_GETWORKAREA, 0, ctypes.byref(rect), 0
-                    ):
+                    if ctypes.windll.user32.SystemParametersInfoW(SPI_GETWORKAREA, 0, ctypes.byref(rect), 0):
                         screen_width = rect.right - rect.left
                         screen_height = rect.bottom - rect.top
                         x_pos = rect.left
@@ -4057,16 +3821,16 @@ class SafePDFUI:
                     filename = os.path.basename(self.controller.selected_files[0])
                     if hasattr(self, "file_label") and self.file_label:
                         self.file_label.config(
-                            text=self.lang_manager.get(
-                                "selected_file", "✅ Selected: {filename}"
-                            ).format(filename=filename),
+                            text=self.lang_manager.get("selected_file", "✅ Selected: {filename}").format(
+                                filename=filename
+                            ),
                             foreground="green",
                         )
                     if hasattr(self, "drop_label") and self.drop_label:
                         self.drop_label.config(
-                            text=self.lang_manager.get(
-                                "selected_file", "✅ Selected: {filename}"
-                            ).format(filename=filename),
+                            text=self.lang_manager.get("selected_file", "✅ Selected: {filename}").format(
+                                filename=filename
+                            ),
                             bg="#e8f5e8",
                             fg="#28a745",
                             relief=tk.SOLID,
@@ -4074,9 +3838,7 @@ class SafePDFUI:
                         )
                 else:
                     # Multiple files (merge operation)
-                    filenames = [
-                        os.path.basename(f) for f in self.controller.selected_files
-                    ]
+                    filenames = [os.path.basename(f) for f in self.controller.selected_files]
                     if hasattr(self, "file_label") and self.file_label:
                         self.file_label.config(
                             text=f"{self.lang_manager.get('selected_files', 'Selected files: ')}{', '.join(filenames)}",
@@ -4107,16 +3869,12 @@ class SafePDFUI:
                 # No files selected
                 if hasattr(self, "file_label") and self.file_label:
                     self.file_label.config(
-                        text=self.lang_manager.get(
-                            "preview_no_file_selected", "No file\nselected"
-                        ).replace("\n", " "),
+                        text=self.lang_manager.get("preview_no_file_selected", "No file\nselected").replace("\n", " "),
                         foreground="#888",
                     )
                 if hasattr(self, "drop_label") and self.drop_label:
                     self.drop_label.config(
-                        text=self.lang_manager.get(
-                            "drop_pdf_file", "📄 Drop PDF File Here\n\nClick to browse"
-                        ),
+                        text=self.lang_manager.get("drop_pdf_file", "📄 Drop PDF File Here\n\nClick to browse"),
                         bg="#FFFFFF",
                         fg="#666",
                         relief=tk.RIDGE,

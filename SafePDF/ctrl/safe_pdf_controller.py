@@ -158,7 +158,17 @@ class SafePDFController:
                 return custom_output_path, None
 
         # Default paths with minimal processing
-        if self.selected_operation in ["compress", "rotate", "repair", "to_word", "to_txt", "to_ocr", "extract_info", "merge", "jpg_to_pdf"]:
+        if self.selected_operation in [
+            "compress",
+            "rotate",
+            "repair",
+            "to_word",
+            "to_txt",
+            "to_ocr",
+            "extract_info",
+            "merge",
+            "jpg_to_pdf",
+        ]:
             base_name = os_path.splitext(self.selected_file)[0]
             if self.selected_operation == "to_word":
                 return f"{base_name}.docx", None

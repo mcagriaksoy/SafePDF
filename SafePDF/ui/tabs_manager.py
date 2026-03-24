@@ -42,9 +42,7 @@ class TabsManager:
         """Create all application tabs"""
         # Tab 1: Welcome
         self.welcome_frame = ttk.Frame(self.notebook)
-        self.notebook.add(
-            self.welcome_frame, text=self.lang_manager.get("tab_welcome", "1. Welcome")
-        )
+        self.notebook.add(self.welcome_frame, text=self.lang_manager.get("tab_welcome", "1. Welcome"))
 
         # Tab 2: Select Operation
         self.operation_frame = ttk.Frame(self.notebook)
@@ -55,9 +53,7 @@ class TabsManager:
 
         # Tab 3: Select File
         self.file_frame = ttk.Frame(self.notebook)
-        self.notebook.add(
-            self.file_frame, text=self.lang_manager.get("tab_file", "3. Select File")
-        )
+        self.notebook.add(self.file_frame, text=self.lang_manager.get("tab_file", "3. Select File"))
 
         # Tab 4: Adjust Settings
         self.settings_frame = ttk.Frame(self.notebook)
@@ -68,9 +64,7 @@ class TabsManager:
 
         # Tab 5: Results
         self.results_frame = ttk.Frame(self.notebook)
-        self.notebook.add(
-            self.results_frame, text=self.lang_manager.get("tab_results", "5. Results")
-        )
+        self.notebook.add(self.results_frame, text=self.lang_manager.get("tab_results", "5. Results"))
 
         # Settings
         self.app_settings_frame = ttk.Frame(self.notebook)
@@ -81,9 +75,7 @@ class TabsManager:
 
         # Help
         self.help_frame = ttk.Frame(self.notebook)
-        self.notebook.add(
-            self.help_frame, text=self.lang_manager.get("tab_help", "Help")
-        )
+        self.notebook.add(self.help_frame, text=self.lang_manager.get("tab_help", "Help"))
 
         # Disable workflow tabs that require prerequisites
         self.notebook.tab(2, state="disabled")  # Select File
@@ -94,24 +86,12 @@ class TabsManager:
         """Setup tooltips for notebook tabs"""
         # Define tooltips for each tab
         tooltips = {
-            0: self.lang_manager.get(
-                "tooltip_welcome", "Start here - Welcome and introduction to SafePDF"
-            ) or "",
-            1: self.lang_manager.get(
-                "tooltip_operation", "Choose the PDF operation you want to perform"
-            ) or "",
-            2: self.lang_manager.get(
-                "tooltip_file", "Select the PDF file(s) you want to process"
-            ) or "",
-            3: self.lang_manager.get(
-                "tooltip_settings", "Configure operation-specific settings"
-            ) or "",
-            4: self.lang_manager.get(
-                "tooltip_results", "View the results of your PDF operation"
-            ) or "",
-            5: self.lang_manager.get(
-                "tooltip_app_settings", "Application settings and preferences"
-            ) or "",
+            0: self.lang_manager.get("tooltip_welcome", "Start here - Welcome and introduction to SafePDF") or "",
+            1: self.lang_manager.get("tooltip_operation", "Choose the PDF operation you want to perform") or "",
+            2: self.lang_manager.get("tooltip_file", "Select the PDF file(s) you want to process") or "",
+            3: self.lang_manager.get("tooltip_settings", "Configure operation-specific settings") or "",
+            4: self.lang_manager.get("tooltip_results", "View the results of your PDF operation") or "",
+            5: self.lang_manager.get("tooltip_app_settings", "Application settings and preferences") or "",
             6: self.lang_manager.get("tooltip_help", "Help and documentation") or "",
         }
 
@@ -134,9 +114,7 @@ class TabsManager:
                 font=(CommonElements.FONT, 9),
             )
             label.pack()
-            self.tooltip_window.wm_geometry(
-                f"+{event.x_root}+{event.y_root + 20}"
-            )
+            self.tooltip_window.wm_geometry(f"+{event.x_root}+{event.y_root + 20}")
 
         def hide_tooltip(event):
             if self.tooltip_window:
@@ -145,15 +123,13 @@ class TabsManager:
 
         def move_tooltip(event):
             if self.tooltip_window:
-                self.tooltip_window.wm_geometry(
-                    f"+{event.x_root}+{event.y_root + 20}"
-                )
+                self.tooltip_window.wm_geometry(f"+{event.x_root}+{event.y_root + 20}")
 
         # Bind mouse events to notebook tabs
         try:
-            self.notebook.bind("<Motion>", lambda e: self.check_tab_hover(
-                e, tooltips, show_tooltip, hide_tooltip, move_tooltip
-            ))
+            self.notebook.bind(
+                "<Motion>", lambda e: self.check_tab_hover(e, tooltips, show_tooltip, hide_tooltip, move_tooltip)
+            )
             self.notebook.bind("<Leave>", hide_tooltip)
         except Exception:
             pass
@@ -187,9 +163,7 @@ class TabsManager:
 
             self.settings_label = ttk.Label(
                 main_frame,
-                text=self.lang_manager.get(
-                    "select_settings", "Select an operation first to see available settings"
-                ),
+                text=self.lang_manager.get("select_settings", "Select an operation first to see available settings"),
                 style="TLabel",
                 font=(CommonElements.FONT, 12, "bold"),
                 foreground=CommonElements.RED_COLOR,

@@ -5,6 +5,6 @@ This file makes the `SafePDF` directory a proper Python package so
 absolute imports like `from SafePDF.ui...` work consistently.
 """
 
-__version__ = "1.0.13"
+__version__ = "1.0.14"
 
 __all__ = []
