@@ -198,7 +198,7 @@ class SafePDFUI:
         self.output_frame = None
         # Application-level settings
         self.language_var = tk.StringVar(value=self._load_language_preference())
-        self.theme_var = tk.StringVar(value="system")  # options: system, light, dark
+        self.theme_var = tk.StringVar(value=self._load_theme_preference())  # options: system, light, dark
         self.update_frequency_var = tk.StringVar(value=self._load_update_frequency_preference())
         # Update the global language setting with loaded preference
         CommonElements.SELECTED_LANGUAGE = str(self.language_var.get())
@@ -249,6 +249,7 @@ class SafePDFUI:
             language_manager=self.lang_manager,
             update_frequency_var=self.update_frequency_var,
             update_frequency_callback=self._on_update_frequency_change,
+            theme_callback=self._on_theme_change,
         )
 
         # Ensure language changes update UI (language_var stores language code, e.g. 'en')
@@ -256,10 +257,18 @@ class SafePDFUI:
             self.language_var.trace("w", lambda *args: self._on_language_change())
         except Exception:
             pass
+        try:
+            self.theme_var.trace_add("write", lambda *args: self._on_theme_change())
+        except Exception:
+            try:
+                self.theme_var.trace("w", lambda *args: self._on_theme_change())
+            except Exception:
+                pass
 
         # Initialize UI
         self.setup_main_window()
         self.create_ui_components()
+        self.apply_theme(initial=True)
         # Run non-blocking auto update check according to user cadence.
         self.root.after(1500, self._auto_check_updates_if_due)
 
@@ -1888,8 +1897,6 @@ class SafePDFUI:
         try:
             # Replace the app settings tab content with the delegated implementation
             self.settings_ui.create_settings_tab_content(self.app_settings_frame)
-            # Ensure the theme radio buttons trigger the main UI apply_theme callback
-
         except Exception:
             main_frame = ttk.Frame(self.app_settings_frame, style="TFrame")
             main_frame.pack(fill="both", expand=True, padx=24, pady=24)
@@ -1916,6 +1923,320 @@ class SafePDFUI:
             self.apply_language()
         except Exception:
             logger.debug("Error handling language change", exc_info=True)
+
+    def _on_theme_change(self):
+        """Internal trace callback when `theme_var` changes."""
+        try:
+            theme_name = str(self.theme_var.get() or "system").strip().lower()
+            if theme_name not in {"system", "light", "dark"}:
+                theme_name = "system"
+            if str(self.theme_var.get()).strip().lower() != theme_name:
+                self.theme_var.set(theme_name)
+                return
+            self._save_theme_preference(theme_name)
+            self.apply_theme()
+        except Exception:
+            logger.debug("Error handling theme change", exc_info=True)
+
+    def _resolve_theme_palette(self):
+        """Return the active palette for the selected theme."""
+        theme_name = str(self.theme_var.get() or "system").strip().lower()
+        if theme_name == "system":
+            theme_name = "light"
+
+        if theme_name == "dark":
+            return {
+                "theme": "dark",
+                "bg_main": "#111827",
+                "bg_card": "#1f2937",
+                "bg_frame": "#1f2937",
+                "fg_text": "#f3f4f6",
+                "fg_secondary": "#9ca3af",
+                "tab_bg": "#243041",
+                "tab_selected": "#1f2937",
+                "highlight": "#2b3a50",
+                "text_bg": "#17212f",
+                "text_fg": "#f9fafb",
+                "button_bg": "#334155",
+                "button_fg": "#f9fafb",
+                "entry_bg": "#17212f",
+                "entry_fg": "#f9fafb",
+                "shadow_bg": "#0b1220",
+                "secondary_button_bg": "#3f4d61",
+                "secondary_button_active": "#52627b",
+                "notebook_active": "#314156",
+                "tooltip_bg": "#0f172a",
+                "tooltip_fg": "#f9fafb",
+                "muted_text": "#cbd5e1",
+            }
+
+        return {
+            "theme": "light",
+            "bg_main": "#f4f6fb",
+            "bg_card": "#ffffff",
+            "bg_frame": "#ffffff",
+            "fg_text": "#000000",
+            "fg_secondary": "#dbdbdb",
+            "tab_bg": "#e9ecef",
+            "tab_selected": "#ffffff",
+            "highlight": "#f8f9fa",
+            "text_bg": "#ffffff",
+            "text_fg": "#222222",
+            "button_bg": "#e9ecef",
+            "button_fg": "#000000",
+            "entry_bg": "#ffffff",
+            "entry_fg": "#000000",
+            "shadow_bg": "#f4f6fb",
+            "secondary_button_bg": "#eadede",
+            "secondary_button_active": "#d8c6c6",
+            "notebook_active": "#f6e9e9",
+            "tooltip_bg": CommonElements.BG_COLOR,
+            "tooltip_fg": CommonElements.FG_COLOR,
+            "muted_text": "#6b7280",
+        }
+
+    def apply_theme(self, initial=False):
+        """Apply the selected theme palette to ttk styles and live widgets."""
+        palette = self._resolve_theme_palette()
+
+        CommonElements.BG_MAIN = palette["bg_main"]
+        CommonElements.BG_CARD = palette["bg_card"]
+        CommonElements.BG_FRAME = palette["bg_frame"]
+        CommonElements.FG_TEXT = palette["fg_text"]
+        CommonElements.FG_SECONDARY = palette["fg_secondary"]
+        CommonElements.TAB_BG = palette["tab_bg"]
+        CommonElements.TAB_SELECTED = palette["tab_selected"]
+        CommonElements.HIGHLIGHT_COLOR = palette["highlight"]
+        CommonElements.TEXT_BG = palette["text_bg"]
+        CommonElements.TEXT_FG = palette["text_fg"]
+        CommonElements.BUTTON_BG = palette["button_bg"]
+        CommonElements.BUTTON_FG = palette["button_fg"]
+        CommonElements.ENTRY_BG = palette["entry_bg"]
+        CommonElements.ENTRY_FG = palette["entry_fg"]
+
+        try:
+            self.root.configure(bg=palette["bg_main"])
+        except Exception:
+            pass
+
+        try:
+            style = ttk.Style()
+            style.configure("TNotebook", background=palette["bg_main"], borderwidth=0, relief="flat")
+            style.configure(
+                "TNotebook.Tab",
+                background=palette["tab_bg"],
+                foreground=palette["fg_text"],
+                padding=[16, 10],
+                font=(CommonElements.FONT, CommonElements.FONT_SIZE),
+                borderwidth=0,
+                relief="flat",
+            )
+            style.map(
+                "TNotebook.Tab",
+                background=[("selected", palette["tab_selected"]), ("active", palette["notebook_active"])],
+                foreground=[("selected", CommonElements.RED_COLOR), ("active", palette["fg_text"])],
+                expand=[("selected", [1, 1, 1, 0])],
+            )
+            style.configure("TFrame", background=palette["bg_card"])
+            style.configure(
+                "TLabel",
+                background=palette["bg_card"],
+                foreground=palette["fg_text"],
+                font=(CommonElements.FONT, CommonElements.FONT_SIZE),
+            )
+            style.configure(
+                "TButton",
+                font=(CommonElements.FONT, CommonElements.FONT_SIZE),
+                padding=9,
+                background=palette["button_bg"],
+                foreground=CommonElements.BUTTON_TEXT_DARK,
+                borderwidth=0,
+                relief="flat",
+            )
+            style.map(
+                "TButton",
+                background=[("active", palette["notebook_active"]), ("!active", palette["button_bg"])],
+                foreground=[
+                    ("active", CommonElements.BUTTON_TEXT_DARK),
+                    ("!active", CommonElements.BUTTON_TEXT_DARK),
+                ],
+                relief=[("pressed", "flat"), ("!pressed", "flat")],
+            )
+            style.configure(
+                "Accent.TButton",
+                background=CommonElements.RED_COLOR,
+                foreground=CommonElements.BUTTON_TEXT_DARK,
+                font=(CommonElements.FONT, 10, "bold"),
+                padding=12,
+                borderwidth=0,
+                relief="flat",
+            )
+            style.map(
+                "Accent.TButton",
+                background=[("active", "#0b3a64"), ("!active", CommonElements.RED_COLOR)],
+                foreground=[
+                    ("active", CommonElements.BUTTON_TEXT_DARK),
+                    ("!active", CommonElements.BUTTON_TEXT_DARK),
+                ],
+                relief=[("pressed", "flat"), ("!pressed", "flat")],
+            )
+            style.configure(
+                "Secondary.TButton",
+                font=(CommonElements.FONT, CommonElements.FONT_SIZE, "bold"),
+                padding=10,
+                background=palette["secondary_button_bg"],
+                foreground=CommonElements.BUTTON_TEXT_DARK,
+                borderwidth=0,
+                relief="flat",
+            )
+            style.map(
+                "Secondary.TButton",
+                background=[
+                    ("active", palette["secondary_button_active"]),
+                    ("!active", palette["secondary_button_bg"]),
+                ],
+                foreground=[
+                    ("active", CommonElements.BUTTON_TEXT_DARK),
+                    ("!active", CommonElements.BUTTON_TEXT_DARK),
+                ],
+            )
+            style.configure(
+                "Danger.TButton",
+                font=(CommonElements.FONT, CommonElements.FONT_SIZE, "bold"),
+                padding=10,
+                background="#b42318",
+                foreground=CommonElements.BUTTON_TEXT_DARK,
+                borderwidth=0,
+                relief="flat",
+            )
+            style.map(
+                "Danger.TButton",
+                background=[("active", "#912018"), ("!active", "#b42318")],
+                foreground=[
+                    ("active", CommonElements.BUTTON_TEXT_DARK),
+                    ("!active", CommonElements.BUTTON_TEXT_DARK),
+                ],
+            )
+            style.configure("Gray.TLabel", foreground=palette["muted_text"], background=palette["bg_card"])
+            style.configure(
+                "TCombobox",
+                fieldbackground=palette["entry_bg"],
+                background=palette["entry_bg"],
+                foreground=CommonElements.BUTTON_TEXT_DARK,
+                arrowcolor=CommonElements.BUTTON_TEXT_DARK,
+            )
+            style.map(
+                "TCombobox",
+                fieldbackground=[("readonly", palette["entry_bg"])],
+                foreground=[("readonly", CommonElements.BUTTON_TEXT_DARK)],
+                selectforeground=[("readonly", CommonElements.BUTTON_TEXT_DARK)],
+                selectbackground=[("readonly", palette["entry_bg"])],
+                arrowcolor=[("readonly", CommonElements.BUTTON_TEXT_DARK)],
+            )
+            style.map(
+                "TRadiobutton",
+                background=[("active", palette["bg_card"]), ("!active", palette["bg_card"])],
+                foreground=[("active", palette["fg_text"]), ("!active", palette["fg_text"])],
+            )
+        except Exception:
+            logger.debug("Error reconfiguring ttk styles for theme", exc_info=True)
+
+        shadow_color = palette["shadow_bg"]
+        try:
+            if getattr(self, "header_frame", None):
+                self._header_gradient_start = palette["bg_card"]
+                self._header_gradient_end = "#7f1d1d" if palette["theme"] == "dark" else "#b35656"
+                self._header_control_bg = "#7f1d1d" if palette["theme"] == "dark" else "#b35656"
+                self.header_frame.configure(bg=palette["bg_card"])
+                self.header_canvas.configure(bg=palette["bg_card"])
+                self.header_label.configure(fg=CommonElements.RED_COLOR)
+                self.setup_button_hover_effects()
+                self._on_header_resize(
+                    type(
+                        "HeaderEvent",
+                        (),
+                        {
+                            "width": self.header_frame.winfo_width() or self.root.winfo_width(),
+                            "height": self.header_frame.winfo_height() or self._header_height,
+                        },
+                    )()
+                )
+        except Exception:
+            logger.debug("Error updating header colors for theme", exc_info=True)
+
+        try:
+            if getattr(self, "card_frame", None):
+                self.card_frame.configure(bg=palette["bg_card"], highlightbackground=shadow_color)
+        except Exception:
+            pass
+
+        try:
+            parent = self.card_frame.master if getattr(self, "card_frame", None) else None
+            if parent is not None:
+                parent.configure(bg=shadow_color)
+        except Exception:
+            pass
+
+        try:
+            if getattr(self, "results_text", None):
+                self.results_text.configure(
+                    background=palette["text_bg"],
+                    foreground=palette["text_fg"],
+                    insertbackground=palette["text_fg"],
+                )
+        except Exception:
+            pass
+
+        try:
+            if getattr(self, "pro_status_btn", None):
+                status_color = "#b62020" if self.controller.is_pro_activated else "#8b5f5f"
+                self.pro_status_btn.configure(bg=status_color, fg=CommonElements.BUTTON_TEXT_DARK)
+        except Exception:
+            pass
+
+        try:
+            if getattr(self, "tooltip_label", None):
+                self.tooltip_label.configure(background=palette["tooltip_bg"], foreground=palette["tooltip_fg"])
+        except Exception:
+            pass
+
+        for widget in (
+            getattr(self, "root", None),
+            getattr(self, "card_frame", None),
+            getattr(self, "welcome_frame", None),
+            getattr(self, "operation_frame", None),
+            getattr(self, "file_frame", None),
+            getattr(self, "settings_frame", None),
+            getattr(self, "results_frame", None),
+            getattr(self, "app_settings_frame", None),
+            getattr(self, "help_frame", None),
+        ):
+            if widget is not None:
+                self._update_widget_colors(widget, palette["bg_card"], palette["fg_text"], palette["text_bg"], palette["text_fg"])
+
+        try:
+            if getattr(self, "operation_cards", None):
+                for index, (card_frame, widgets) in enumerate(self.operation_cards):
+                    is_selected = index == getattr(self, "selected_operation_index", None)
+                    self._set_operation_card_state(card_frame, widgets, is_selected=is_selected)
+        except Exception:
+            logger.debug("Error refreshing operation card colors", exc_info=True)
+
+        try:
+            if getattr(self, "notebook", None):
+                self.notebook.update_idletasks()
+        except Exception:
+            pass
+
+        try:
+            if getattr(self, "minimize_btn", None):
+                self.minimize_btn.configure(bg=self._header_control_bg, fg="#111827")
+            if getattr(self, "maximize_btn", None):
+                self.maximize_btn.configure(bg=self._header_control_bg, fg="#111827")
+            if getattr(self, "close_btn", None):
+                self.close_btn.configure(bg=self._header_control_bg, fg="#111827")
+        except Exception:
+            pass
 
     def _on_update_frequency_change(self, frequency):
         """Persist update-check frequency when changed from settings UI."""
@@ -2211,7 +2532,29 @@ class SafePDFUI:
             # Update based on widget type
             if widget_class == "Text":
                 try:
-                    widget.configure(background=text_bg, foreground=text_fg)
+                    widget.configure(background=text_bg, foreground=text_fg, insertbackground=text_fg)
+                except Exception:
+                    pass
+            elif widget_class in {"Entry", "Listbox"}:
+                try:
+                    widget.configure(background=text_bg, foreground=text_fg, insertbackground=text_fg)
+                except Exception:
+                    pass
+            elif widget_class == "Canvas":
+                try:
+                    widget.configure(background=bg_color)
+                except Exception:
+                    pass
+            elif widget_class == "Button" and not isinstance(widget, ttk.Button):
+                try:
+                    current_bg = widget.cget("bg")
+                    if current_bg not in {"#c40e2f", CommonElements.RED_COLOR}:
+                        widget.configure(
+                            background=bg_color,
+                            foreground=fg_color,
+                            activebackground=CommonElements.HIGHLIGHT_COLOR,
+                            activeforeground=fg_color,
+                        )
                 except Exception:
                     pass
             elif widget_class == "Label" and not isinstance(widget, ttk.Label):
@@ -2371,7 +2714,7 @@ class SafePDFUI:
             self._tab_transition_overlay = None
 
     def animate_tab_change(self, old_tab, new_tab):
-        """Animate a directional wipe across the selected tab content."""
+        """Animate a subtle directional sweep across the top edge of the selected tab."""
         self._clear_tab_transition_overlay()
 
         if self.notebook is None:
@@ -2393,35 +2736,29 @@ class SafePDFUI:
             return
 
         direction = 1 if new_tab >= old_tab else -1
-        overlay = tk.Canvas(
-            selected_widget,
-            bg=CommonElements.BG_CARD,
-            highlightthickness=0,
-            bd=0,
-        )
-        overlay.place(x=0, y=0, width=width, height=height)
+        overlay_height = 10
+        overlay = tk.Canvas(selected_widget, bg=CommonElements.BG_CARD, highlightthickness=0, bd=0)
+        overlay.place(x=0, y=0, width=width, height=overlay_height)
         self._tab_transition_overlay = overlay
 
-        stripe_width = 18
-        stripe_color = "#f6e6e6"
-        highlight_color = "#fbf3f3"
-        accent_color = CommonElements.RED_COLOR
-        if direction > 0:
-            overlay.create_rectangle(0, 0, width, height, fill=CommonElements.BG_CARD, outline="")
-            overlay.create_rectangle(width - stripe_width, 0, width, height, fill=stripe_color, outline="")
-            overlay.create_rectangle(width - (stripe_width // 2), 0, width, height, fill=highlight_color, outline="")
-            overlay.create_rectangle(width - 2, 0, width, height, fill=accent_color, outline="")
-        else:
-            overlay.create_rectangle(0, 0, width, height, fill=CommonElements.BG_CARD, outline="")
-            overlay.create_rectangle(0, 0, stripe_width, height, fill=stripe_color, outline="")
-            overlay.create_rectangle(0, 0, stripe_width // 2, height, fill=highlight_color, outline="")
-            overlay.create_rectangle(0, 0, 2, height, fill=accent_color, outline="")
+        soft_band = 72
+        bright_band = 28
+        stripe_color = "#3b4758" if CommonElements.BG_CARD != "#ffffff" else "#f6e6e6"
+        highlight_color = "#55657a" if CommonElements.BG_CARD != "#ffffff" else "#fbf3f3"
+        overlay.create_rectangle(0, overlay_height - 1, width, overlay_height, fill=highlight_color, outline="")
 
-        total_steps = 24
-        duration_ms = 320
+        if direction > 0:
+            soft = overlay.create_rectangle(0, 0, soft_band, overlay_height - 1, fill=stripe_color, outline="")
+            bright = overlay.create_rectangle(0, 0, bright_band, overlay_height - 1, fill=highlight_color, outline="")
+        else:
+            soft = overlay.create_rectangle(width - soft_band, 0, width, overlay_height - 1, fill=stripe_color, outline="")
+            bright = overlay.create_rectangle(width - bright_band, 0, width, overlay_height - 1, fill=highlight_color, outline="")
+
+        total_steps = 18
+        duration_ms = 220
         step_delay = max(duration_ms // total_steps, 10)
-        start_x = 0
-        end_x = width if direction > 0 else -width
+        start_x = -soft_band if direction > 0 else width
+        end_x = width if direction > 0 else -soft_band
 
         def step(index):
             if not overlay.winfo_exists():
@@ -2429,7 +2766,12 @@ class SafePDFUI:
             progress = index / total_steps
             eased = 0.5 - (math.cos(progress * math.pi) / 2)
             current_x = int(start_x + ((end_x - start_x) * eased))
-            overlay.place_configure(x=current_x)
+            if direction > 0:
+                overlay.coords(soft, current_x, 0, current_x + soft_band, overlay_height - 1)
+                overlay.coords(bright, current_x, 0, current_x + bright_band, overlay_height - 1)
+            else:
+                overlay.coords(soft, current_x, 0, current_x + soft_band, overlay_height - 1)
+                overlay.coords(bright, current_x + soft_band - bright_band, 0, current_x + soft_band, overlay_height - 1)
             if index < total_steps:
                 self._tab_transition_after_id = self.root.after(step_delay, lambda: step(index + 1))
             else:
@@ -3807,6 +4149,28 @@ class SafePDFUI:
             self._save_app_config(config)
         except Exception as e:
             logger.debug(f"Error saving language preference: {e}", exc_info=True)
+
+    def _load_theme_preference(self):
+        """Load saved theme preference from config file."""
+        try:
+            config = self._load_app_config()
+            value = str(config.get("theme", "system")).lower()
+            return value if value in {"system", "light", "dark"} else "system"
+        except Exception:
+            logger.debug("Error loading theme preference", exc_info=True)
+            return "system"
+
+    def _save_theme_preference(self, theme_name):
+        """Save theme preference to config file."""
+        try:
+            value = str(theme_name or "system").lower()
+            if value not in {"system", "light", "dark"}:
+                value = "system"
+            config = self._load_app_config()
+            config["theme"] = value
+            self._save_app_config(config)
+        except Exception as e:
+            logger.debug(f"Error saving theme preference: {e}", exc_info=True)
 
     def _load_update_frequency_preference(self):
         """Load saved update-check cadence from config file."""

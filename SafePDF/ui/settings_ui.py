@@ -28,6 +28,7 @@ class SettingsUI:
         language_manager=None,
         update_frequency_var=None,
         update_frequency_callback=None,
+        theme_callback=None,
     ):
         self.root = root
         self.controller = controller
@@ -38,6 +39,7 @@ class SettingsUI:
         self.language_manager = language_manager
         self.update_frequency_var = update_frequency_var
         self.update_frequency_callback = update_frequency_callback
+        self.theme_callback = theme_callback
 
     def _create_update_controls(self, parent):
         """Create update-check frequency controls."""
@@ -99,13 +101,22 @@ class SettingsUI:
         )
         theme_frame = ttk.Frame(parent)
         theme_frame.pack(anchor="w", pady=4)
+        self._theme_radiobuttons = []
         theme_system = (
             self.language_manager.get("theme_system", "System Default") if self.language_manager else "System Default"
         )
         theme_light = self.language_manager.get("theme_light", "Light") if self.language_manager else "Light"
         theme_dark = self.language_manager.get("theme_dark", "Dark") if self.language_manager else "Dark"
         for text, val in ((theme_system, "system"), (theme_light, "light"), (theme_dark, "dark")):
-            ttk.Radiobutton(theme_frame, text=text, variable=self.theme_var, value=val).pack(side="left", padx=6)
+            rb = ttk.Radiobutton(
+                theme_frame,
+                text=text,
+                variable=self.theme_var,
+                value=val,
+                command=self.theme_callback,
+            )
+            rb.pack(side="left", padx=6)
+            self._theme_radiobuttons.append(rb)
         theme_hint = (
             self.language_manager.get(
                 "settings_theme_hint", "Change the application's appearance. Restart may be required for full effect."
