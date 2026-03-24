@@ -8,6 +8,7 @@ This module contains the SafePDFUI class which manages the user interface.
 import os
 import sys
 import tkinter as tk
+import math
 from datetime import datetime, timedelta
 from pathlib import Path
 from platform import system as platform_system
@@ -214,6 +215,8 @@ class SafePDFUI:
 
         # Previous tab for reverting disabled tab selection
         self._previous_tab = 0
+        self._tab_transition_overlay = None
+        self._tab_transition_after_id = None
 
         # Current tooltip index to prevent flickering
         self.current_tooltip_index = None
@@ -1316,7 +1319,7 @@ class SafePDFUI:
         self.update_file_tab_ui()
 
     def show_pdf_preview(self, pdf_path):
-        """Render and show the first page of the selected PDF in the preview canvas."""
+        """Render and show a preview for the selected PDF or JPG image."""
         if not hasattr(self, "pdf_preview_canvas") or not self.pdf_preview_canvas:
             return
 
@@ -1344,20 +1347,23 @@ class SafePDFUI:
             if not Image or not ImageTk:
                 raise ImportError("Pillow is not available")
 
-            # Use pypdfium2 for rendering (no external dependencies)
-            import pypdfium2 as pdfium
+            if Path(pdf_path).suffix.lower() in (".jpg", ".jpeg"):
+                img = Image.open(pdf_path)
+            else:
+                # Use pypdfium2 for rendering (no external dependencies)
+                import pypdfium2 as pdfium
 
-            # Open PDF and render first page
-            pdf = pdfium.PdfDocument(pdf_path)
-            if len(pdf) < 1:
+                # Open PDF and render first page
+                pdf = pdfium.PdfDocument(pdf_path)
+                if len(pdf) < 1:
+                    pdf.close()
+                    raise ValueError("Empty PDF")
+
+                page = pdf[0]
+                # Calculate scale to fit canvas
+                scale = min(canvas_w / page.get_width(), canvas_h / page.get_height()) * 0.8
+                img = page.render(scale=scale).to_pil()
                 pdf.close()
-                raise ValueError("Empty PDF")
-
-            page = pdf[0]
-            # Calculate scale to fit canvas
-            scale = min(canvas_w / page.get_width(), canvas_h / page.get_height()) * 0.8
-            img = page.render(scale=scale).to_pil()
-            pdf.close()
 
             img.thumbnail((canvas_w, canvas_h), Image.LANCZOS)
 
@@ -1385,6 +1391,12 @@ class SafePDFUI:
         if self.controller.selected_operation == "merge":
             self.drop_label.config(
                 text=self.lang_manager.get("drop_pdf_files", "📄 Drop PDF Files Here!")
+            )
+        elif self.controller.selected_operation == "jpg_to_pdf":
+            self.drop_label.config(
+                text=self.lang_manager.get(
+                    "drop_jpg_file", "🖼️ Drop JPG File Here\n\nClick to browse"
+                )
             )
         else:
             self.drop_label.config(
@@ -1565,6 +1577,13 @@ class SafePDFUI:
                 self.lang_manager.get("op_merge_desc", "Combine files"),
                 self.select_merge,
                 "assets/merge.png",
+                True,
+            ),
+            (
+                self.lang_manager.get("op_jpg_to_pdf", "JPG to PDF"),
+                self.lang_manager.get("op_jpg_to_pdf_desc", "Convert image to PDF"),
+                self.select_jpg_to_pdf,
+                "assets/jpg2pdf.png",
                 True,
             ),
             (
@@ -2093,13 +2112,14 @@ class SafePDFUI:
                         "compress": 0,
                         "split": 1,
                         "merge": 2,
-                        "to_jpg": 3,
-                        "rotate": 4,
-                        "repair": 5,
-                        "to_word": 6,
-                        "to_txt": 7,
-                        "to_ocr": 8,
-                        "extract_info": 9,
+                        "jpg_to_pdf": 3,
+                        "to_jpg": 4,
+                        "rotate": 5,
+                        "repair": 6,
+                        "to_word": 7,
+                        "to_txt": 8,
+                        "to_ocr": 9,
+                        "extract_info": 10,
                     }
                     idx = op_to_index.get(
                         getattr(self.controller, "selected_operation", None)
@@ -2332,11 +2352,90 @@ class SafePDFUI:
         # Bind tab change event
         self.notebook.bind("<<NotebookTabChanged>>", self.on_tab_changed)
 
-    def animate_tab_change(self):
-        """Simple animation for tab change"""
-        original_bg = self.card_frame.cget("bg")
-        self.card_frame.config(bg="#ffffff")
-        self.root.after(200, lambda: self.card_frame.config(bg=original_bg))
+    def _clear_tab_transition_overlay(self):
+        """Remove any active tab-transition overlay."""
+        try:
+            if self._tab_transition_after_id:
+                self.root.after_cancel(self._tab_transition_after_id)
+        except Exception:
+            pass
+        finally:
+            self._tab_transition_after_id = None
+
+        try:
+            if self._tab_transition_overlay and self._tab_transition_overlay.winfo_exists():
+                self._tab_transition_overlay.destroy()
+        except Exception:
+            logger.debug("Could not destroy tab transition overlay", exc_info=True)
+        finally:
+            self._tab_transition_overlay = None
+
+    def animate_tab_change(self, old_tab, new_tab):
+        """Animate a directional wipe across the selected tab content."""
+        self._clear_tab_transition_overlay()
+
+        if self.notebook is None:
+            return
+
+        try:
+            selected_widget = self.notebook.nametowidget(self.notebook.select())
+        except Exception:
+            return
+
+        try:
+            selected_widget.update_idletasks()
+            width = max(int(selected_widget.winfo_width()), 1)
+            height = max(int(selected_widget.winfo_height()), 1)
+        except Exception:
+            return
+
+        if width < 20 or height < 20:
+            return
+
+        direction = 1 if new_tab >= old_tab else -1
+        overlay = tk.Canvas(
+            selected_widget,
+            bg=CommonElements.BG_CARD,
+            highlightthickness=0,
+            bd=0,
+        )
+        overlay.place(x=0, y=0, width=width, height=height)
+        self._tab_transition_overlay = overlay
+
+        stripe_width = 18
+        stripe_color = "#f6e6e6"
+        highlight_color = "#fbf3f3"
+        accent_color = CommonElements.RED_COLOR
+        if direction > 0:
+            overlay.create_rectangle(0, 0, width, height, fill=CommonElements.BG_CARD, outline="")
+            overlay.create_rectangle(width - stripe_width, 0, width, height, fill=stripe_color, outline="")
+            overlay.create_rectangle(width - (stripe_width // 2), 0, width, height, fill=highlight_color, outline="")
+            overlay.create_rectangle(width - 2, 0, width, height, fill=accent_color, outline="")
+        else:
+            overlay.create_rectangle(0, 0, width, height, fill=CommonElements.BG_CARD, outline="")
+            overlay.create_rectangle(0, 0, stripe_width, height, fill=stripe_color, outline="")
+            overlay.create_rectangle(0, 0, stripe_width // 2, height, fill=highlight_color, outline="")
+            overlay.create_rectangle(0, 0, 2, height, fill=accent_color, outline="")
+
+        total_steps = 24
+        duration_ms = 320
+        step_delay = max(duration_ms // total_steps, 10)
+        start_x = 0
+        end_x = width if direction > 0 else -width
+
+        def step(index):
+            if not overlay.winfo_exists():
+                return
+            progress = index / total_steps
+            eased = 0.5 - (math.cos(progress * math.pi) / 2)
+            current_x = int(start_x + ((end_x - start_x) * eased))
+            overlay.place_configure(x=current_x)
+            if index < total_steps:
+                self._tab_transition_after_id = self.root.after(step_delay, lambda: step(index + 1))
+            else:
+                self._clear_tab_transition_overlay()
+
+        step(0)
 
     # Event handlers
     def on_tab_changed(self, event):
@@ -2358,10 +2457,11 @@ class SafePDFUI:
                 self.notebook.select(0)
         else:
             # store last selected tab index (avoid name collision with method)
+            previous_tab = self._previous_tab
             self._previous_tab = new_tab
             self.controller.current_tab = new_tab
             self.update_navigation_buttons()
-            self.animate_tab_change()
+            self.animate_tab_change(previous_tab, new_tab)
 
     def on_drag_enter(self, event):
         """Handle drag enter event - provide visual feedback"""
@@ -2440,8 +2540,9 @@ class SafePDFUI:
                                 highlightthickness=3,
                             )
 
-                    # Show PDF info for the first file
-                    self.show_pdf_info()
+                    # Show PDF info for PDF-based operations
+                    if self.controller.selected_operation != "jpg_to_pdf":
+                        self.show_pdf_info()
 
                     # Show preview of the first selected file
                     try:
@@ -2512,6 +2613,39 @@ class SafePDFUI:
                     messagebox.showerror(
                         self.lang_manager.get("error", "Error"), message
                     )
+        elif self.controller.selected_operation == "jpg_to_pdf":
+            file_path = filedialog.askopenfilename(
+                title=self.lang_manager.get("select_jpg", "Select JPG File"),
+                filetypes=[
+                    ("JPG files", "*.jpg;*.jpeg"),
+                    ("JPEG files", "*.jpeg"),
+                    ("All files", "*.*"),
+                ],
+                defaultextension=".jpg",
+            )
+
+            if file_path:
+                success, message = self.controller.select_file(file_path)
+
+                if success:
+                    filename = os.path.basename(file_path)
+                    if hasattr(self, "file_label") and self.file_label:
+                        self.file_label.config(text=message, foreground="green")
+                    if hasattr(self, "drop_label") and self.drop_label:
+                        self.drop_label.config(
+                            text=f"✅ Selected: {filename}",
+                            bg="#e8f5e8",
+                            fg="#28a745",
+                            relief=tk.FLAT,
+                            highlightbackground="#28a745",
+                            highlightthickness=3,
+                        )
+                    self.show_pdf_preview(file_path)
+                    self.notebook.tab(3, state="normal")
+                else:
+                    messagebox.showerror(
+                        self.lang_manager.get("error", "Error"), message
+                    )
         else:
             file_path = filedialog.askopenfilename(
                 title=self.lang_manager.get("select_pdf", "Select PDF File"),
@@ -2537,7 +2671,8 @@ class SafePDFUI:
                             highlightthickness=3,
                         )
                     # Show PDF info
-                    self.show_pdf_info()
+                    if self.controller.selected_operation != "jpg_to_pdf":
+                        self.show_pdf_info()
                     # Show PDF preview
                     self.show_pdf_preview(file_path)
                     # Enable settings tab
@@ -2627,6 +2762,15 @@ class SafePDFUI:
 
     def select_to_jpg(self):
         self.controller.select_operation("to_jpg")
+        self.highlight_selected_operation(4)
+        self.update_settings_for_operation()
+        self.update_file_tab_ui()
+        if self.notebook is not None:
+            self.notebook.tab(2, state="normal")
+            self.notebook.select(2)
+
+    def select_jpg_to_pdf(self):
+        self.controller.select_operation("jpg_to_pdf")
         self.highlight_selected_operation(3)
         self.update_settings_for_operation()
         self.update_file_tab_ui()
@@ -2636,7 +2780,7 @@ class SafePDFUI:
 
     def select_rotate(self):
         self.controller.select_operation("rotate")
-        self.highlight_selected_operation(4)
+        self.highlight_selected_operation(5)
         self.update_settings_for_operation()
         self.update_file_tab_ui()
         if self.notebook is not None:
@@ -2645,7 +2789,7 @@ class SafePDFUI:
 
     def select_repair(self):
         self.controller.select_operation("repair")
-        self.highlight_selected_operation(5)
+        self.highlight_selected_operation(6)
         self.update_settings_for_operation()
         self.update_file_tab_ui()
         if self.notebook is not None:
@@ -2707,6 +2851,12 @@ class SafePDFUI:
             ops_ui.create_split_settings(self.split_var, self.page_range_var)
             ops_ui.create_output_path_selection(
                 True, self.use_default_output, self.output_path_var,
+                self._on_browse_output
+            )
+        elif self.controller.selected_operation == "jpg_to_pdf":
+            ops_ui.create_jpg_to_pdf_settings()
+            ops_ui.create_output_path_selection(
+                False, self.use_default_output, self.output_path_var,
                 self._on_browse_output
             )
         elif self.controller.selected_operation == "to_jpg":
@@ -2839,6 +2989,8 @@ class SafePDFUI:
             return f"{base_name}.docx"
         if operation == "to_txt":
             return f"{base_name}.txt"
+        if operation == "jpg_to_pdf":
+            return f"{base_name}.pdf"
         if operation == "to_ocr":
             extension = ".docx" if self.ocr_output_format_var.get() == "docx" else ".txt"
             return f"{base_name}_ocr{extension}"
@@ -3526,7 +3678,7 @@ class SafePDFUI:
 
     def select_to_word(self):
         self.controller.select_operation("to_word")
-        self.highlight_selected_operation(6)
+        self.highlight_selected_operation(7)
         self.update_settings_for_operation()
         self.update_file_tab_ui()
         if self.notebook is not None:
@@ -3535,7 +3687,7 @@ class SafePDFUI:
 
     def select_to_txt(self):
         self.controller.select_operation("to_txt")
-        self.highlight_selected_operation(7)
+        self.highlight_selected_operation(8)
         self.update_settings_for_operation()
         self.update_file_tab_ui()
         if self.notebook is not None:
@@ -3547,7 +3699,7 @@ class SafePDFUI:
 
     def select_extract_info(self):
         self.controller.select_operation("extract_info")
-        self.highlight_selected_operation(9)
+        self.highlight_selected_operation(10)
         self.update_settings_for_operation()
         self.update_file_tab_ui()
         if self.notebook is not None:
@@ -3600,8 +3752,9 @@ class SafePDFUI:
                             bd=2,
                         )
 
-                # Show PDF info for the first file
-                self.show_pdf_info()
+                # Show PDF info for PDF-based operations
+                if self.controller.selected_operation != "jpg_to_pdf":
+                    self.show_pdf_info()
 
                 # Update preview for the first file
                 try:

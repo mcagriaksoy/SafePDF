@@ -25,7 +25,8 @@ class PDFCompressor:
         "low": {"dpi": 110, "jpeg_quality": 45},
         "medium": {"dpi": 140, "jpeg_quality": 60},
         "high": {"dpi": 180, "jpeg_quality": 75},
-        "ultra": {"dpi": 220, "jpeg_quality": 88},
+        "very_high": {"dpi": 210, "jpeg_quality": 90},
+        "ultra": {"dpi": 240, "jpeg_quality": 95},
     }
 
     def __init__(self, progress_callback=None, language_manager=None, atomic_write_file=None, validate_pdf=None):
@@ -165,7 +166,7 @@ class PDFCompressor:
         Args:
             input_path: Input PDF file path
             output_path: Output PDF file path
-            quality: Compression quality ("low", "medium", "high")
+            quality: Compression quality ("low", "medium", "high", "very_high", "ultra")
 
         Returns:
             Tuple of (success, message)

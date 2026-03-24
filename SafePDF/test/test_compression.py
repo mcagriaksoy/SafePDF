@@ -34,7 +34,7 @@ def test_compression():
     print("PDF validation passed")
 
     # Test compression with different qualities
-    qualities = ["low", "medium", "high"]
+    qualities = ["low", "medium", "high", "very_high", "ultra"]
 
     for quality in qualities:
         output_file = f"test_compressed_{quality}.pdf"

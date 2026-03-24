@@ -80,11 +80,18 @@ class OperationSettingsUI:
             value="high",
             command=update_compression_visual_callback,
         ).pack(anchor="w")
+        ttk.Radiobutton(
+            radio_frame,
+            text=self.lang_manager.get("settings_very_high", "Very High (Best quality)"),
+            variable=self.quality_var,
+            value="very_high",
+            command=update_compression_visual_callback,
+        ).pack(anchor="w")
 
         # Pro feature: Ultra quality
         self.ultra_radio = ttk.Radiobutton(
             radio_frame,
-            text=self.lang_manager.get("settings_ultra", "Ultra (Pro - Best quality)"),
+            text=self.lang_manager.get("settings_ultra", "Ultra (Pro - Maximum quality)"),
             variable=self.quality_var,
             value="ultra",
             command=update_compression_visual_callback,
@@ -120,16 +127,36 @@ class OperationSettingsUI:
     def update_compression_visual(self, quality_var):
         """Update visual feedback for compression quality"""
         quality = quality_var.get()
-        text = ""
+        text = self.lang_manager.get(
+            "settings_preview_note",
+            "Compression results vary by PDF content.",
+        )
 
         if quality == "low":
-            text = "📊 Low Quality\n• 20-30% smaller\n• Noticeable loss\n• Fast processing"
+            text = self.lang_manager.get(
+                "settings_low_quality",
+                "📊 Low Compression Quality\n• Strongest size reduction\n• More visible image loss\n• Best for sharing drafts",
+            )
         elif quality == "medium":
-            text = "📊 Medium Quality\n• 30-50% smaller\n• Minimal loss\n• Balanced"
+            text = self.lang_manager.get(
+                "settings_medium_quality",
+                "📊 Medium Compression Quality\n• Balanced reduction\n• Moderate quality retention\n• Good default for most PDFs",
+            )
         elif quality == "high":
-            text = "📊 High Quality\n• 50-70% smaller\n• Minor loss\n• Better quality"
+            text = self.lang_manager.get(
+                "settings_high_quality",
+                "📊 High Compression Quality\n• Lighter compression\n• Better visual retention\n• File size reduction is less predictable",
+            )
+        elif quality == "very_high":
+            text = self.lang_manager.get(
+                "settings_very_high_quality",
+                "📊 Very High Compression Quality\n• Minimal compression\n• Strong visual preservation\n• Good when quality matters most",
+            )
         elif quality == "ultra":
-            text = "📊 Ultra Quality (Pro)\n• 70-85% smaller\n• Barely noticeable\n• Best quality"
+            text = self.lang_manager.get(
+                "settings_ultra_quality",
+                "📊 Ultra Compression Quality (Pro)\n• Lightest compression available\n• Maximum visual preservation\n• Typically the largest output among presets",
+            )
 
         self.compression_indicator.config(text=text)
         self.compression_visual_frame.config(bg=CommonElements.BG_COLOR)
@@ -176,6 +203,44 @@ class OperationSettingsUI:
             text="High (Better quality)",
             variable=self.img_quality_var,
             value="high",
+        ).pack(anchor="w")
+
+    def create_jpg_to_pdf_settings(self):
+        """Create settings for JPG to PDF conversion"""
+        ttk.Label(
+            self.settings_container,
+            text=self.lang_manager.get(
+                "settings_jpg_to_pdf_intro",
+                "Convert a JPG/JPEG image into a single-page PDF document",
+            ),
+        ).pack(anchor="w", pady=5)
+
+        info_frame = ttk.Frame(self.settings_container)
+        info_frame.pack(anchor="w", pady=5, fill="x")
+
+        ttk.Label(
+            info_frame,
+            text=self.lang_manager.get(
+                "settings_jpg_to_pdf_bullet_single",
+                "• Creates one PDF page from the selected image",
+            ),
+            foreground="#666",
+        ).pack(anchor="w")
+        ttk.Label(
+            info_frame,
+            text=self.lang_manager.get(
+                "settings_jpg_to_pdf_bullet_quality",
+                "• Keeps the original image appearance as closely as possible",
+            ),
+            foreground="#666",
+        ).pack(anchor="w")
+        ttk.Label(
+            info_frame,
+            text=self.lang_manager.get(
+                "settings_jpg_to_pdf_bullet_output",
+                "• Saves as a standard PDF file",
+            ),
+            foreground="#666",
         ).pack(anchor="w")
 
     def create_repair_settings(self, repair_var):

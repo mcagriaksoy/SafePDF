@@ -131,10 +131,10 @@ class UpdateUI:
                 except Exception:
                     pass
 
-            # If ultra was selected but pro is deactivated, switch to high
+            # If ultra was selected but pro is deactivated, switch to very high
             try:
                 if not is_pro and getattr(ui, "quality_var", None) and ui.quality_var.get() == "ultra":
-                    ui.quality_var.set("high")
+                    ui.quality_var.set("very_high")
                     if hasattr(ui, "update_compression_visual"):
                         ui.update_compression_visual()
             except Exception:
