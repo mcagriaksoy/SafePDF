@@ -42,7 +42,7 @@
 - Real-time progress tracking
 - Multi-language UI
 - Modern, intuitive design
-- 
+
 ![Screenshot](img/UI_v1.avif)
 
 ![How to Use](img/HowToUse.gif)
@@ -54,24 +54,44 @@
 2. Extract the ZIP file
 3. Run `SafePDF.exe`
 
-### Option 2: Run from Source
+### Option 2: Install from PyPI
 
 **Requirements:**
-- Python 3.7+
+- Python 3.8+
 - pip
 
 **Installation:**
+```bash
+# Install from PyPI
+pip install SafePDF
+
+# Optional extras
+# OCR support: pip install "SafePDF[ocr]"
+# All optional extras: pip install "SafePDF[full]"
+
+# Run the app
+safepdf
+```
+
+### Option 3: Run from Source
+
 ```bash
 # Clone the repository
 git clone https://github.com/mcagriaksoy/SafePDF.git
 cd SafePDF
 
-# Install dependencies
+# Install core dependencies
 pip install -r requirements.txt
+
+# Optional extras
+# OCR support: pip install ".[ocr]"
+# All optional extras: pip install ".[full]"
 
 # Run the application
 python run_safe_pdf.py
 ```
+
+**OCR note:** OCR uses Tesseract. Install the Python extra with `SafePDF[ocr]` and make sure the Tesseract OCR application is installed on your system as well.
 
 ## How to Use
 
@@ -105,9 +125,11 @@ Contributions are welcome! Please:
 
 ## Support
 
-- Email: [info@safepdf.de](mailto:info@safepdf.de)
+- Website: [safepdf.com](https://safepdf.com)
+- More information is available at [safepdf.com](https://safepdf.com)
+- Email: [info@safepdf.com](mailto:info@safepdf.com)
 - Report Issues: [GitHub Issues](https://github.com/mcagriaksoy/SafePDF/issues)
-- Documentation: [safepdf.de](https://safepdf.de)
+- Documentation: [safepdf.com](https://safepdf.com)
 
 ## License
 

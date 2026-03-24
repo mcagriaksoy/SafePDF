@@ -457,7 +457,7 @@ class OperationSettingsUI:
             info_frame,
             text=self.lang_manager.get(
                 "settings_to_ocr_bullet_requires",
-                "• Requires EasyOCR and pypdfium2",
+                "• Requires Tesseract OCR and pypdfium2",
             ),
             foreground="#666",
         ).pack(anchor="w")

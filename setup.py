@@ -1,16 +1,26 @@
-from setuptools import setup, find_packages
 import re
+from setuptools import setup, find_packages
+
+BASE_REQUIREMENTS = [
+    "PyPDF2>=3.0.0",
+    "Pillow>=9.0.0",
+    "pypdfium2>=4.0.0",
+    "python-docx>=0.8.11",
+    "PyGitHub>=1.55.0",
+    "python-gnupg>=0.4.8",
+    "tkinterdnd2>=0.3.0",
+]
+
+EXTRAS_REQUIRE = {
+    "ocr": ["pytesseract>=0.3.10"],
+}
+EXTRAS_REQUIRE["full"] = sorted({dep for deps in EXTRAS_REQUIRE.values() for dep in deps})
 
 # Read version from SafePDF/__init__.py
 with open("SafePDF/__init__.py", "r", encoding="utf-8") as f:
     content = f.read()
     match = re.search(r'__version__\s*=\s*["\']([^"\']+)["\']', content)
     version = match.group(1) if match else "0.0.1"
-
-with open("requirements.txt", "r") as f:
-    requirements = [
-        line.strip() for line in f if line.strip() and not line.startswith("#")
-    ]
 
 with open("README.md", "r", encoding="utf-8") as f:
     long_description = f.read()
@@ -29,7 +39,8 @@ setup(
     package_data={
         "SafePDF": ["text/**/*", "version.txt"],
     },
-    install_requires=requirements,
+    install_requires=BASE_REQUIREMENTS,
+    extras_require=EXTRAS_REQUIRE,
     entry_points={
         "console_scripts": [
             "safepdf=SafePDF.safe_pdf_app:main",

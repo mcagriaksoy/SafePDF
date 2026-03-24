@@ -1,9 +1,9 @@
 """
 PDF OCR conversion module for SafePDF.
-Handles scanned/image-based PDF text extraction using EasyOCR.
+Handles scanned/image-based PDF text extraction using Tesseract OCR.
 """
 
-import warnings
+from pathlib import Path
 from typing import Tuple
 
 import pypdfium2 as pdfium
@@ -11,20 +11,20 @@ import pypdfium2 as pdfium
 from SafePDF.logger.logging_config import get_logger
 
 try:
-    import easyocr
-    import numpy as np
+    import pytesseract
+    from pytesseract import TesseractNotFoundError
 except ImportError:
-    easyocr = None
-    np = None
+    pytesseract = None
+    TesseractNotFoundError = RuntimeError
 
 
 class PDFOCRConverter:
     """Class handling OCR-based PDF conversions."""
 
     OCR_LANG_MAP = {
-        "en": ["en"],
-        "de": ["de", "en"],
-        "tr": ["tr", "en"],
+        "en": "eng",
+        "de": "deu+eng",
+        "tr": "tur+eng",
     }
 
     def __init__(
@@ -42,7 +42,7 @@ class PDFOCRConverter:
         self._atomic_write_via_path = atomic_write_via_path
         self._cancel_requested = False
         self.logger = get_logger("SafePDF.PDFOCR")
-        self._easyocr_readers = {}
+        self._tesseract_checked = False
 
     def update_progress(self, value):
         """Update progress if callback is available."""
@@ -60,33 +60,45 @@ class PDFOCRConverter:
 
     def _get_ocr_langs(self):
         if not self.language_manager:
-            return ["en"]
-        return self.OCR_LANG_MAP.get(getattr(self.language_manager, "lang", "en"), ["en"])
+            return "eng"
+        return self.OCR_LANG_MAP.get(getattr(self.language_manager, "lang", "en"), "eng")
 
-    def _get_easyocr_reader(self, langs):
-        """Cache EasyOCR readers because model loading is expensive."""
-        lang_key = tuple(langs)
-        reader = self._easyocr_readers.get(lang_key)
-        if reader is None:
-            self.update_status(
-                self.language_manager.get("ocr_status_loading_model", "Loading OCR model...")
-                if self.language_manager
-                else "Loading OCR model..."
-            )
-            with warnings.catch_warnings():
-                warnings.filterwarnings(
-                    "ignore",
-                    message=".*pin_memory.*no accelerator is found.*",
-                    category=UserWarning,
-                )
-                reader = easyocr.Reader(list(langs), gpu=False)
-            self._easyocr_readers[lang_key] = reader
-            self.update_status(
-                self.language_manager.get("ocr_status_model_ready", "OCR model ready.")
-                if self.language_manager
-                else "OCR model ready."
-            )
-        return reader
+    def _configure_tesseract_binary(self):
+        """Use the default Windows Tesseract install if it exists."""
+        if pytesseract is None or pytesseract.pytesseract.tesseract_cmd != "tesseract":
+            return
+
+        candidate_paths = [
+            Path(r"C:\Program Files\Tesseract-OCR\tesseract.exe"),
+            Path(r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe"),
+        ]
+        for candidate in candidate_paths:
+            if candidate.exists():
+                pytesseract.pytesseract.tesseract_cmd = str(candidate)
+                return
+
+    def _ensure_ocr_available(self):
+        """Validate that pytesseract is importable and the Tesseract binary is installed."""
+        if pytesseract is None:
+            raise ImportError("pytesseract is not installed")
+
+        self._configure_tesseract_binary()
+
+        if self._tesseract_checked:
+            return
+
+        self.update_status(
+            self.language_manager.get("ocr_status_loading_model", "Loading OCR model...")
+            if self.language_manager
+            else "Loading OCR model..."
+        )
+        pytesseract.get_tesseract_version()
+        self._tesseract_checked = True
+        self.update_status(
+            self.language_manager.get("ocr_status_model_ready", "OCR model ready.")
+            if self.language_manager
+            else "OCR model ready."
+        )
 
     def _extract_page_text_chunks(self, input_path: str, dpi: int = 300):
         """Run OCR on each PDF page and return per-page text chunks."""
@@ -94,7 +106,7 @@ class PDFOCRConverter:
         try:
             total_pages = len(pdf)
             ocr_langs = self._get_ocr_langs()
-            reader = self._get_easyocr_reader(ocr_langs)
+            self._ensure_ocr_available()
             scale = max(dpi, 72) / 72.0
             text_chunks = []
 
@@ -118,7 +130,6 @@ class PDFOCRConverter:
 
                 page = pdf[page_num]
                 pil_image = page.render(scale=scale).to_pil()
-                image_array = np.array(pil_image)
                 self.update_status(
                     (
                         self.language_manager.get(
@@ -129,8 +140,7 @@ class PDFOCRConverter:
                         else "Recognizing text on page {page} of {total}..."
                     ).format(page=page_index, total=total_pages)
                 )
-                results = reader.readtext(image_array, detail=0, paragraph=True)
-                text = "\n".join(line.strip() for line in results if line and line.strip())
+                text = pytesseract.image_to_string(pil_image, lang=ocr_langs).strip()
                 text_chunks.append((page_index, text))
                 self.update_progress(int((page_index / total_pages) * 100))
 
@@ -194,10 +204,13 @@ class PDFOCRConverter:
                 "op_pdfium_unavailable", "pypdfium2 not available"
             ) if self.language_manager else "pypdfium2 not available"
 
-        if not easyocr or np is None:
+        if pytesseract is None:
             return False, self.language_manager.get(
-                "op_ocr_unavailable", "OCR dependencies missing. Please install with: pip install easyocr"
-            ) if self.language_manager else "OCR dependencies missing. Please install with: pip install easyocr"
+                "op_ocr_unavailable",
+                "OCR dependencies missing. Install with: pip install SafePDF[ocr] and install Tesseract OCR.",
+            ) if self.language_manager else (
+                "OCR dependencies missing. Install with: pip install SafePDF[ocr] and install Tesseract OCR."
+            )
 
         try:
             success, result = self._extract_page_text_chunks(input_path, dpi=dpi)
@@ -212,6 +225,10 @@ class PDFOCRConverter:
             )
             return True, success_msg.format(output_path=output_path)
 
+        except TesseractNotFoundError:
+            return False, self.language_manager.get(
+                "op_ocr_engine_missing", "OCR engine not found."
+            ) if self.language_manager else "OCR engine not found."
         except Exception as e:
             self.logger.error("OCR conversion failed", exc_info=True)
             error_msg = (
@@ -228,10 +245,13 @@ class PDFOCRConverter:
                 "op_pdfium_unavailable", "pypdfium2 not available"
             ) if self.language_manager else "pypdfium2 not available"
 
-        if not easyocr or np is None:
+        if pytesseract is None:
             return False, self.language_manager.get(
-                "op_ocr_unavailable", "OCR dependencies missing. Please install with: pip install easyocr"
-            ) if self.language_manager else "OCR dependencies missing. Please install with: pip install easyocr"
+                "op_ocr_unavailable",
+                "OCR dependencies missing. Install with: pip install SafePDF[ocr] and install Tesseract OCR.",
+            ) if self.language_manager else (
+                "OCR dependencies missing. Install with: pip install SafePDF[ocr] and install Tesseract OCR."
+            )
 
         try:
             success, result = self._extract_page_text_chunks(input_path, dpi=dpi)
@@ -247,6 +267,10 @@ class PDFOCRConverter:
                 else "PDF converted to DOCX document: {output_path}"
             )
             return True, success_msg.format(output_path=output_path)
+        except TesseractNotFoundError:
+            return False, self.language_manager.get(
+                "op_ocr_engine_missing", "OCR engine not found."
+            ) if self.language_manager else "OCR engine not found."
         except Exception as e:
             self.logger.error("OCR DOCX conversion failed", exc_info=True)
             error_msg = (
