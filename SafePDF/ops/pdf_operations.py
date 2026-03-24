@@ -275,7 +275,7 @@ class PDFOperations:
         Args:
             input_path: Input PDF file path
             output_path: Output PDF file path
-            quality: Compression quality ("low", "medium", "high")
+            quality: Compression quality ("low", "medium", "high", "very_high", "ultra")
 
         Returns:
             Tuple of (success, message)
@@ -333,6 +333,65 @@ class PDFOperations:
         # Sync cancellation flag
         self.jpeg_converter._cancel_requested = self._cancel_requested
         return self.jpeg_converter.pdf_to_jpg(input_path, output_dir, dpi)
+
+    def jpg_to_pdf(self, input_path: str, output_path: str) -> Tuple[bool, str]:
+        """
+        Convert a JPG/JPEG image to a single-page PDF.
+
+        Args:
+            input_path: Input image file path
+            output_path: Output PDF file path
+
+        Returns:
+            Tuple of (success, message)
+        """
+        try:
+            if not Image:
+                return False, self.language_manager.get(
+                    "op_pil_unavailable", "PIL/Pillow not available"
+                ) if self.language_manager else "PIL/Pillow not available"
+
+            if not os_path.exists(input_path):
+                return False, self.language_manager.get(
+                    "op_input_file_not_exist", "Input file does not exist"
+                ) if self.language_manager else "Input file does not exist"
+
+            self.update_progress(20)
+            self._ensure_parent_dir(output_path)
+
+            with Image.open(input_path) as source_image:
+                # PDF export requires an RGB-compatible image; flatten alpha if needed.
+                if source_image.mode in ("RGBA", "LA") or (
+                    source_image.mode == "P" and "transparency" in source_image.info
+                ):
+                    rgba_image = source_image.convert("RGBA")
+                    flattened = Image.new("RGB", source_image.size, (255, 255, 255))
+                    flattened.paste(rgba_image, mask=rgba_image.getchannel("A"))
+                    pdf_image = flattened
+                else:
+                    pdf_image = source_image.convert("RGB")
+
+                self.update_progress(70)
+
+                def _write_pdf(tmpf):
+                    pdf_image.save(tmpf, "PDF", resolution=100.0)
+
+                self._atomic_write_file(output_path, _write_pdf)
+
+            self.update_progress(100)
+            success_msg = (
+                self.language_manager.get("op_jpg_to_pdf_success", "Image converted to PDF successfully")
+                if self.language_manager
+                else "Image converted to PDF successfully"
+            )
+            return True, success_msg
+        except Exception as e:
+            error_msg = (
+                self.language_manager.get("op_jpg_to_pdf_failed", "JPG to PDF conversion failed: {error}")
+                if self.language_manager
+                else "JPG to PDF conversion failed: {error}"
+            )
+            return False, error_msg.format(error=str(e))
 
     def rotate_pdf(self, input_path: str, output_path: str, angle: int = 90) -> Tuple[bool, str]:
         """

@@ -28,6 +28,7 @@ class SettingsUI:
         language_manager=None,
         update_frequency_var=None,
         update_frequency_callback=None,
+        theme_callback=None,
     ):
         self.root = root
         self.controller = controller
@@ -38,6 +39,7 @@ class SettingsUI:
         self.language_manager = language_manager
         self.update_frequency_var = update_frequency_var
         self.update_frequency_callback = update_frequency_callback
+        self.theme_callback = theme_callback
 
     def _create_update_controls(self, parent):
         """Create update-check frequency controls."""
@@ -99,13 +101,22 @@ class SettingsUI:
         )
         theme_frame = ttk.Frame(parent)
         theme_frame.pack(anchor="w", pady=4)
+        self._theme_radiobuttons = []
         theme_system = (
             self.language_manager.get("theme_system", "System Default") if self.language_manager else "System Default"
         )
         theme_light = self.language_manager.get("theme_light", "Light") if self.language_manager else "Light"
         theme_dark = self.language_manager.get("theme_dark", "Dark") if self.language_manager else "Dark"
         for text, val in ((theme_system, "system"), (theme_light, "light"), (theme_dark, "dark")):
-            ttk.Radiobutton(theme_frame, text=text, variable=self.theme_var, value=val).pack(side="left", padx=6)
+            rb = ttk.Radiobutton(
+                theme_frame,
+                text=text,
+                variable=self.theme_var,
+                value=val,
+                command=self.theme_callback,
+            )
+            rb.pack(side="left", padx=6)
+            self._theme_radiobuttons.append(rb)
         theme_hint = (
             self.language_manager.get(
                 "settings_theme_hint", "Change the application's appearance. Restart may be required for full effect."
@@ -252,8 +263,9 @@ class SettingsUI:
             except Exception:
                 log_size = 0
             log_location_text = (
-                self.language_manager.get("log_location", "Log Location: {path}\nSize: {size} KB")
-                .format(path=self.log_file_path, size=f"{log_size:.1f}")
+                self.language_manager.get("log_location", "Log Location: {path}\nSize: {size} KB").format(
+                    path=self.log_file_path, size=f"{log_size:.1f}"
+                )
                 if self.language_manager
                 else f"Log Location: {self.log_file_path}\nSize: {log_size:.1f} KB"
             )
@@ -294,9 +306,7 @@ class SettingsUI:
             btn_refresh_text = (
                 self.language_manager.get("btn_refresh", "Refresh") if self.language_manager else "Refresh"
             )
-            btn_close_text = (
-                self.language_manager.get("btn_close", "Close") if self.language_manager else "Close"
-            )
+            btn_close_text = self.language_manager.get("btn_close", "Close") if self.language_manager else "Close"
             ttk.Button(btn_frame, text=btn_refresh_text, command=lambda: self._refresh_log_view(log_text)).pack(
                 side="left", padx=5
             )
@@ -304,9 +314,7 @@ class SettingsUI:
 
         except Exception as e:
             logger.error(f"Error opening log viewer: {e}", exc_info=True)
-            error_title = (
-                self.language_manager.get("error", "Error") if self.language_manager else "Error"
-            )
+            error_title = self.language_manager.get("error", "Error") if self.language_manager else "Error"
             could_not_open_msg = (
                 self.language_manager.get("could_not_open", "Could not open log viewer.")
                 if self.language_manager
@@ -328,8 +336,7 @@ class SettingsUI:
             text_widget.config(state=tk.NORMAL)
             text_widget.delete("1.0", tk.END)
             log_read_error = (
-                self.language_manager.get("log_read_error", "Error reading log file: {error}")
-                .format(error=str(e))
+                self.language_manager.get("log_read_error", "Error reading log file: {error}").format(error=str(e))
                 if self.language_manager
                 else f"Error reading log file: {e}"
             )
@@ -351,7 +358,9 @@ class SettingsUI:
                 self.language_manager.get("log_clear_title", "Clear Log") if self.language_manager else "Clear Log"
             )
             log_clear_confirm = (
-                self.language_manager.get("log_clear_confirm", "Are you sure you want to clear the error log?\nThis action cannot be undone.")
+                self.language_manager.get(
+                    "log_clear_confirm", "Are you sure you want to clear the error log?\nThis action cannot be undone."
+                )
                 if self.language_manager
                 else "Are you sure you want to clear the error log?\nThis action cannot be undone."
             )
@@ -368,12 +377,9 @@ class SettingsUI:
                 messagebox.showinfo("Success", log_clear_success)
         except Exception as e:
             logger.error(f"Error clearing log file: {e}", exc_info=True)
-            error_title = (
-                self.language_manager.get("error", "Error") if self.language_manager else "Error"
-            )
+            error_title = self.language_manager.get("error", "Error") if self.language_manager else "Error"
             log_clear_error = (
-                self.language_manager.get("log_clear_error", "Could not clear log file: {error}")
-                .format(error=str(e))
+                self.language_manager.get("log_clear_error", "Could not clear log file: {error}").format(error=str(e))
                 if self.language_manager
                 else f"Could not clear log file: {e}"
             )
@@ -385,9 +391,7 @@ class SettingsUI:
 
             log_dir = self.log_file_path.parent
             if not safe_open_file_or_folder(log_dir):
-                error_title = (
-                    self.language_manager.get("error", "Error") if self.language_manager else "Error"
-                )
+                error_title = self.language_manager.get("error", "Error") if self.language_manager else "Error"
                 log_open_folder_error = (
                     self.language_manager.get("log_open_folder_error", "Could not open log folder.")
                     if self.language_manager
@@ -396,9 +400,7 @@ class SettingsUI:
                 messagebox.showerror(error_title, log_open_folder_error)
         except Exception as e:
             logger.error(f"Error opening log folder: {e}", exc_info=True)
-            error_title = (
-                self.language_manager.get("error", "Error") if self.language_manager else "Error"
-            )
+            error_title = self.language_manager.get("error", "Error") if self.language_manager else "Error"
             log_open_folder_error = (
                 self.language_manager.get("log_open_folder_error", "Could not open log folder.")
                 if self.language_manager
@@ -412,9 +414,7 @@ class SettingsUI:
 
         # Language selection: use combobox and map to language codes
         lang_label = (
-            self.language_manager.get("settings_language_label", "Language:")
-            if self.language_manager
-            else "Language:"
+            self.language_manager.get("settings_language_label", "Language:") if self.language_manager else "Language:"
         )
         ttk.Label(main_frame, text=lang_label, font=(self.font, CommonElements.FONT_SIZE, "bold")).pack(
             anchor="w", pady=(12, 4)

@@ -80,28 +80,29 @@ class OperationSettingsUI:
             value="high",
             command=update_compression_visual_callback,
         ).pack(anchor="w")
+        ttk.Radiobutton(
+            radio_frame,
+            text=self.lang_manager.get("settings_very_high", "Very High (Best quality)"),
+            variable=self.quality_var,
+            value="very_high",
+            command=update_compression_visual_callback,
+        ).pack(anchor="w")
 
         # Pro feature: Ultra quality
         self.ultra_radio = ttk.Radiobutton(
             radio_frame,
-            text=self.lang_manager.get("settings_ultra", "Ultra (Pro - Best quality)"),
+            text=self.lang_manager.get("settings_ultra", "Ultra (Pro - Maximum quality)"),
             variable=self.quality_var,
             value="ultra",
             command=update_compression_visual_callback,
         )
         self.ultra_radio.pack(anchor="w")
         # Enable/disable based on pro status
-        self.ultra_radio.config(
-            state="normal" if self.controller.is_pro_activated else "disabled"
-        )
+        self.ultra_radio.config(state="normal" if self.controller.is_pro_activated else "disabled")
 
         # Right side - visual indicator
-        self.compression_visual_frame = tk.Frame(
-            quality_frame, bg="#ffffff", relief=tk.RIDGE, bd=1
-        )
-        self.compression_visual_frame.pack(
-            side="right", padx=(20, 0), fill="both", expand=True
-        )
+        self.compression_visual_frame = tk.Frame(quality_frame, bg="#ffffff", relief=tk.RIDGE, bd=1)
+        self.compression_visual_frame.pack(side="right", padx=(20, 0), fill="both", expand=True)
 
         # Create visual indicator label
         self.compression_indicator = tk.Label(
@@ -120,16 +121,36 @@ class OperationSettingsUI:
     def update_compression_visual(self, quality_var):
         """Update visual feedback for compression quality"""
         quality = quality_var.get()
-        text = ""
+        text = self.lang_manager.get(
+            "settings_preview_note",
+            "Compression results vary by PDF content.",
+        )
 
         if quality == "low":
-            text = "📊 Low Quality\n• 20-30% smaller\n• Noticeable loss\n• Fast processing"
+            text = self.lang_manager.get(
+                "settings_low_quality",
+                "📊 Low Compression Quality\n• Strongest size reduction\n• More visible image loss\n• Best for sharing drafts",
+            )
         elif quality == "medium":
-            text = "📊 Medium Quality\n• 30-50% smaller\n• Minimal loss\n• Balanced"
+            text = self.lang_manager.get(
+                "settings_medium_quality",
+                "📊 Medium Compression Quality\n• Balanced reduction\n• Moderate quality retention\n• Good default for most PDFs",
+            )
         elif quality == "high":
-            text = "📊 High Quality\n• 50-70% smaller\n• Minor loss\n• Better quality"
+            text = self.lang_manager.get(
+                "settings_high_quality",
+                "📊 High Compression Quality\n• Lighter compression\n• Better visual retention\n• File size reduction is less predictable",
+            )
+        elif quality == "very_high":
+            text = self.lang_manager.get(
+                "settings_very_high_quality",
+                "📊 Very High Compression Quality\n• Minimal compression\n• Strong visual preservation\n• Good when quality matters most",
+            )
         elif quality == "ultra":
-            text = "📊 Ultra Quality (Pro)\n• 70-85% smaller\n• Barely noticeable\n• Best quality"
+            text = self.lang_manager.get(
+                "settings_ultra_quality",
+                "📊 Ultra Compression Quality (Pro)\n• Lightest compression available\n• Maximum visual preservation\n• Typically the largest output among presets",
+            )
 
         self.compression_indicator.config(text=text)
         self.compression_visual_frame.config(bg=CommonElements.BG_COLOR)
@@ -138,24 +159,18 @@ class OperationSettingsUI:
         """Create settings for PDF rotation"""
         self.rotation_var = rotation_var
 
-        ttk.Label(self.settings_container, text="Rotation Angle:").pack(
-            anchor="w", pady=5
-        )
+        ttk.Label(self.settings_container, text="Rotation Angle:").pack(anchor="w", pady=5)
         rotation_frame = ttk.Frame(self.settings_container)
         rotation_frame.pack(anchor="w", pady=5)
 
         for angle in ["90", "180", "270"]:
-            ttk.Radiobutton(
-                rotation_frame, text=f"{angle}°", variable=self.rotation_var, value=angle
-            ).pack(anchor="w")
+            ttk.Radiobutton(rotation_frame, text=f"{angle}°", variable=self.rotation_var, value=angle).pack(anchor="w")
 
     def create_to_jpg_settings(self, img_quality_var):
         """Create settings for PDF to JPG conversion"""
         self.img_quality_var = img_quality_var
 
-        ttk.Label(self.settings_container, text="Image Quality:").pack(
-            anchor="w", pady=5
-        )
+        ttk.Label(self.settings_container, text="Image Quality:").pack(anchor="w", pady=5)
         img_quality_frame = ttk.Frame(self.settings_container)
         img_quality_frame.pack(anchor="w", pady=5)
 
@@ -178,13 +193,49 @@ class OperationSettingsUI:
             value="high",
         ).pack(anchor="w")
 
+    def create_jpg_to_pdf_settings(self):
+        """Create settings for JPG to PDF conversion"""
+        ttk.Label(
+            self.settings_container,
+            text=self.lang_manager.get(
+                "settings_jpg_to_pdf_intro",
+                "Convert a JPG/JPEG image into a single-page PDF document",
+            ),
+        ).pack(anchor="w", pady=5)
+
+        info_frame = ttk.Frame(self.settings_container)
+        info_frame.pack(anchor="w", pady=5, fill="x")
+
+        ttk.Label(
+            info_frame,
+            text=self.lang_manager.get(
+                "settings_jpg_to_pdf_bullet_single",
+                "• Creates one PDF page from the selected image",
+            ),
+            foreground="#666",
+        ).pack(anchor="w")
+        ttk.Label(
+            info_frame,
+            text=self.lang_manager.get(
+                "settings_jpg_to_pdf_bullet_quality",
+                "• Keeps the original image appearance as closely as possible",
+            ),
+            foreground="#666",
+        ).pack(anchor="w")
+        ttk.Label(
+            info_frame,
+            text=self.lang_manager.get(
+                "settings_jpg_to_pdf_bullet_output",
+                "• Saves as a standard PDF file",
+            ),
+            foreground="#666",
+        ).pack(anchor="w")
+
     def create_repair_settings(self, repair_var):
         """Create settings for PDF repair"""
         self.repair_var = repair_var
 
-        ttk.Label(self.settings_container, text="Repair Options:").pack(
-            anchor="w", pady=5
-        )
+        ttk.Label(self.settings_container, text="Repair Options:").pack(anchor="w", pady=5)
         repair_frame = ttk.Frame(self.settings_container)
         repair_frame.pack(anchor="w", pady=5)
 
@@ -198,49 +249,35 @@ class OperationSettingsUI:
         """Create settings for PDF merging"""
         self.merge_var = merge_var
 
-        ttk.Label(self.settings_container, text="Merge Options:").pack(
-            anchor="w", pady=5
-        )
+        ttk.Label(self.settings_container, text="Merge Options:").pack(anchor="w", pady=5)
         merge_frame = ttk.Frame(self.settings_container)
         merge_frame.pack(anchor="w", pady=5)
 
-        ttk.Checkbutton(
-            merge_frame, text="Add page numbers to merged PDF", variable=self.merge_var
-        ).pack(anchor="w")
+        ttk.Checkbutton(merge_frame, text="Add page numbers to merged PDF", variable=self.merge_var).pack(anchor="w")
 
         # Show selected files
-        files_frame = ttk.LabelFrame(
-            self.settings_container, text="Files to Merge (in order)", padding="10"
-        )
+        files_frame = ttk.LabelFrame(self.settings_container, text="Files to Merge (in order)", padding="10")
         files_frame.pack(fill="x", pady=(8, 6))
 
         if selected_files:
             for file_path in selected_files:
-                ttk.Label(files_frame, text=f"  • {file_path}", foreground="#666").pack(
-                    anchor="w", padx=10
-                )
+                ttk.Label(files_frame, text=f"  • {file_path}", foreground="#666").pack(anchor="w", padx=10)
         else:
-            ttk.Label(
-                files_frame, text="No files selected", foreground="#999", style="Gray.TLabel"
-            ).pack(anchor="w", padx=10)
+            ttk.Label(files_frame, text="No files selected", foreground="#999", style="Gray.TLabel").pack(
+                anchor="w", padx=10
+            )
 
     def create_split_settings(self, split_var, page_range_var):
         """Create settings for PDF splitting"""
         self.split_var = split_var
         self.page_range_var = page_range_var
 
-        ttk.Label(self.settings_container, text="Split Method:").pack(
-            anchor="w", pady=5
-        )
+        ttk.Label(self.settings_container, text="Split Method:").pack(anchor="w", pady=5)
         split_frame = ttk.Frame(self.settings_container)
         split_frame.pack(anchor="w", pady=5)
 
-        ttk.Radiobutton(
-            split_frame, text="Split by pages", variable=self.split_var, value="pages"
-        ).pack(anchor="w")
-        ttk.Radiobutton(
-            split_frame, text="Split by range", variable=self.split_var, value="range"
-        ).pack(anchor="w")
+        ttk.Radiobutton(split_frame, text="Split by pages", variable=self.split_var, value="pages").pack(anchor="w")
+        ttk.Radiobutton(split_frame, text="Split by range", variable=self.split_var, value="range").pack(anchor="w")
 
         # Add range entry for custom ranges
         range_frame = ttk.Frame(self.settings_container)
@@ -392,7 +429,7 @@ class OperationSettingsUI:
             info_frame,
             text=self.lang_manager.get(
                 "settings_to_ocr_bullet_requires",
-                "• Requires EasyOCR and pypdfium2",
+                "• Requires Tesseract OCR and pypdfium2",
             ),
             foreground="#666",
         ).pack(anchor="w")
@@ -442,9 +479,7 @@ class OperationSettingsUI:
             foreground="#666",
         ).pack(anchor="w")
 
-    def create_output_path_selection(
-        self, is_directory, use_default_output, output_path_var, browse_callback
-    ):
+    def create_output_path_selection(self, is_directory, use_default_output, output_path_var, browse_callback):
         """Create output path selection UI"""
         # If an earlier output_frame exists (from previous settings render), destroy it
         try:
@@ -462,9 +497,7 @@ class OperationSettingsUI:
         # Default option
         default_cb = ttk.Checkbutton(
             output_frame,
-            text=self.lang_manager.get(
-                "settings_use_default_output", "Use default output location"
-            ),
+            text=self.lang_manager.get("settings_use_default_output", "Use default output location"),
             variable=use_default_output,
         )
         default_cb.pack(anchor="w", pady=2)
@@ -483,8 +516,7 @@ class OperationSettingsUI:
 
         path_label = ttk.Label(
             path_frame,
-            text=output_path_var.get()
-            or self.lang_manager.get("settings_no_path_selected", "No path selected"),
+            text=output_path_var.get() or self.lang_manager.get("settings_no_path_selected", "No path selected"),
             foreground="#666",
         )
         path_label.pack(side="left", fill="x", expand=True)
@@ -502,8 +534,7 @@ class OperationSettingsUI:
         # Bind variable to update label
         def update_label(*args):
             path_label.config(
-                text=output_path_var.get()
-                or self.lang_manager.get("settings_no_path_selected", "No path selected")
+                text=output_path_var.get() or self.lang_manager.get("settings_no_path_selected", "No path selected")
             )
 
         output_path_var.trace("w", update_label)

@@ -84,7 +84,7 @@ class SafePDFController:
             self.status_callback(message)
 
     def select_file(self, file_path):
-        """Select and validate PDF file(s)"""
+        """Select and validate file(s) for the active operation"""
         if isinstance(file_path, list):
             self.selected_files = file_path
         else:
@@ -96,7 +96,10 @@ class SafePDFController:
         for f in self.selected_files:
             if not os_path.exists(f):
                 return False, f"File does not exist: {f}"
-            if not f.lower().endswith(".pdf"):
+            if self.selected_operation == "jpg_to_pdf":
+                if not f.lower().endswith((".jpg", ".jpeg")):
+                    return False, f"Please select JPG files only. Invalid: {os_path.basename(f)}"
+            elif not f.lower().endswith(".pdf"):
                 return False, f"Please select PDF files only. Invalid: {os_path.basename(f)}"
 
         filenames = [os_path.basename(f) for f in self.selected_files]
@@ -115,6 +118,7 @@ class SafePDFController:
             "compress",
             "split",
             "merge",
+            "jpg_to_pdf",
             "to_jpg",
             "rotate",
             "repair",
@@ -154,7 +158,17 @@ class SafePDFController:
                 return custom_output_path, None
 
         # Default paths with minimal processing
-        if self.selected_operation in ["compress", "rotate", "repair", "to_word", "to_txt", "to_ocr", "extract_info", "merge"]:
+        if self.selected_operation in [
+            "compress",
+            "rotate",
+            "repair",
+            "to_word",
+            "to_txt",
+            "to_ocr",
+            "extract_info",
+            "merge",
+            "jpg_to_pdf",
+        ]:
             base_name = os_path.splitext(self.selected_file)[0]
             if self.selected_operation == "to_word":
                 return f"{base_name}.docx", None
@@ -168,6 +182,8 @@ class SafePDFController:
                 return f"{base_name}_info.txt", None
             elif self.selected_operation == "merge":
                 return f"{base_name}_merged.pdf", None
+            elif self.selected_operation == "jpg_to_pdf":
+                return f"{base_name}.pdf", None
             else:
                 return f"{base_name}_{self.selected_operation}.pdf", None
         else:
@@ -217,6 +233,9 @@ class SafePDFController:
             elif self.selected_operation == "to_jpg":
                 dpi = int(self.operation_settings.get("dpi", 200))
                 success, message = self.pdf_ops.pdf_to_jpg(self.selected_file, output_dir, dpi)
+
+            elif self.selected_operation == "jpg_to_pdf":
+                success, message = self.pdf_ops.jpg_to_pdf(self.selected_file, output_path)
 
             elif self.selected_operation == "merge":
                 # Merge operation: use all selected files

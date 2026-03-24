@@ -25,7 +25,7 @@ class HelpUI:
         try:
             if self.lang_manager:
                 return self.lang_manager.get(key, default)
-            elif hasattr(self.controller, 'lang_manager') and self.controller.lang_manager:
+            elif hasattr(self.controller, "lang_manager") and self.controller.lang_manager:
                 return self.controller.lang_manager.get(key, default)
         except Exception:
             pass
@@ -40,10 +40,7 @@ class HelpUI:
             try:
                 messagebox.showerror(
                     self._get_lang_text("error_title", "Error"),
-                    self._get_lang_text(
-                        "error_open_tutorial",
-                        f"Could not open tutorial. Please visit:\n{gif_url}"
-                    )
+                    self._get_lang_text("error_open_tutorial", f"Could not open tutorial. Please visit:\n{gif_url}"),
                 )
             except Exception:
                 pass
@@ -59,10 +56,7 @@ class HelpUI:
             try:
                 messagebox.showinfo(
                     self._get_lang_text("contact_title", "Contact Us"),
-                    self._get_lang_text(
-                        "contact_email_info",
-                        f"Please send your inquiries to:\n\n{email}"
-                    )
+                    self._get_lang_text("contact_email_info", f"Please send your inquiries to:\n\n{email}"),
                 )
             except Exception:
                 pass
@@ -76,10 +70,7 @@ class HelpUI:
             try:
                 messagebox.showinfo(
                     self._get_lang_text("github_issues_title", "Report Issue"),
-                    self._get_lang_text(
-                        "github_issues_info",
-                        f"Please visit:\n\n{github_issues_url}"
-                    )
+                    self._get_lang_text("github_issues_info", f"Please visit:\n\n{github_issues_url}"),
                 )
             except Exception:
                 pass
@@ -141,7 +132,7 @@ class HelpUI:
                 button_frame,
                 text=self._get_lang_text("btn_how_to_use", "📹 How to Use"),
                 command=self._open_how_to_use_gif,
-                style="Accent.TButton"
+                style="Accent.TButton",
             )
             how_to_btn.pack(side="left", padx=5, pady=5)
 
@@ -149,7 +140,7 @@ class HelpUI:
                 button_frame,
                 text=self._get_lang_text("btn_contact_email", "📧 Contact: info@safepdf.de"),
                 command=self._open_contact_email,
-                style="TButton"
+                style="TButton",
             )
             contact_btn.pack(side="left", padx=5, pady=5)
 
@@ -157,7 +148,7 @@ class HelpUI:
                 button_frame,
                 text=self._get_lang_text("btn_github_issues", "🐛 Report Issue"),
                 command=self._open_github_issues,
-                style="TButton"
+                style="TButton",
             )
             github_btn.pack(side="left", padx=5, pady=5)
 

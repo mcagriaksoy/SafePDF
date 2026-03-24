@@ -27,7 +27,7 @@
     <script src="head.js"></script>
     <script>
         // Fetch latest version from GitHub releases
-        let latestVersion = 'v1.0.10'; // fallback version
+        let latestVersion = 'v1.0.14'; // fallback version
         let installerDownloadUrl = '';
         let portableDownloadUrl = '';
         
@@ -35,7 +35,7 @@
             try {
                 const response = await fetch('https://api.github.com/repos/mcagriaksoy/SafePDF/releases/latest');
                 const data = await response.json();
-                latestVersion = data.tag_name || 'v1.0.10';
+                latestVersion = data.tag_name || 'v1.0.14';
                 
                 // Find installer and portable versions in assets
                 const installerAsset = data.assets.find(asset => 
@@ -127,7 +127,7 @@
 
                 <div class="download-stats">
                     <div class="stat">
-                        <span class="stat-number version-number">v1.0.9</span>
+                        <span class="stat-number version-number">v1.0.14</span>
                         <span class="stat-label">Latest Version</span>
                     </div>
                     <div class="stat">

@@ -19,7 +19,7 @@ if errorlevel 1 (
 )
 
 echo About to call pyinstaller...
-REM Build the slim default app package. OCR/torch is intentionally excluded.
+REM Build the slim default app package without optional OCR/update extras.
 pyinstaller --noconfirm --windowed --onefile^
     --icon "%ROOT%\assets\icon.ico" ^
     --version-file "%ROOT%\version.txt" ^
@@ -30,10 +30,6 @@ pyinstaller --noconfirm --windowed --onefile^
     --add-data "%ROOT%\logger;logger/" ^
     --add-data "%ROOT%\text;text/" ^
     --add-data "%ROOT%\keys;keys/" ^
-    --exclude-module easyocr ^
-    --exclude-module torch ^
-    --exclude-module torchvision ^
-    --exclude-module torchaudio ^
     --exclude-module scipy ^
     --exclude-module networkx ^
     "%ROOT%\safe_pdf_app.py"
