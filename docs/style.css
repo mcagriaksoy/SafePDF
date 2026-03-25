@@ -212,7 +212,12 @@ body {
   margin-top: 22px;
   display: flex;
   gap: 12px;
-  flex-wrap: wrap
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.badges .btn {
+  margin: 0;
 }
 
 .social-proof {

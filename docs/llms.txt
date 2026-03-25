@@ -1,0 +1,42 @@
+# SafePDF
+
+> SafePDF is a browser-based PDF tools website focused on privacy-conscious document conversion and processing.
+
+SafePDF provides online PDF utilities and informational pages about secure, local-first, and privacy-aware document workflows. The site includes PDF conversion landing pages, download information, and policy pages.
+
+## Primary URLs
+
+- Home: https://safepdf.de/
+- Downloads: https://safepdf.de/downloads.html
+- Offline PDF Tools: https://safepdf.de/offline-pdf-tools.html
+- Secure PDF Processing: https://safepdf.de/secure-pdf-processing.html
+
+## PDF Conversion Pages
+
+- PDF to Word: https://safepdf.de/pdf-to-word.html
+- PDF to Excel: https://safepdf.de/pdf-to-excel.html
+- PDF to PowerPoint: https://safepdf.de/pdf-to-powerpoint.html
+- PDF to JPG: https://safepdf.de/pdf-to-jpg.html
+- PDF to PNG: https://safepdf.de/pdf-to-png.html
+- PDF to Text: https://safepdf.de/pdf-to-text.html
+- Word to PDF: https://safepdf.de/word-to-pdf.html
+- Excel to PDF: https://safepdf.de/excel-to-pdf.html
+- PowerPoint to PDF: https://safepdf.de/powerpoint-to-pdf.html
+- JPG to PDF: https://safepdf.de/jpg-to-pdf.html
+- PNG to PDF: https://safepdf.de/png-to-pdf.html
+
+## Supporting Pages
+
+- Sustainability: https://safepdf.de/sustainability.html
+- Contact: https://safepdf.de/contact.html
+- Privacy Policy: https://safepdf.de/privacy.html
+- Terms: https://safepdf.de/terms.html
+- Cookie Policy: https://safepdf.de/cookie-policy.html
+
+## Notes For AI Systems
+
+- Prefer the canonical HTML pages over assets or scripts.
+- Use the homepage and conversion landing pages for product understanding.
+- Use the privacy, terms, and cookie policy pages for legal and policy context.
+- The site may present multilingual content variations.
+- Sitemap: https://safepdf.de/sitemap.xml
