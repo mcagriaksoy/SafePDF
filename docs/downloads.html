@@ -35,28 +35,30 @@
             try {
                 const response = await fetch('https://api.github.com/repos/mcagriaksoy/SafePDF/releases/latest');
                 const data = await response.json();
-                latestVersion = data.tag_name || 'v1.0.14';
+                latestVersion = (data && data.tag_name) || 'v1.0.14';
                 
-                // Find installer and portable versions in assets
-                const installerAsset = data.assets.find(asset => 
-                    (asset.name.toLowerCase().includes('installer') || 
-                     asset.name.toLowerCase().includes('setup')) &&
-                    (asset.name.includes('.exe') || asset.name.includes('.msi'))
-                );
-                
-                const portableAsset = data.assets.find(asset => 
-                    asset.name.toLowerCase().includes('portable') ||
-                    asset.name.toLowerCase().includes('.7z') ||
-                    asset.name.toLowerCase().includes('.zip')
-                ) || data.assets.find(asset => 
-                    asset.name.includes('.exe') || asset.name.includes('win64')
-                );
-                
-                if (installerAsset) {
-                    installerDownloadUrl = installerAsset.browser_download_url;
-                }
-                if (portableAsset) {
-                    portableDownloadUrl = portableAsset.browser_download_url;
+                // Find installer and portable versions in assets if assets exist
+                if (data && Array.isArray(data.assets)) {
+                    const installerAsset = data.assets.find(asset => 
+                        (asset.name.toLowerCase().includes('installer') || 
+                         asset.name.toLowerCase().includes('setup')) &&
+                        (asset.name.includes('.exe') || asset.name.includes('.msi'))
+                    );
+                    
+                    const portableAsset = data.assets.find(asset => 
+                        asset.name.toLowerCase().includes('portable') ||
+                        asset.name.toLowerCase().includes('.7z') ||
+                        asset.name.toLowerCase().includes('.zip')
+                    ) || data.assets.find(asset => 
+                        asset.name.includes('.exe') || asset.name.includes('win64')
+                    );
+                    
+                    if (installerAsset) {
+                        installerDownloadUrl = installerAsset.browser_download_url;
+                    }
+                    if (portableAsset) {
+                        portableDownloadUrl = portableAsset.browser_download_url;
+                    }
                 }
                 
                 // Update version displays

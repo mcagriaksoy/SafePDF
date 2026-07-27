@@ -18,6 +18,13 @@
     attempt();
   }
 
+  function getCookie(name){
+    var value = "; " + document.cookie;
+    var parts = value.split("; " + name + "=");
+    if (parts.length === 2) return parts.pop().split(";").shift();
+    return null;
+  }
+
   function attachListeners(){
     var selects = Array.prototype.slice.call(document.querySelectorAll('.language-select, #language-select'));
     selects.forEach(function(sel){
@@ -30,6 +37,16 @@
     });
   }
 
+  function initTranslate(){
+    attachListeners();
+    var urlLang = new URL(window.location.href).searchParams.get('lang');
+    var cookieLang = getCookie('site_lang');
+    var activeLang = urlLang || cookieLang;
+    if(activeLang && ['tr', 'de'].includes(activeLang)){
+      triggerTranslate(activeLang);
+    }
+  }
+
   // ensure hidden translate container exists
   if(!document.getElementById('google_translate_element')){
     var d = document.createElement('div'); d.id = 'google_translate_element'; d.style.display = 'none'; document.body.appendChild(d);
@@ -39,8 +56,8 @@
   window.googleTranslateElementInit = googleTranslateElementInit;
 
   // attach listeners on DOM ready
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', attachListeners);
-  else attachListeners();
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initTranslate);
+  else initTranslate();
 
   // load Google Translate script
   (function(){
