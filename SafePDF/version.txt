@@ -23,7 +23,7 @@ VSVersionInfo(
           StringStruct('InternalName', 'SafePDF'),
           StringStruct('LegalCopyright', 'Copyright (C) 2025- 2026 by mcagriaksoy'),
           StringStruct('LegalTrademarks', ''),
-          StringStruct('OriginalFilename', 'SafePdf_v1.0.14_win64.exe'),
+          StringStruct('OriginalFilename', 'SafePdf_v1.0.15_win64.exe'),
           StringStruct('ProductName', 'SafePDF'),
           StringStruct('ProductVersion', '1.0.14'),
           StringStruct('License', 'GPL-V3.0')

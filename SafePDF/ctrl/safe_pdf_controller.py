@@ -14,7 +14,10 @@ from os import path as os_path
 from threading import Thread
 
 from SafePDF.logger.logging_config import get_logger
-from SafePDF.ops.license_manager import LicenseManager
+try:
+    from SafePDF.safepdf_pro.license_manager import LicenseManager
+except ImportError:
+    LicenseManager = None
 from SafePDF.ops.pdf_operations import PDFOperations
 from SafePDF.ops.updates import SafePDFUpdates
 
@@ -46,7 +49,10 @@ class SafePDFController:
         self.language_manager = language_manager
 
         # License manager for verification (must be initialized BEFORE _load_pro_status)
-        self.license_manager = LicenseManager(logger=self.logger)
+        if LicenseManager is not None:
+            self.license_manager = LicenseManager(logger=self.logger)
+        else:
+            self.license_manager = None
 
         # Load saved pro status
         self._load_pro_status()
@@ -347,6 +353,8 @@ class SafePDFController:
 
     def activate_pro_features(self, license_file_path):
         """Activate pro features by verifying and copying the license file"""
+        if self.license_manager is None:
+            return False, "Pro licensing module is not available in this build."
         try:
             if not os_path.exists(license_file_path):
                 return False, "License file not found."
@@ -474,6 +482,12 @@ class SafePDFController:
 
     def _load_pro_status(self):
         """Load and verify pro activation status on startup"""
+        if self.license_manager is None:
+            self.logger.info("[STARTUP] Running in FREE mode (no Pro module)")
+            self.is_pro_activated = False
+            self.activation_key = None
+            self.pro_expiry_date = None
+            return
         try:
             config_dir = os_path.join(os_path.expanduser("~"), ".safepdf")
             makedirs(config_dir, exist_ok=True)

@@ -278,7 +278,7 @@ class SafePDFUpdates:
 
     def _get_default_public_key(self):
         """Get the default public key for verification"""
-        key_dir = Path(__file__).parent.parent / "key"
+        key_dir = Path(__file__).parent.parent / "keys"
 
         # Try PGP key files first
         for ext in [".asc", ".pgp", ".gpg"]:

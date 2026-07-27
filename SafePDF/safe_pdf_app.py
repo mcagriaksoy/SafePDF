@@ -71,14 +71,22 @@ class SafePDFApp:
             self.ui.update_progress(value)
 
     def set_app_icon_and_taskbar(self):
-        """Set Windows AppUserModelID and application icon so the app shows on taskbar."""
-        # Only on Windows: set AppUserModelID for proper taskbar grouping & icon
+        """Set Windows AppUserModelID, DPI awareness, and application icon so the app looks crisp and shows on taskbar."""
+        # Only on Windows: set DPI awareness and AppUserModelID for proper scaling and taskbar grouping
         if sys.platform == "win32":
             try:
                 if windll is not None:
+                    # Set DPI awareness for a crisp UI on high-resolution screens
+                    try:
+                        windll.shcore.SetProcessDpiAwareness(1)  # PROCESS_SYSTEM_DPI_AWARE
+                    except Exception:
+                        try:
+                            windll.user32.SetProcessDPIAware()
+                        except Exception:
+                            pass
                     windll.shell32.SetCurrentProcessExplicitAppUserModelID("com.mca.safepdf")
             except Exception:
-                self.logger.debug("Error setting AppUserModelID", exc_info=True)
+                self.logger.debug("Error setting AppUserModelID/DPI awareness", exc_info=True)
                 pass
 
         # Find an icon file (check assets folder next to this file)
