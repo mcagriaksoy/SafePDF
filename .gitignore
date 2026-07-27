@@ -210,4 +210,5 @@ __marimo__/
 private.pem
 *.lic
 generate_license_keys.py
+SafePDF/safepdf_pro/
 

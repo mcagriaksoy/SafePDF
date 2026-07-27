@@ -234,7 +234,7 @@ class SafePDFUI:
         )
 
         # Instantiate UpdateUI with root and controller
-        self.update_ui = UpdateUI(root, controller, CommonElements.FONT, language_manager=self.lang_manager)
+        self.update_manager = UpdateUI(root, controller, CommonElements.FONT, language_manager=self.lang_manager)
 
         # Instantiate delegated UI helpers
         self.help_ui = HelpUI(root, controller, CommonElements.FONT, lang_manager=self.lang_manager)
@@ -542,7 +542,7 @@ class SafePDFUI:
             relief=tk.FLAT,
             bd=0,
         )
-        self.pro_badge_label.bind("<Button-1>", lambda e: self.update_ui.show_pro_dialog(self))
+        self.pro_badge_label.bind("<Button-1>", lambda e: self.update_manager.show_pro_dialog(self))
 
         self.minimize_btn = tk.Button(
             self.header_frame,
@@ -1150,7 +1150,7 @@ class SafePDFUI:
                     f"1.0+{update_line_start}c",
                     f"1.0+{line_end}c",
                 )
-                text_widget.tag_bind("update_link", "<Button-1>", self.update_ui.check_for_updates)
+                text_widget.tag_bind("update_link", "<Button-1>", self.update_manager.check_for_updates)
                 text_widget.tag_bind(
                     "update_link",
                     "<Enter>",
@@ -2198,7 +2198,7 @@ class SafePDFUI:
                 try:
                     update_info = self.controller.check_for_updates()
                     if update_info and update_info.get("available"):
-                        self.root.after(0, lambda: self.update_ui.show_update_dialog(update_info))
+                        self.root.after(0, lambda: self.update_manager.show_update_dialog(update_info))
                 except Exception:
                     logger.debug("Silent auto update check failed", exc_info=True)
 
@@ -2283,7 +2283,7 @@ class SafePDFUI:
 
             # Let UpdateUI refresh any localized strings it manages
             try:
-                self.update_ui.update_pro_ui(self)
+                self.update_manager.update_pro_ui(self)
             except Exception:
                 pass
 
@@ -2515,7 +2515,7 @@ class SafePDFUI:
         self.pro_status_btn = tk.Button(
             pro_frame,
             text=status_text,
-            command=lambda: self.update_ui.show_pro_dialog(self),
+            command=lambda: self.update_manager.show_pro_dialog(self),
             font=(CommonElements.FONT, 9, "bold"),
             fg=CommonElements.BUTTON_TEXT_DARK,
             bg=status_color,
@@ -3472,17 +3472,17 @@ class SafePDFUI:
         """Generic UI update callback"""
         # This can be used for any general UI updates
         self.root.update_idletasks()
-        # Update pro features when UI updates (delegated)
         try:
-            self.update_ui  # ensure attribute exists
-            self.update_ui.update_pro_ui(self)
+            if hasattr(self, "update_manager") and self.update_manager:
+                self.update_manager.update_pro_ui(self)
         except Exception:
             pass
 
     def update_pro_features(self):
         """Backward-compatible delegate to UpdateUI for pro UI updates"""
         try:
-            self.update_ui.update_pro_ui(self)
+            if hasattr(self, "update_manager") and self.update_manager:
+                self.update_manager.update_pro_ui(self)
         except Exception:
             logger.debug("Error delegating pro UI update", exc_info=True)
             pass
@@ -3527,7 +3527,7 @@ class SafePDFUI:
     def _load_pro_features(self):
         """Delegate loading pro features to UpdateUI"""
         try:
-            return self.update_ui.load_pro_features()
+            return self.update_manager.load_pro_features()
         except Exception:
             logger.debug("Error delegating pro features load", exc_info=True)
             return []
@@ -3614,7 +3614,7 @@ class SafePDFUI:
     def show_pro_dialog(self):
         """Delegate to UpdateUI to show Pro dialog"""
         try:
-            return self.update_ui.show_pro_dialog(self)
+            return self.update_manager.show_pro_dialog(self)
         except Exception:
             logger.debug("Error delegating show_pro_dialog", exc_info=True)
             try:

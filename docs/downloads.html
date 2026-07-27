@@ -6,20 +6,24 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Download SafePDF - Open Source Offline PDF Toolkit</title>
-    <meta name="description" content="Download SafePDF for Windows, macOS, and Linux. Open source offline PDF toolkit for compression, split, merge, convert, rotate, and repair without uploads.">
-    <meta name="keywords" content="SafePDF download, PDF toolkit download, offline PDF tool, free PDF software, Windows PDF tool, macOS PDF tool, Linux PDF tool">
+    <meta name="description"
+        content="Download SafePDF for Windows, macOS, and Linux. Open source offline PDF toolkit for compression, split, merge, convert, rotate, and repair without uploads.">
+    <meta name="keywords"
+        content="SafePDF download, PDF toolkit download, offline PDF tool, free PDF software, Windows PDF tool, macOS PDF tool, Linux PDF tool">
     <meta name="author" content="mcagriaksoy">
     <meta name="robots" content="index,follow">
     <meta name="language" content="en">
     <meta property="og:title" content="Download SafePDF - Open Source Offline PDF Toolkit">
-    <meta property="og:description" content="Download SafePDF for Windows, macOS, and Linux. Open source offline PDF operations for private local processing.">
+    <meta property="og:description"
+        content="Download SafePDF for Windows, macOS, and Linux. Open source offline PDF operations for private local processing.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://safepdf.de/downloads.html">
     <meta property="og:image" content="https://github.com/mcagriaksoy/SafePDF/raw/main/img/SafePDF_Ad.avif">
     <meta property="og:site_name" content="SafePDF">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Download SafePDF - Open Source Offline PDF Toolkit">
-    <meta name="twitter:description" content="Download SafePDF for Windows, macOS, and Linux for private local PDF processing.">
+    <meta name="twitter:description"
+        content="Download SafePDF for Windows, macOS, and Linux for private local PDF processing.">
     <meta name="twitter:image" content="https://github.com/mcagriaksoy/SafePDF/raw/main/img/SafePDF_Ad.avif">
     <link rel="canonical" href="https://safepdf.de/downloads.html">
     <link rel="icon" href="/favicon.ico">
@@ -27,32 +31,32 @@
     <script src="head.js"></script>
     <script>
         // Fetch latest version from GitHub releases
-        let latestVersion = 'v1.0.14'; // fallback version
+        let latestVersion = 'v1.0.15'; // fallback version
         let installerDownloadUrl = '';
         let portableDownloadUrl = '';
-        
+
         async function fetchLatestRelease() {
             try {
                 const response = await fetch('https://api.github.com/repos/mcagriaksoy/SafePDF/releases/latest');
                 const data = await response.json();
-                latestVersion = (data && data.tag_name) || 'v1.0.14';
-                
+                latestVersion = (data && data.tag_name) || 'v1.0.15';
+
                 // Find installer and portable versions in assets if assets exist
                 if (data && Array.isArray(data.assets)) {
-                    const installerAsset = data.assets.find(asset => 
-                        (asset.name.toLowerCase().includes('installer') || 
-                         asset.name.toLowerCase().includes('setup')) &&
+                    const installerAsset = data.assets.find(asset =>
+                        (asset.name.toLowerCase().includes('installer') ||
+                            asset.name.toLowerCase().includes('setup')) &&
                         (asset.name.includes('.exe') || asset.name.includes('.msi'))
                     );
-                    
-                    const portableAsset = data.assets.find(asset => 
+
+                    const portableAsset = data.assets.find(asset =>
                         asset.name.toLowerCase().includes('portable') ||
                         asset.name.toLowerCase().includes('.7z') ||
                         asset.name.toLowerCase().includes('.zip')
-                    ) || data.assets.find(asset => 
+                    ) || data.assets.find(asset =>
                         asset.name.includes('.exe') || asset.name.includes('win64')
                     );
-                    
+
                     if (installerAsset) {
                         installerDownloadUrl = installerAsset.browser_download_url;
                     }
@@ -60,12 +64,12 @@
                         portableDownloadUrl = portableAsset.browser_download_url;
                     }
                 }
-                
+
                 // Update version displays
                 document.querySelectorAll('.version-number').forEach(el => {
                     el.textContent = latestVersion;
                 });
-                
+
                 // Update Windows download links
                 if (installerDownloadUrl) {
                     document.querySelectorAll('.windows-installer-link').forEach(link => {
@@ -81,10 +85,10 @@
                 console.error('Failed to fetch latest release:', error);
             }
         }
-        
+
         // Fetch on page load
         window.addEventListener('DOMContentLoaded', fetchLatestRelease);
-        
+
         // Page configuration for head.js
         const pageConfig = {
             title: "Download SafePDF - Open Source Offline PDF Toolkit",
@@ -125,12 +129,14 @@
         <div class="container hero-inner">
             <div class="hero-text">
                 <h1>Download SafePDF for Windows, macOS, and Linux</h1>
-                <p class="lead">Choose your platform and start processing PDFs privately and securely. SafePDF is an open source offline PDF toolkit for compression, conversion, splitting, merging, and repair.</p>
+                <p class="lead">Choose your platform and start processing PDFs privately and securely. SafePDF is an
+                    open source offline PDF toolkit for compression, conversion, splitting, merging, and repair.</p>
 
-                <p style="font-size: 0.9em; color: #666; margin: 16px 0; font-weight: 500;">⭐ Free and open source • No signup required • No personal data collected</p>
+                <p style="font-size: 0.9em; color: #666; margin: 16px 0; font-weight: 500;">⭐ Free and open source • No
+                    signup required • No personal data collected</p>
                 <div class="download-stats">
                     <div class="stat">
-                        <span class="stat-number version-number">v1.0.14</span>
+                        <span class="stat-number version-number">v1.0.15</span>
                         <span class="stat-label">Latest Version</span>
                     </div>
                     <div class="stat">
@@ -154,14 +160,17 @@
 
     <main class="container">
         <!-- Quick Info Section -->
-        <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; margin-bottom: 48px; margin-top: 32px;">
+        <section
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; margin-bottom: 48px; margin-top: 32px;">
             <article style="background: #f8f9fa; padding: 24px; border-radius: 8px; border-left: 4px solid #0066cc;">
                 <h3 style="margin-top: 0; color: #0066cc;">📖 New to offline PDF tools?</h3>
-                <p>Learn why SafePDF and offline processing matter for your privacy and workflow. <a href="offline-pdf-tools.html">Read the offline PDF guide</a>.</p>
+                <p>Learn why SafePDF and offline processing matter for your privacy and workflow. <a
+                        href="offline-pdf-tools.html">Read the offline PDF guide</a>.</p>
             </article>
             <article style="background: #f8f9fa; padding: 24px; border-radius: 8px; border-left: 4px solid #cc0000;">
                 <h3 style="margin-top: 0; color: #cc0000;">🔒 Concerned about uploading files?</h3>
-                <p>Understand why secure PDF processing means keeping documents local. <a href="secure-pdf-processing.html">Read the security guide</a>.</p>
+                <p>Understand why secure PDF processing means keeping documents local. <a
+                        href="secure-pdf-processing.html">Read the security guide</a>.</p>
             </article>
             <article style="background: #f8f9fa; padding: 24px; border-radius: 8px; border-left: 4px solid #00aa00;">
                 <h3 style="margin-top: 0; color: #00aa00;">✅ Ready to start?</h3>
@@ -171,12 +180,16 @@
 
         <section class="downloads-section">
             <h2>Choose Your Platform</h2>
-            <p class="section-desc">SafePDF is available for Windows, macOS, and Linux. The easiest way to install on any platform is using pip:</p>
+            <p class="section-desc">SafePDF is available for Windows, macOS, and Linux. The easiest way to install on
+                any platform is using pip:</p>
 
-            <div class="pip-install-box" style="background:#f8f9fa;border:1px solid #e2e8f0;padding:16px;margin-bottom:24px;border-radius:8px;">
+            <div class="pip-install-box"
+                style="background:#f8f9fa;border:1px solid #e2e8f0;padding:16px;margin-bottom:24px;border-radius:8px;">
                 <h3 style="margin-top:0;">Install with pip (Recommended for Linux/macOS/Windows)</h3>
-                <pre style="background:#fff;border-radius:6px;padding:12px 16px;font-size:1.1em;">pip install SafePDF</pre>
-                <p style="margin:8px 0 0 0;font-size:0.95em;color:#555;">Requires Python 3.8 or newer. Works on all major platforms.</p>
+                <pre
+                    style="background:#fff;border-radius:6px;padding:12px 16px;font-size:1.1em;">pip install SafePDF</pre>
+                <p style="margin:8px 0 0 0;font-size:0.95em;color:#555;">Requires Python 3.8 or newer. Works on all
+                    major platforms.</p>
             </div>
 
             <div class="downloads-grid">
@@ -186,11 +199,13 @@
                     <h3>Windows</h3>
                     <p>Compatible with Windows 10 and later</p>
                     <div class="download-options">
-                        <a href="https://github.com/mcagriaksoy/SafePDF/releases/latest" class="btn primary download-btn windows-installer-link">
+                        <a href="https://github.com/mcagriaksoy/SafePDF/releases/latest"
+                            class="btn primary download-btn windows-installer-link">
                             <span class="download-icon">⬇️</span>
                             Download Installer
                         </a>
-                        <a href="https://github.com/mcagriaksoy/SafePDF/releases/latest" class="btn download-btn secondary windows-portable-link">
+                        <a href="https://github.com/mcagriaksoy/SafePDF/releases/latest"
+                            class="btn download-btn secondary windows-portable-link">
                             <span class="download-icon">📦</span>
                             Portable Version
                         </a>
@@ -206,8 +221,10 @@
                         <div class="btn primary download-btn" style="background: #e2e8f0; color: #333; cursor:default;">
                             Use pip to install
                         </div>
-                        <pre style="background:#fff;border-radius:6px;padding:8px 12px;font-size:1em;margin:8px 0 0 0;">pip install SafePDF</pre>
-                        <p style="margin-top: 8px; font-size: 0.9em; color: #666;">No native installer yet. Use pip for easiest installation.</p>
+                        <pre
+                            style="background:#fff;border-radius:6px;padding:8px 12px;font-size:1em;margin:8px 0 0 0;">pip install SafePDF</pre>
+                        <p style="margin-top: 8px; font-size: 0.9em; color: #666;">No native installer yet. Use pip for
+                            easiest installation.</p>
                     </div>
                 </div>
 
@@ -220,8 +237,10 @@
                         <div class="btn primary download-btn" style="background: #e2e8f0; color: #333; cursor:default;">
                             Use pip to install
                         </div>
-                        <pre style="background:#fff;border-radius:6px;padding:8px 12px;font-size:1em;margin:8px 0 0 0;">pip install SafePDF</pre>
-                        <p style="margin-top: 8px; font-size: 0.9em; color: #666;">No native installer yet. Use pip for easiest installation.</p>
+                        <pre
+                            style="background:#fff;border-radius:6px;padding:8px 12px;font-size:1em;margin:8px 0 0 0;">pip install SafePDF</pre>
+                        <p style="margin-top: 8px; font-size: 0.9em; color: #666;">No native installer yet. Use pip for
+                            easiest installation.</p>
                     </div>
                 </div>
             </div>
