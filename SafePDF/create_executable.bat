@@ -18,6 +18,12 @@ if errorlevel 1 (
     echo PyInstaller found.
 )
 
+REM Ensure keys directory exists (PyInstaller fails if --add-data source does not exist)
+if not exist "%ROOT%\keys" (
+    echo Creating missing keys directory...
+    mkdir "%ROOT%\keys"
+)
+
 echo About to call pyinstaller...
 REM Build the slim default app package without optional OCR/update extras.
 pyinstaller --noconfirm --windowed --onefile^
@@ -38,16 +44,7 @@ if errorlevel 1 (
     echo PyInstaller failed to run.
 ) else (
     echo PyInstaller command finished successfully.
+    echo Done. Check the "dist" folder for the generated executable.
 )
-echo Done. Check the "dist" folder for the generated executable.
-pause
-
-
-if errorlevel 1 (
-    echo PyInstaller failed to run.
-) else (
-    echo PyInstaller command finished successfully.
-)
-echo Done. Check the "dist" folder for the generated executable.
 pause
 cmd /k
