@@ -69,16 +69,23 @@ function initializeNavigation() {
         langSelect.addEventListener('change', function() {
             updateFlag();
             const lang = langSelect.value;
+            
+            // Set cookie so other pages know the language choice
+            var d = new Date(); d.setTime(d.getTime() + (365*24*60*60*1000));
+            document.cookie = "site_lang=" + lang + ";path=/;expires=" + d.toUTCString() + ";SameSite=Lax";
+            
             const url = new URL(window.location.href);
             url.searchParams.set('lang', lang);
             window.location.href = url.toString();
         });
 
-        // Set initial flag based on URL parameter
+        // Set initial flag based on URL parameter or cookie
         const urlLang = new URL(window.location.href).searchParams.get('lang');
-        if (urlLang) {
+        const cookieLang = getCookie('site_lang');
+        const activeLang = urlLang || cookieLang;
+        if (activeLang) {
             for (let i = 0; i < langSelect.options.length; i++) {
-                if (langSelect.options[i].value === urlLang) {
+                if (langSelect.options[i].value === activeLang) {
                     langSelect.selectedIndex = i;
                     break;
                 }
@@ -87,4 +94,11 @@ function initializeNavigation() {
         updateFlag();
     }
 
+}
+
+function getCookie(name) {
+    var value = "; " + document.cookie;
+    var parts = value.split("; " + name + "=");
+    if (parts.length === 2) return parts.pop().split(";").shift();
+    return null;
 }

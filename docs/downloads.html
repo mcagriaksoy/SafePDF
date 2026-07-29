@@ -31,21 +31,22 @@
     <script src="head.js"></script>
     <script>
         // Fetch latest version from GitHub releases
-        let latestVersion = 'v1.0.15'; // fallback version
-        let installerDownloadUrl = '';
-        let portableDownloadUrl = '';
+        let latestVersion = 'v1.0.16'; // fallback version
+        let installerDownloadUrl = 'https://github.com/mcagriaksoy/SafePDF/releases/download/v1.0.16/SafePdf_v1.0.16_iwin64.exe';
+        let portableDownloadUrl = 'https://github.com/mcagriaksoy/SafePDF/releases/download/v1.0.16/SafePdf_v1.0.16_portable_win64.exe';
 
         async function fetchLatestRelease() {
             try {
                 const response = await fetch('https://api.github.com/repos/mcagriaksoy/SafePDF/releases/latest');
                 const data = await response.json();
-                latestVersion = (data && data.tag_name) || 'v1.0.15';
+                latestVersion = (data && data.tag_name) || 'v1.0.16';
 
                 // Find installer and portable versions in assets if assets exist
                 if (data && Array.isArray(data.assets)) {
                     const installerAsset = data.assets.find(asset =>
                         (asset.name.toLowerCase().includes('installer') ||
-                            asset.name.toLowerCase().includes('setup')) &&
+                            asset.name.toLowerCase().includes('setup') ||
+                            asset.name.toLowerCase().includes('iwin64')) &&
                         (asset.name.includes('.exe') || asset.name.includes('.msi'))
                     );
 
@@ -53,8 +54,6 @@
                         asset.name.toLowerCase().includes('portable') ||
                         asset.name.toLowerCase().includes('.7z') ||
                         asset.name.toLowerCase().includes('.zip')
-                    ) || data.assets.find(asset =>
-                        asset.name.includes('.exe') || asset.name.includes('win64')
                     );
 
                     if (installerAsset) {
@@ -136,7 +135,7 @@
                     signup required • No personal data collected</p>
                 <div class="download-stats">
                     <div class="stat">
-                        <span class="stat-number version-number">v1.0.15</span>
+                        <span class="stat-number version-number">v1.0.16</span>
                         <span class="stat-label">Latest Version</span>
                     </div>
                     <div class="stat">
@@ -199,12 +198,12 @@
                     <h3>Windows</h3>
                     <p>Compatible with Windows 10 and later</p>
                     <div class="download-options">
-                        <a href="https://github.com/mcagriaksoy/SafePDF/releases/latest"
+                        <a href="https://github.com/mcagriaksoy/SafePDF/releases/download/v1.0.16/SafePdf_v1.0.16_iwin64.exe"
                             class="btn primary download-btn windows-installer-link">
                             <span class="download-icon">⬇️</span>
                             Download Installer
                         </a>
-                        <a href="https://github.com/mcagriaksoy/SafePDF/releases/latest"
+                        <a href="https://github.com/mcagriaksoy/SafePDF/releases/download/v1.0.16/SafePdf_v1.0.16_portable_win64.exe"
                             class="btn download-btn secondary windows-portable-link">
                             <span class="download-icon">📦</span>
                             Portable Version
@@ -368,6 +367,8 @@
     </div>
 
     <script src="cookie-consent.js"></script>
+    <!-- Translation -->
+    <script src="translate.js"></script>
 </body>
 
 </html>
