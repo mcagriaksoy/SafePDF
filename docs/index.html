@@ -641,7 +641,9 @@
                 const firstCard = slider.querySelector('.feature-card');
                 if (!firstCard) return;
                 const cardWidth = firstCard.getBoundingClientRect().width;
-                const gap = parseFloat(getComputedStyle(slider).columnGap || getComputedStyle(slider).gap || 0);
+                const rawGap = getComputedStyle(slider).columnGap || getComputedStyle(slider).gap || 0;
+                const parsedGap = parseFloat(rawGap);
+                const gap = isNaN(parsedGap) ? 0 : parsedGap;
                 const step = cardWidth + gap;
                 slider.scrollBy({ left: direction * step, behavior: 'smooth' });
             }
@@ -738,11 +740,19 @@
                     }
                 }));
             }
+            function getCookie(name) {
+                var value = "; " + document.cookie;
+                var parts = value.split("; " + name + "=");
+                if (parts.length === 2) return parts.pop().split(";").shift();
+                return null;
+            }
             var urlLang = new URL(window.location.href).searchParams.get('lang');
+            var cookieLang = getCookie('site_lang');
+            var activeLang = urlLang || cookieLang;
             // Validate ISO standard language codes (en, tr, de)
-            if (urlLang && ['tr', 'de'].includes(urlLang)) {
+            if (activeLang && ['tr', 'de'].includes(activeLang)) {
                 window.addEventListener('DOMContentLoaded', function () {
-                    translatePage(urlLang);
+                    translatePage(activeLang);
                 });
             }
         })();
