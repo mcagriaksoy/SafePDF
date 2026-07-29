@@ -155,16 +155,25 @@ class OperationSettingsUI:
         self.compression_indicator.config(text=text)
         self.compression_visual_frame.config(bg=CommonElements.BG_COLOR)
 
-    def create_rotate_settings(self, rotation_var):
+    def create_rotate_settings(self, rotation_var, on_change_callback=None):
         """Create settings for PDF rotation"""
         self.rotation_var = rotation_var
 
-        ttk.Label(self.settings_container, text="Rotation Angle:").pack(anchor="w", pady=5)
+        ttk.Label(
+            self.settings_container,
+            text=self.lang_manager.get("settings_rotation", "Rotation Angle:"),
+        ).pack(anchor="w", pady=5)
         rotation_frame = ttk.Frame(self.settings_container)
         rotation_frame.pack(anchor="w", pady=5)
 
         for angle in ["90", "180", "270"]:
-            ttk.Radiobutton(rotation_frame, text=f"{angle}°", variable=self.rotation_var, value=angle).pack(anchor="w")
+            ttk.Radiobutton(
+                rotation_frame,
+                text=f"{angle}°",
+                variable=self.rotation_var,
+                value=angle,
+                command=on_change_callback,
+            ).pack(anchor="w")
 
     def create_to_jpg_settings(self, img_quality_var):
         """Create settings for PDF to JPG conversion"""
@@ -245,27 +254,167 @@ class OperationSettingsUI:
             variable=self.repair_var,
         ).pack(anchor="w")
 
-    def create_merge_settings(self, merge_var, selected_files):
-        """Create settings for PDF merging"""
+    def create_merge_settings(self, merge_var, selected_files, on_files_changed=None):
+        """Create settings for PDF merging with interactive ordering, adding, and removing files"""
         self.merge_var = merge_var
 
-        ttk.Label(self.settings_container, text="Merge Options:").pack(anchor="w", pady=5)
+        # Define custom style for smaller buttons
+        style = ttk.Style()
+        style.configure(
+            "Small.TButton",
+            font=(CommonElements.FONT, 9),
+            padding=4,
+        )
+
+        ttk.Label(
+            self.settings_container,
+            text=self.lang_manager.get("settings_merge_options", "Merge Options:"),
+        ).pack(anchor="w", pady=5)
+        
         merge_frame = ttk.Frame(self.settings_container)
         merge_frame.pack(anchor="w", pady=5)
 
-        ttk.Checkbutton(merge_frame, text="Add page numbers to merged PDF", variable=self.merge_var).pack(anchor="w")
+        ttk.Checkbutton(
+            merge_frame,
+            text=self.lang_manager.get("settings_merge_page_numbers", "Add page numbers to merged PDF"),
+            variable=self.merge_var,
+        ).pack(anchor="w")
 
-        # Show selected files
-        files_frame = ttk.LabelFrame(self.settings_container, text="Files to Merge (in order)", padding="10")
-        files_frame.pack(fill="x", pady=(8, 6))
+        # Show selected files frame
+        files_frame = ttk.LabelFrame(
+            self.settings_container,
+            text=self.lang_manager.get("settings_files_to_merge", "Files to Merge (in order)"),
+            padding="10",
+        )
+        files_frame.pack(fill="both", expand=True, pady=(8, 6))
 
-        if selected_files:
-            for file_path in selected_files:
-                ttk.Label(files_frame, text=f"  • {file_path}", foreground="#666").pack(anchor="w", padx=10)
-        else:
-            ttk.Label(files_frame, text="No files selected", foreground="#999", style="Gray.TLabel").pack(
-                anchor="w", padx=10
+        # Main layout frame inside files_frame: left is listbox, right is control buttons
+        layout_frame = ttk.Frame(files_frame)
+        layout_frame.pack(fill="both", expand=True)
+
+        # Listbox container (with scrollbars)
+        list_container = ttk.Frame(layout_frame)
+        list_container.pack(side="left", fill="both", expand=True, padx=(0, 10))
+
+        # Create Listbox
+        self.merge_listbox = tk.Listbox(
+            list_container,
+            bg=CommonElements.ENTRY_BG,
+            fg=CommonElements.TEXT_FG,
+            selectbackground=CommonElements.RED_COLOR,
+            selectforeground="#ffffff",
+            font=(CommonElements.FONT, 10),
+            height=6,
+            relief="solid",
+            bd=1,
+            highlightthickness=0,
+        )
+        self.merge_listbox.pack(side="left", fill="both", expand=True)
+
+        # Scrollbar for Listbox
+        scrollbar = ttk.Scrollbar(list_container, orient="vertical", command=self.merge_listbox.yview)
+        scrollbar.pack(side="right", fill="y")
+        self.merge_listbox.config(yscrollcommand=scrollbar.set)
+
+        # Control buttons frame
+        btn_frame = ttk.Frame(layout_frame)
+        btn_frame.pack(side="right", fill="y")
+
+        # Localized button labels
+        up_text = self.lang_manager.get("merge_move_up", "▲ Move Up")
+        down_text = self.lang_manager.get("merge_move_down", "▼ Move Down")
+        add_text = self.lang_manager.get("merge_add_file", "➕ Add File")
+        remove_text = self.lang_manager.get("merge_remove", "❌ Remove")
+
+        # Function to update Listbox and Controller
+        def update_listbox_from_controller():
+            self.merge_listbox.delete(0, tk.END)
+            for f in self.controller.selected_files:
+                self.merge_listbox.insert(tk.END, f)
+
+        # Initial populate
+        update_listbox_from_controller()
+
+        def move_up():
+            selected_indices = self.merge_listbox.curselection()
+            if not selected_indices:
+                return
+            index = selected_indices[0]
+            if index == 0:
+                return
+            # Swap in controller list
+            files = list(self.controller.selected_files)
+            files[index], files[index - 1] = files[index - 1], files[index]
+            self.controller.selected_files = files
+            self.controller.selected_file = files[0] if files else None
+            update_listbox_from_controller()
+            self.merge_listbox.select_set(index - 1)
+            self.merge_listbox.see(index - 1)
+            if on_files_changed:
+                on_files_changed()
+
+        def move_down():
+            selected_indices = self.merge_listbox.curselection()
+            if not selected_indices:
+                return
+            index = selected_indices[0]
+            if index == self.merge_listbox.size() - 1:
+                return
+            # Swap in controller list
+            files = list(self.controller.selected_files)
+            files[index], files[index + 1] = files[index + 1], files[index]
+            self.controller.selected_files = files
+            self.controller.selected_file = files[0] if files else None
+            update_listbox_from_controller()
+            self.merge_listbox.select_set(index + 1)
+            self.merge_listbox.see(index + 1)
+            if on_files_changed:
+                on_files_changed()
+
+        def add_file():
+            from tkinter import filedialog
+            file_paths = filedialog.askopenfilenames(
+                title=self.lang_manager.get("select_merge_files", "Select PDF Files to Merge"),
+                filetypes=[("PDF files", "*.pdf"), ("All files", "*.*")],
             )
+            if file_paths:
+                files = list(self.controller.selected_files)
+                for f in file_paths:
+                    if f not in files:
+                        files.append(f)
+                self.controller.selected_files = files
+                self.controller.selected_file = files[0] if files else None
+                update_listbox_from_controller()
+                # Select the last added item
+                self.merge_listbox.select_set(tk.END)
+                self.merge_listbox.see(tk.END)
+                if on_files_changed:
+                    on_files_changed()
+
+        def remove_file():
+            selected_indices = self.merge_listbox.curselection()
+            if not selected_indices:
+                return
+            index = selected_indices[0]
+            files = list(self.controller.selected_files)
+            if 0 <= index < len(files):
+                del files[index]
+                self.controller.selected_files = files
+                self.controller.selected_file = files[0] if files else None
+                update_listbox_from_controller()
+                # Select the next or previous item
+                new_len = len(files)
+                if new_len > 0:
+                    new_idx = min(index, new_len - 1)
+                    self.merge_listbox.select_set(new_idx)
+                if on_files_changed:
+                    on_files_changed()
+
+        # Pack control buttons
+        ttk.Button(btn_frame, text=up_text, style="Small.TButton", width=15, command=move_up).pack(pady=2, fill="x")
+        ttk.Button(btn_frame, text=down_text, style="Small.TButton", width=15, command=move_down).pack(pady=2, fill="x")
+        ttk.Button(btn_frame, text=add_text, style="Small.TButton", width=15, command=add_file).pack(pady=2, fill="x")
+        ttk.Button(btn_frame, text=remove_text, style="Small.TButton", width=15, command=remove_file).pack(pady=2, fill="x")
 
     def create_split_settings(self, split_var, page_range_var):
         """Create settings for PDF splitting"""

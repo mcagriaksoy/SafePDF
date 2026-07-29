@@ -1278,21 +1278,25 @@ class SafePDFUI:
         self.update_file_tab_ui()
 
     def show_pdf_preview(self, pdf_path):
-        """Render and show a preview for the selected PDF or JPG image."""
-        if not hasattr(self, "pdf_preview_canvas") or not self.pdf_preview_canvas:
-            return
-
+        """Render and show a preview for the selected PDF or JPG image on both file and settings tabs."""
         canvas_w, canvas_h = 180, 240
-        self.pdf_preview_canvas.delete("all")
+
+        # Delete previous images
+        if hasattr(self, "pdf_preview_canvas") and self.pdf_preview_canvas:
+            self.pdf_preview_canvas.delete("all")
+        if hasattr(self, "settings_preview_canvas") and self.settings_preview_canvas:
+            self.settings_preview_canvas.delete("all")
 
         if not pdf_path:
-            self.pdf_preview_canvas.create_text(
-                canvas_w // 2,
-                canvas_h // 2,
-                text=self.lang_manager.get("preview_no_file_selected", "No file\nselected"),
-                fill="#888",
-                font=(CommonElements.FONT, 10),
-            )
+            no_file_text = self.lang_manager.get("preview_no_file_selected", "No file\nselected")
+            if hasattr(self, "pdf_preview_canvas") and self.pdf_preview_canvas:
+                self.pdf_preview_canvas.create_text(
+                    canvas_w // 2, canvas_h // 2, text=no_file_text, fill="#888", font=(CommonElements.FONT, 10)
+                )
+            if hasattr(self, "settings_preview_canvas") and self.settings_preview_canvas:
+                self.settings_preview_canvas.create_text(
+                    canvas_w // 2, canvas_h // 2, text=no_file_text, fill="#888", font=(CommonElements.FONT, 10)
+                )
             return
 
         try:
@@ -1322,19 +1326,39 @@ class SafePDFUI:
                 img = page.render(scale=scale).to_pil()
                 pdf.close()
 
+            # Rotate preview in real-time if active operation is 'rotate'
+            if getattr(self.controller, "selected_operation", None) == "rotate":
+                try:
+                    angle_str = self.rotation_var.get()
+                    if angle_str:
+                        angle = int(angle_str)
+                        # Pillow rotates counter-clockwise, so clockwise is negative angle
+                        img = img.rotate(-angle, expand=True)
+                except Exception:
+                    pass
+
             img.thumbnail((canvas_w, canvas_h), Image.LANCZOS)
 
-            self.pdf_preview_image = ImageTk.PhotoImage(img)
-            self.pdf_preview_canvas.create_image(canvas_w // 2, canvas_h // 2, image=self.pdf_preview_image)
+            # Store image object reference to prevent garbage collection
+            preview_img = ImageTk.PhotoImage(img)
+
+            if hasattr(self, "pdf_preview_canvas") and self.pdf_preview_canvas:
+                self.pdf_preview_image = preview_img
+                self.pdf_preview_canvas.create_image(canvas_w // 2, canvas_h // 2, image=self.pdf_preview_image)
+            if hasattr(self, "settings_preview_canvas") and self.settings_preview_canvas:
+                self.settings_preview_image = preview_img
+                self.settings_preview_canvas.create_image(canvas_w // 2, canvas_h // 2, image=self.settings_preview_image)
+
         except Exception:
-            self.pdf_preview_canvas.delete("all")
-            self.pdf_preview_canvas.create_text(
-                canvas_w // 2,
-                canvas_h // 2,
-                text=self.lang_manager.get("preview_unavailable", "Preview\nUnavailable"),
-                fill="#888",
-                font=(CommonElements.FONT, 10),
-            )
+            err_text = self.lang_manager.get("preview_unavailable", "Preview\nUnavailable")
+            if hasattr(self, "pdf_preview_canvas") and self.pdf_preview_canvas:
+                self.pdf_preview_canvas.create_text(
+                    canvas_w // 2, canvas_h // 2, text=err_text, fill="#888", font=(CommonElements.FONT, 10)
+                )
+            if hasattr(self, "settings_preview_canvas") and self.settings_preview_canvas:
+                self.settings_preview_canvas.create_text(
+                    canvas_w // 2, canvas_h // 2, text=err_text, fill="#888", font=(CommonElements.FONT, 10)
+                )
 
     def update_file_tab_ui(self):
         """Update file tab UI based on selected operation"""
@@ -1748,7 +1772,7 @@ class SafePDFUI:
         messagebox.showinfo(title, message)
 
     def create_settings_tab(self):
-        """Create the settings adjustment tab with modern design"""
+        """Create the settings adjustment tab with modern design and PDF preview"""
         main_frame = ttk.Frame(self.settings_frame, style="TFrame")
         main_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
@@ -1762,9 +1786,39 @@ class SafePDFUI:
         )
         self.settings_label.pack(expand=True, pady=(0, 8))
 
-        # Settings container
-        self.settings_container = ttk.Frame(main_frame, style="TFrame")
-        self.settings_container.pack(fill="both", expand=True)
+        # Horizontal layout container for settings and preview
+        settings_layout_container = tk.Frame(main_frame, bg=CommonElements.BG_CARD)
+        settings_layout_container.pack(fill="both", expand=True)
+
+        # Left: Settings container
+        self.settings_container = ttk.Frame(settings_layout_container, style="TFrame")
+        self.settings_container.pack(side="left", fill="both", expand=True)
+
+        # Right: PDF preview area on settings tab
+        self.settings_preview_frame = tk.Frame(settings_layout_container, bg=CommonElements.BG_CARD, relief=tk.FLAT, bd=0)
+        self.settings_preview_frame.pack(side="right", fill="y", padx=(16, 0), pady=(0, 12))
+
+        self.settings_preview_label = tk.Label(
+            self.settings_preview_frame,
+            text=self.lang_manager.get("preview", "Preview:"),
+            font=(CommonElements.FONT, 11, "bold"),
+            bg=CommonElements.BG_CARD,
+            fg="#333",
+        )
+        self.settings_preview_label.pack(anchor="nw", pady=(0, 4))
+
+        self.settings_preview_canvas = tk.Canvas(
+            self.settings_preview_frame,
+            width=180,
+            height=240,
+            bg=CommonElements.BG_FRAME,
+            bd=1,
+            relief=tk.SOLID,
+            highlightthickness=1,
+            highlightbackground="#acb2bb",
+        )
+        self.settings_preview_canvas.pack(anchor="n", pady=(0, 8))
+        self.settings_preview_image = None
 
     def create_results_tab(self):
         """Create the results display tab with modern design"""
@@ -2645,6 +2699,9 @@ class SafePDFUI:
             previous_tab = self._previous_tab
             self._previous_tab = new_tab
             self.controller.current_tab = new_tab
+            if new_tab == 3:
+                self.update_settings_for_operation()
+                self.show_pdf_preview(self.controller.selected_file)
             self.update_navigation_buttons()
             self.animate_tab_change(previous_tab, new_tab)
 
@@ -3009,7 +3066,10 @@ class SafePDFUI:
                 False, self.use_default_output, self.output_path_var, self._on_browse_output
             )
         elif self.controller.selected_operation == "rotate":
-            ops_ui.create_rotate_settings(self.rotation_var)
+            ops_ui.create_rotate_settings(
+                self.rotation_var,
+                on_change_callback=lambda: self.show_pdf_preview(self.controller.selected_file)
+            )
             ops_ui.create_output_path_selection(
                 False, self.use_default_output, self.output_path_var, self._on_browse_output
             )
@@ -3034,7 +3094,11 @@ class SafePDFUI:
                 False, self.use_default_output, self.output_path_var, self._on_browse_output
             )
         elif self.controller.selected_operation == "merge":
-            ops_ui.create_merge_settings(self.merge_var, self.controller.selected_files)
+            ops_ui.create_merge_settings(
+                self.merge_var,
+                self.controller.selected_files,
+                on_files_changed=self._on_merge_files_changed,
+            )
             ops_ui.create_output_path_selection(
                 False, self.use_default_output, self.output_path_var, self._on_browse_output
             )
@@ -3493,13 +3557,10 @@ class SafePDFUI:
             # Default: enable
             enabled = True
             if self.controller.selected_operation == "merge":
-                # Require a second file to be selected
-                second = (
-                    self.merge_second_file_var.get().strip() if getattr(self, "merge_second_file_var", None) else ""
-                )
-                if not second:
+                # Require at least 2 files to be selected
+                if len(self.controller.selected_files) < 2:
                     enabled = False
-
+            
             # If results tab and output exists, Next becomes Open - leave it enabled
             if self.controller.current_tab == 4 and self.controller.current_output:
                 enabled = True
@@ -3510,6 +3571,11 @@ class SafePDFUI:
         except Exception:
             logger.debug("Error updating execute button state", exc_info=True)
             pass  # Button may not exist during initialization, ignore
+
+    def _on_merge_files_changed(self):
+        """Callback triggered when files in the merge settings list are modified"""
+        self._update_execute_button_state()
+        self.update_file_display()
 
     # Utility methods
     def open_github(self, event):
