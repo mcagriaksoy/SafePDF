@@ -1,10 +1,10 @@
 // Common head elements for SafePDF website
 // Note: Critical SEO meta tags are now in static HTML for better SEO
 function createCommonHead(pageConfig = {}) {
-    const canonicalUrl = pageConfig.canonicalUrl || `${window.location.origin}${window.location.pathname}`;
-    const analyticsId = pageConfig.analyticsId || 'G-FRC3NLZG1V';
-    const includeAnalytics = pageConfig.analytics !== false;
-    const headContent = `
+  const canonicalUrl = pageConfig.canonicalUrl || `${window.location.origin}${window.location.pathname}`;
+  const analyticsId = pageConfig.analyticsId || 'G-FRC3NLZG1V';
+  const includeAnalytics = pageConfig.analytics !== false;
+  const headContent = `
     <!-- Theme and UI Meta Tags -->
     <meta name="theme-color" content="#0f1720">
     <meta name="geo.region" content="DE">
@@ -108,7 +108,7 @@ function createCommonHead(pageConfig = {}) {
       "offers": {
         "@type": "Offer",
         "price": "0",
-        "priceCurrency": "USD"
+        "priceCurrency": "EUR"
       },
       "featureList": [
         "Offline PDF processing",
@@ -134,18 +134,18 @@ function createCommonHead(pageConfig = {}) {
     </script>` : ''}
     `;
 
-    // Insert into head
-    document.head.insertAdjacentHTML('beforeend', headContent);
+  // Insert into head
+  document.head.insertAdjacentHTML('beforeend', headContent);
 
 }
 
 function loadDeferredFonts() {
-    const fontLink = document.getElementById('deferred-google-fonts');
-    if (fontLink) {
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = fontLink.dataset.href;
-        document.head.appendChild(link);
-        fontLink.remove();
-    }
+  const fontLink = document.getElementById('deferred-google-fonts');
+  if (fontLink) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = fontLink.dataset.href;
+    document.head.appendChild(link);
+    fontLink.remove();
+  }
 }

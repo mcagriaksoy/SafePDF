@@ -2,37 +2,43 @@
 <html lang="en">
 
 <head>
-    <!-- Critical SEO Meta Tags (Static for better SEO) -->
+    <!-- Critical SEO Meta Tags -->
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Offline PDF Converter, Compressor & Open Source Toolkit | SafePDF</title>
+    <title>SafePDF - 100% Offline & Private PDF Converter, Compressor & Merger</title>
     <meta name="description"
-        content="SafePDF is an open source offline PDF converter and compressor for private local processing. Merge, split, compress, convert, rotate, and repair PDF files on your own device without uploads.">
+        content="Open source offline PDF converter, merger, and compressor for Windows, macOS, & Linux. Convert PDF to Word, Excel, JPG & compress documents locally on your device with zero cloud uploads.">
     <meta name="keywords"
-        content="offline PDF tool, local PDF processing, private PDF converter, secure PDF processing, offline PDF toolkit, privacy-first PDF software, local PDF converter, PDF compressor, merge PDF offline, split PDF offline, PDF to Word, PDF to Excel, PDF to JPG, Word to PDF, JPG to PDF, open source PDF app, SafePDF">
+        content="offline PDF converter, local PDF processor, private PDF software, open source PDF merger, offline PDF compressor, PDF to Word offline, Windows PDF converter, macOS local PDF tool, SafePDF">
     <meta name="author" content="mcagriaksoy">
     <meta name="robots" content="index,follow">
     <meta name="language" content="en">
 
-    <!-- Open Graph (Critical for social media) -->
-    <meta property="og:title" content="Offline PDF Converter, Compressor & Open Source Toolkit | SafePDF">
+    <!-- Multilingual Hreflang Tags for SEO -->
+    <link rel="alternate" hreflang="en" href="https://safepdf.de/" />
+    <link rel="alternate" hreflang="tr" href="https://safepdf.de/tr/" />
+    <link rel="alternate" hreflang="de" href="https://safepdf.de/de/" />
+    <link rel="alternate" hreflang="x-default" href="https://safepdf.de/" />
+
+    <!-- Open Graph (Critical for social media & preview cards) -->
+    <meta property="og:title" content="SafePDF - 100% Offline & Private PDF Converter, Compressor & Merger">
     <meta property="og:description"
-        content="Open source offline PDF converter and compressor for secure local processing. Convert, merge, split, compress, and repair documents without uploads.">
+        content="Open source offline PDF converter and compressor for private local processing. Convert, merge, split, compress, and repair documents without cloud uploads.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://safepdf.de/">
-    <meta property="og:image" content="https://github.com/mcagriaksoy/SafePDF/raw/main/img/SafePDF_Ad.avif">
+    <meta property="og:image" content="https://safepdf.de/assets/SafePDF_Ad.avif">
     <meta property="og:image:alt" content="SafePDF application banner showing privacy-focused PDF operations">
     <meta property="og:site_name" content="SafePDF">
     <meta property="og:locale" content="en_US">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
 
-    <!-- Twitter Card (Critical for Twitter sharing) -->
+    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Offline PDF Converter, Compressor & Open Source Toolkit | SafePDF">
+    <meta name="twitter:title" content="SafePDF - 100% Offline & Private PDF Converter, Compressor & Merger">
     <meta name="twitter:description"
-        content="Open source offline PDF converter and compressor for secure local processing. Convert, merge, split, compress, and repair documents without uploads.">
-    <meta name="twitter:image" content="https://github.com/mcagriaksoy/SafePDF/raw/main/img/SafePDF_Ad.avif">
+        content="Open source offline PDF converter and compressor for private local processing. Convert, merge, split, compress, and repair documents without cloud uploads.">
+    <meta name="twitter:image" content="https://safepdf.de/assets/SafePDF_Ad.avif">
     <meta name="twitter:image:alt" content="SafePDF application banner showing privacy-focused PDF operations">
 
     <meta name="yandex-verification" content="8f2ef7dc5c3c1687" />
@@ -42,7 +48,35 @@
     <!-- Favicon -->
     <link rel="icon" href="/favicon.ico">
 
-    <!-- Stylesheet -->
+    <!-- Structured Data (Schema.org JSON-LD for Google Software Application Snippets) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "SafePDF",
+      "operatingSystem": "Windows, macOS, Linux",
+      "applicationCategory": "UtilitiesApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "EUR"
+      },
+      "description": "Open source offline PDF converter, compressor, merger, and repair tool for private local document processing without uploads.",
+      "softwareVersion": "1.0.0",
+      "license": "https://opensource.org/licenses/GPL-3.0",
+      "downloadUrl": "https://safepdf.de/downloads.html",
+      "author": {
+        "@type": "Person",
+        "name": "mcagriaksoy",
+        "url": "https://github.com/mcagriaksoy"
+      },
+      "url": "https://safepdf.de/"
+    }
+    </script>
+
+    <!-- Fonts & Stylesheet -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="style.css">
 
     <!-- Additional head elements loaded via JavaScript -->
@@ -78,36 +112,45 @@
     </script>
 
     <header class="hero" id="hero">
-
         <div class="container hero-inner">
             <div class="hero-text">
+                <div class="hero-pill">
+                    <span class="hero-pill-icon">🛡️</span> 100% On-Device & Privacy-First PDF Toolkit
+                </div>
                 <h1>Open source offline PDF converter and compressor</h1>
                 <p class="lead">Merge, split, compress, convert, rotate, and repair PDF files locally on your own
-                    device. No uploads, no
-                    cloud processing, and no document leakage risk.</p>
+                    device. No uploads, no cloud processing, and zero document leakage risk.</p>
 
                 <div class="badges">
-                    <div style="text-align: center;">
-                        <a class="btn primary" href="downloads.html">Download Free</a>
-                        <p style="font-size: 0.85em; color: #666; margin: 4px 0 0 0;">No signup required</p>
+                    <div class="btn-secondary-group">
+                        <a class="btn primary" href="downloads.html">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="7 10 12 15 17 10" />
+                                <line x1="12" y1="15" x2="12" y2="3" />
+                            </svg>
+                            Download Free
+                        </a>
+                        <span class="btn-subtext">No signup required • macOS, Windows, Linux</span>
                     </div>
-                    <a class="btn" href="#buy-pro">Compare Plans</a>
+                    <a class="btn" href="#buy-pro">Compare Plans →</a>
                 </div>
 
                 <div class="trust-line">
-                    <a href="https://github.com/mcagriaksoy/SafePDF" target="_blank" rel="noopener">Open source on
-                        GitHub</a>
+                    <a href="https://github.com/mcagriaksoy/SafePDF" target="_blank" rel="noopener">
+                        ⭐ Open source on GitHub
+                    </a>
                     <span aria-hidden="true">•</span>
                     <a href="https://github.com/mcagriaksoy/SafePDF/blob/main/LICENSE" target="_blank"
                         rel="noopener">GPL-3.0 License</a>
                     <span aria-hidden="true">•</span>
-                    <a href="contact.html">Contact</a>
+                    <a href="contact.html">Contact Us</a>
                 </div>
             </div>
 
             <div class="hero-media">
-                <img class="hero-banner" src="https://github.com/mcagriaksoy/SafePDF/raw/main/img/SafePDF_Ad.avif"
-                    fetchpriority="high" width="1200" height="630"
+                <img class="hero-banner" src="assets/SafePDF_Ad.avif" fetchpriority="high" width="1200" height="630"
                     alt="SafePDF application banner showcasing privacy-focused PDF operations interface" />
             </div>
         </div>
@@ -121,24 +164,45 @@
             <h2>Key features</h2>
             <div class="features-top-grid">
                 <div class="feature-card">
-                    <div class="feature-icon">OFF</div>
-                    <h3 class="feature-title">Offline Processing</h3>
+                    <div class="feature-card-header">
+                        <div class="feature-icon-wrapper">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                                <path d="m9 12 2 2 4-4" />
+                            </svg>
+                        </div>
+                        <h3 class="feature-title">Offline Processing</h3>
+                    </div>
                     <p class="feature-desc">All PDF operations run entirely on your local device without requiring any
                         internet connection, ensuring your sensitive files never leave your computer or get uploaded to
                         external servers.</p>
                 </div>
 
                 <div class="feature-card">
-                    <div class="feature-icon">PRV</div>
-                    <h3 class="feature-title">Privacy‑Focused</h3>
+                    <div class="feature-card-header">
+                        <div class="feature-icon-wrapper">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                            </svg>
+                        </div>
+                        <h3 class="feature-title">Privacy‑Focused</h3>
+                    </div>
                     <p class="feature-desc">This privacy-first toolkit implements minimal telemetry practices and
                         provides clear, transparent consent controls for managing optional cookies, giving you complete
                         control over your data.</p>
                 </div>
 
                 <div class="feature-card">
-                    <div class="feature-icon">OSS</div>
-                    <h3 class="feature-title">Open Source</h3>
+                    <div class="feature-card-header">
+                        <div class="feature-icon-wrapper">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <polyline points="16 18 22 12 16 6" />
+                                <polyline points="8 6 2 12 8 18" />
+                            </svg>
+                        </div>
+                        <h3 class="feature-title">Open Source</h3>
+                    </div>
                     <p class="feature-desc">The complete source code for SafePDF is publicly available on GitHub under
                         the GPL‑3.0 license, allowing anyone to review, audit, and contribute to the project's
                         development.</p>
@@ -151,89 +215,153 @@
                 </button>
                 <div class="features-slider" id="features-slider">
                     <div class="feature-card">
-                        <div class="feature-icon">CMP</div>
-                        <h3 class="feature-title">Smart Compression</h3>
+                        <div class="feature-card-header">
+                            <div class="feature-icon-wrapper">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <polyline points="4 14 10 14 10 20" />
+                                    <polyline points="20 10 14 10 14 4" />
+                                    <line x1="14" y1="10" x2="21" y2="3" />
+                                    <line x1="3" y1="21" x2="10" y2="14" />
+                                </svg>
+                            </div>
+                            <h3 class="feature-title">Smart Compression</h3>
+                        </div>
                         <p class="feature-desc">Our intelligent compression engine offers multiple quality presets and
                             advanced image controls, allowing you to find the perfect balance between reduced file size
-                            and
-                            maintained visual quality.</p>
+                            and maintained visual quality.</p>
                     </div>
 
                     <div class="feature-card">
-                        <div class="feature-icon">SPL</div>
-                        <h3 class="feature-title">Split & Extract</h3>
+                        <div class="feature-card-header">
+                            <div class="feature-icon-wrapper">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <circle cx="6" cy="6" r="3" />
+                                    <circle cx="6" cy="18" r="3" />
+                                    <line x1="20" y1="4" x2="8.12" y2="15.88" />
+                                    <line x1="14.47" y1="14.47" x2="20" y2="20" />
+                                    <line x1="8.12" y1="8.12" x2="12" y2="12" />
+                                </svg>
+                            </div>
+                            <h3 class="feature-title">Split & Extract</h3>
+                        </div>
                         <p class="feature-desc">Easily split large PDF documents by individual pages, specific page
-                            ranges,
-                            or extract single pages quickly for sharing or further processing as separate files.</p>
-                    </div>
-
-                    <div class="feature-card">
-                        <div class="feature-icon">MRG</div>
-                        <h3 class="feature-title">Merge PDFs</h3>
-                        <p class="feature-desc">Combine multiple PDF documents into a single unified file with the
-                            ability
-                            to reorder pages and arrange content exactly how you need it before exporting the final
-                            document.</p>
-                    </div>
-
-                    <div class="feature-card">
-                        <div class="feature-icon">IMG</div>
-                        <h3 class="feature-title">Export Images</h3>
-                        <p class="feature-desc">Export individual PDF pages as high‑quality AVIF or JPG images, perfect
-                            for
-                            creating previews, thumbnails, or preparing content for further image processing and
-                            editing.
+                            ranges, or extract single pages quickly for sharing or further processing as separate files.
                         </p>
                     </div>
 
                     <div class="feature-card">
-                        <div class="feature-icon">TXT</div>
-                        <h3 class="feature-title">Text Conversion</h3>
+                        <div class="feature-card-header">
+                            <div class="feature-icon-wrapper">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <polygon points="12 2 2 7 12 12 22 7 12 2" />
+                                    <polyline points="2 17 12 22 22 17" />
+                                    <polyline points="2 12 12 17 22 12" />
+                                </svg>
+                            </div>
+                            <h3 class="feature-title">Merge PDFs</h3>
+                        </div>
+                        <p class="feature-desc">Combine multiple PDF documents into a single unified file with the
+                            ability to reorder pages and arrange content exactly how you need it before exporting the
+                            final document.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-card-header">
+                            <div class="feature-icon-wrapper">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                                    <circle cx="8.5" cy="8.5" r="1.5" />
+                                    <polyline points="21 15 16 10 5 21" />
+                                </svg>
+                            </div>
+                            <h3 class="feature-title">Export Images</h3>
+                        </div>
+                        <p class="feature-desc">Export individual PDF pages as high‑quality AVIF or JPG images, perfect
+                            for creating previews, thumbnails, or preparing content for further image processing and
+                            editing.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-card-header">
+                            <div class="feature-icon-wrapper">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                    <polyline points="14 2 14 8 20 8" />
+                                    <line x1="16" y1="13" x2="8" y2="13" />
+                                    <line x1="16" y1="17" x2="8" y2="17" />
+                                    <polyline points="10 9 9 9 8 9" />
+                                </svg>
+                            </div>
+                            <h3 class="feature-title">Text Conversion</h3>
+                        </div>
                         <p class="feature-desc">Convert PDF documents to searchable plain text format or editable DOCX
                             files, making it easy to reuse content, perform text analysis, or continue editing in word
                             processors.</p>
                     </div>
 
                     <div class="feature-card">
-                        <div class="feature-icon">ROT</div>
-                        <h3 class="feature-title">Rotate Pages</h3>
+                        <div class="feature-card-header">
+                            <div class="feature-icon-wrapper">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M21.5 2v6h-6" />
+                                    <path d="M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+                                </svg>
+                            </div>
+                            <h3 class="feature-title">Rotate Pages</h3>
+                        </div>
                         <p class="feature-desc">Rotate individual pages or entire documents non‑destructively,
-                            preserving
-                            the original content quality while fixing orientation issues in scanned or incorrectly
-                            formatted
-                            PDF files.</p>
+                            preserving original content quality while fixing orientation issues in scanned or
+                            incorrectly formatted PDF files.</p>
                     </div>
 
                     <div class="feature-card">
-                        <div class="feature-icon">RPR</div>
-                        <h3 class="feature-title">Repair PDFs</h3>
+                        <div class="feature-card-header">
+                            <div class="feature-icon-wrapper">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path
+                                        d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+                                </svg>
+                            </div>
+                            <h3 class="feature-title">Repair PDFs</h3>
+                        </div>
                         <p class="feature-desc">Attempt to recover and repair corrupted or damaged PDF files by
-                            salvaging
-                            readable pages and reconstructing document structure to retrieve as much content as
-                            possible.
-                        </p>
+                            salvaging readable pages and reconstructing document structure to retrieve as much content
+                            as possible.</p>
                     </div>
 
                     <div class="feature-card">
-                        <div class="feature-icon">MET</div>
-                        <h3 class="feature-title">Metadata Editing</h3>
+                        <div class="feature-card-header">
+                            <div class="feature-icon-wrapper">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path
+                                        d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+                                    <line x1="7" y1="7" x2="7.01" y2="7" />
+                                </svg>
+                            </div>
+                            <h3 class="feature-title">Metadata Editing</h3>
+                        </div>
                         <p class="feature-desc">Quickly edit and update PDF metadata including document title, author
                             information, subject fields, keywords, and other properties to better organize and identify
-                            your
-                            files.</p>
+                            your files.</p>
                     </div>
 
                     <div class="feature-card">
-                        <div class="feature-icon">CLI</div>
-                        <h3 class="feature-title">CLI & Automation</h3>
+                        <div class="feature-card-header">
+                            <div class="feature-icon-wrapper">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <polyline points="4 17 10 11 4 5" />
+                                    <line x1="12" y1="19" x2="20" y2="19" />
+                                </svg>
+                            </div>
+                            <h3 class="feature-title">CLI & Automation</h3>
+                        </div>
                         <p class="feature-desc">Automate repetitive PDF tasks using command-line interface examples and
                             scripts, perfect for batch processing large numbers of documents or integrating into
-                            existing
-                            workflows.</p>
+                            existing workflows.</p>
                     </div>
                 </div>
                 <button class="features-nav-btn" type="button" id="features-next" aria-label="Next features">
-                    →
+                    ←
                 </button>
             </div>
             <p class="features-hint">Swipe or use arrows to browse all features.</p>
@@ -243,10 +371,9 @@
         <section class="screenshots" id="screenshots">
             <h2>Screenshots</h2>
             <div class="shot-row">
-                <img src="https://github.com/mcagriaksoy/SafePDF/raw/main/img/UI_v1.avif"
-                    alt="SafePDF main application window showing PDF operation options" tabindex="0" role="button"
-                    class="shot-img" />
-                <img src="https://github.com/mcagriaksoy/SafePDF/raw/main/img/UI_v1_p2.avif"
+                <img src="assets/UI_v1.avif" alt="SafePDF main application window showing PDF operation options"
+                    tabindex="0" role="button" class="shot-img" />
+                <img src="assets/UI_v1_p2.avif"
                     alt="SafePDF operations interface displaying file selection and processing controls" tabindex="0"
                     role="button" class="shot-img" />
             </div>
@@ -495,7 +622,8 @@
             <article class="plan-card" data-price="4.99" data-discount="33">
                 <div class="discount-badge">-33%</div>
                 <h3>30 Days</h3>
-                <p class="price"><span class="price-old">€4.99 + VAT</span> <span class="price-new">€3.34</span> + VAT</p>
+                <p class="price"><span class="price-old">€4.99 + VAT</span> <span class="price-new">€3.34</span> + VAT
+                </p>
                 <ul>
                     <li>Full Pro features for 30 days</li>
                 </ul>
@@ -506,7 +634,8 @@
             <article class="plan-card" data-price="11.99" data-discount="45">
                 <div class="discount-badge">-45%</div>
                 <h3>90 Days</h3>
-                <p class="price"><span class="price-old">€11.99 + VAT</span> <span class="price-new">€6.59</span> + VAT</p>
+                <p class="price"><span class="price-old">€11.99 + VAT</span> <span class="price-new">€6.59</span> + VAT
+                </p>
                 <ul>
                     <li>Full Pro features for 90 days</li>
                 </ul>
@@ -516,12 +645,13 @@
             <article class="plan-card recommended" data-price="29.99" data-discount="60">
                 <div class="discount-badge">-60%</div>
                 <h3>Yearly</h3>
-                <p class="price"><span class="price-old">€29.99 + VAT</span> <span class="price-new">€12.00</span> + VAT</p>
+                <p class="price"><span class="price-old">€29.99 + VAT</span> <span class="price-new">€12.00</span> + VAT
+                </p>
                 <ul>
                     <li>Full Pro features for 12 months</li>
                 </ul>
-                <a class="btn buy-btn secondary" href="https://safepdf.gumroad.com/l/cozefx" role="button"
-                    data-plan="365" target="_blank" rel="noopener">Buy for 365 Days</a>
+                <a class="btn primary buy-btn" href="https://safepdf.gumroad.com/l/cozefx" role="button" data-plan="365"
+                    target="_blank" rel="noopener">Buy for 365 Days</a>
             </article>
         </div>
 
