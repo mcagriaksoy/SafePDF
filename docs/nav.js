@@ -30,14 +30,26 @@ function createNavigation(navConfig) {
     const navContent = `
     <nav class="navbar">
         <div class="container">
-            <a href="${brandLink}" class="nav-brand">SafePDF™</a>
+            <a href="${brandLink}" class="nav-brand">
+                <svg class="nav-logo-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L3 7V12C3 17.55 6.84 22.74 12 24C17.16 22.74 21 17.55 21 12V7L12 2Z" fill="url(#brand-grad)"/>
+                    <path d="M12 6.5C9.5 6.5 7.5 8.5 7.5 11V12.5H6.5V17.5H17.5V12.5H16.5V11C16.5 8.5 14.5 6.5 12 6.5ZM12 8.3C13.5 8.3 14.7 9.5 14.7 11V12.5H9.3V11C9.3 9.5 10.5 8.3 12 8.3Z" fill="white"/>
+                    <defs>
+                        <linearGradient id="brand-grad" x1="3" y1="2" x2="21" y2="24" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#E11D48"/>
+                            <stop offset="1" stop-color="#991B1B"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <span>SafePDF<span class="brand-tm">™</span></span>
+            </a>
             <ul class="nav-links">
                 ${sharedLinks.map(link => `<li><a href="${link.href}">${link.text}</a></li>`).join('')}
             </ul>
-            <div class="lang-selector" style="display:flex;align-items:center;gap:6px">
-                <img id="lang-flag" src="${flagMap.en}" alt="Selected language flag" width="24" height="16" style="display:block;border-radius:2px;box-shadow:0 0 0 1px rgba(15,23,36,.12)">
+            <div class="lang-selector">
+                <img id="lang-flag" src="${flagMap.en}" alt="Selected language flag" width="22" height="15" class="lang-flag-img">
                 <label for="language-select" style="display:none">Language</label>
-                <select class="language-select" id="language-select" aria-label="Language" style="background:#fff;color:#0f1724;border:1px solid #ddd;padding:4px 8px;border-radius:6px;">
+                <select class="language-select" id="language-select" aria-label="Language">
                     <option value="en">English</option>
                     <option value="tr">Türkçe</option>
                     <option value="de">Deutsch</option>

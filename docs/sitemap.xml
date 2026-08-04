@@ -7,34 +7,34 @@
 
   <url>
     <loc>https://safepdf.de/</loc>
-    <lastmod>2026-03-13T00:00:00+00:00</lastmod>
+    <lastmod>2026-08-04T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://safepdf.de/" />
-    <xhtml:link rel="alternate" hreflang="tr" href="https://safepdf.de/?lang=tr" />
-    <xhtml:link rel="alternate" hreflang="de" href="https://safepdf.de/?lang=de" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://safepdf.de/tr/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://safepdf.de/de/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://safepdf.de/" />
   </url>
 
   <url>
-    <loc>https://safepdf.de/?lang=tr</loc>
-    <lastmod>2026-03-13T00:00:00+00:00</lastmod>
+    <loc>https://safepdf.de/tr/</loc>
+    <lastmod>2026-08-04T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://safepdf.de/" />
-    <xhtml:link rel="alternate" hreflang="tr" href="https://safepdf.de/?lang=tr" />
-    <xhtml:link rel="alternate" hreflang="de" href="https://safepdf.de/?lang=de" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://safepdf.de/tr/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://safepdf.de/de/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://safepdf.de/" />
   </url>
 
   <url>
-    <loc>https://safepdf.de/?lang=de</loc>
-    <lastmod>2026-03-13T00:00:00+00:00</lastmod>
+    <loc>https://safepdf.de/de/</loc>
+    <lastmod>2026-08-04T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://safepdf.de/" />
-    <xhtml:link rel="alternate" hreflang="tr" href="https://safepdf.de/?lang=tr" />
-    <xhtml:link rel="alternate" hreflang="de" href="https://safepdf.de/?lang=de" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://safepdf.de/tr/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://safepdf.de/de/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://safepdf.de/" />
   </url>
 

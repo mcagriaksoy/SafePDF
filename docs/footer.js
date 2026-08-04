@@ -55,9 +55,15 @@ function createFooter() {
 
     <div class="container footer-bottom">
         <p class="muted">© <span id="copy-year"></span> SafePDF. All rights reserved. <a href="https://github.com/mcagriaksoy/SafePDF">Repository</a></p>
-        <div class="footer-payment-logos" aria-label="Accepted payment methods">
-            <img src="assets/mc.avif" alt="Mastercard" />
-            <img src="assets/vc.avif" alt="Visa" />
+        <div class="footer-trust-badges">
+            <a href="https://www.checkdomain.de/unternehmen/garantie/ssl/popup/"
+               onclick="window.open(this.href + '?host=' + window.location.host,'','height=600,width=560,scrollbars=yes'); return false;" class="ssl-seal-link" title="SSL-Zertifikat">
+                <img src="https://www.checkdomain.de/assets/bundles/web/app/widget/seal/img/ssl_certificate/de/150x150.png" alt="SSL-Zertifikat" class="ssl-seal-img" />
+            </a>
+            <div class="footer-payment-logos" aria-label="Accepted payment methods">
+                <img src="assets/mc.avif" alt="Mastercard" />
+                <img src="assets/vc.avif" alt="Visa" />
+            </div>
         </div>
     </div>
 
