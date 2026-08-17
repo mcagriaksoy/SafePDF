@@ -17,6 +17,7 @@ function createFooter() {
                 <li><a href="pdf-to-jpg.html">PDF to JPG</a></li>
                 <li><a href="word-to-pdf.html">Word to PDF</a></li>
                 <li><a href="jpg-to-pdf.html">JPG to PDF</a></li>
+                <a href="https://krepza.lt/">Krepza.lt</a>
             </ul>
         </div>
 
