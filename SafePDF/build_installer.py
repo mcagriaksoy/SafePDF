@@ -11,7 +11,7 @@ def get_version():
     match = re.search(r'__version__\s*=\s*["\']([^"\']+)["\']', content)
     if match:
         return match.group(1)
-    return "1.0.16" # fallback
+    return "1.1.0" # fallback
 
 def build_executable(version, safe_pdf_dir, dist_dir):
     portable_name = f"SafePdf_v{version}_portable_win64"

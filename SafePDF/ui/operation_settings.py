@@ -101,7 +101,7 @@ class OperationSettingsUI:
         self.ultra_radio.config(state="normal" if self.controller.is_pro_activated else "disabled")
 
         # Right side - visual indicator
-        self.compression_visual_frame = tk.Frame(quality_frame, bg="#ffffff", relief=tk.RIDGE, bd=1)
+        self.compression_visual_frame = tk.Frame(quality_frame, bg=CommonElements.BG_CARD, relief=tk.RIDGE, bd=1)
         self.compression_visual_frame.pack(side="right", padx=(20, 0), fill="both", expand=True)
 
         # Create visual indicator label
@@ -109,7 +109,7 @@ class OperationSettingsUI:
             self.compression_visual_frame,
             text=self.lang_manager.get("settings_preview", "📊 Compression Preview"),
             font=(CommonElements.FONT, 10, "bold"),
-            bg="#ffffff",
+            bg=CommonElements.BG_CARD,
             fg=CommonElements.RED_COLOR,
             pady=CommonElements.PADDING,
         )
@@ -221,7 +221,7 @@ class OperationSettingsUI:
                 "settings_jpg_to_pdf_bullet_single",
                 "• Creates one PDF page from the selected image",
             ),
-            foreground="#666",
+            foreground=CommonElements.FG_SECONDARY,
         ).pack(anchor="w")
         ttk.Label(
             info_frame,
@@ -229,7 +229,7 @@ class OperationSettingsUI:
                 "settings_jpg_to_pdf_bullet_quality",
                 "• Keeps the original image appearance as closely as possible",
             ),
-            foreground="#666",
+            foreground=CommonElements.FG_SECONDARY,
         ).pack(anchor="w")
         ttk.Label(
             info_frame,
@@ -237,7 +237,7 @@ class OperationSettingsUI:
                 "settings_jpg_to_pdf_bullet_output",
                 "• Saves as a standard PDF file",
             ),
-            foreground="#666",
+            foreground=CommonElements.FG_SECONDARY,
         ).pack(anchor="w")
 
     def create_repair_settings(self, repair_var):
@@ -455,7 +455,7 @@ class OperationSettingsUI:
                 "settings_to_word_bullet_extracts",
                 "• Extracts embedded text from PDF",
             ),
-            foreground="#666",
+            foreground=CommonElements.FG_SECONDARY,
         ).pack(anchor="w")
         ttk.Label(
             info_frame,
@@ -463,7 +463,7 @@ class OperationSettingsUI:
                 "settings_to_word_bullet_formatting",
                 "• Attempts to preserve basic formatting",
             ),
-            foreground="#666",
+            foreground=CommonElements.FG_SECONDARY,
         ).pack(anchor="w")
         ttk.Label(
             info_frame,
@@ -471,7 +471,7 @@ class OperationSettingsUI:
                 "settings_to_word_bullet_images",
                 "• Includes images where possible",
             ),
-            foreground="#666",
+            foreground=CommonElements.FG_SECONDARY,
         ).pack(anchor="w")
         ttk.Label(
             info_frame,
@@ -479,7 +479,7 @@ class OperationSettingsUI:
                 "settings_to_word_bullet_requires",
                 "• Requires python-docx and pypdfium2",
             ),
-            foreground="#666",
+            foreground=CommonElements.FG_SECONDARY,
         ).pack(anchor="w")
 
     def create_to_txt_settings(self):
@@ -501,7 +501,7 @@ class OperationSettingsUI:
                 "settings_to_txt_bullet_extracts",
                 "• Extracts all readable text from PDF",
             ),
-            foreground="#666",
+            foreground=CommonElements.FG_SECONDARY,
         ).pack(anchor="w")
         ttk.Label(
             info_frame,
@@ -509,7 +509,7 @@ class OperationSettingsUI:
                 "settings_to_txt_bullet_selectable",
                 "• Works on PDFs that already contain selectable text",
             ),
-            foreground="#666",
+            foreground=CommonElements.FG_SECONDARY,
         ).pack(anchor="w")
         ttk.Label(
             info_frame,
@@ -517,7 +517,7 @@ class OperationSettingsUI:
                 "settings_to_txt_bullet_no_ocr",
                 "• Does not perform OCR on scanned/image-only PDFs",
             ),
-            foreground="#666",
+            foreground=CommonElements.FG_SECONDARY,
         ).pack(anchor="w")
         ttk.Label(
             info_frame,
@@ -525,7 +525,7 @@ class OperationSettingsUI:
                 "settings_to_txt_bullet_utf8",
                 "• UTF-8 encoded output",
             ),
-            foreground="#666",
+            foreground=CommonElements.FG_SECONDARY,
         ).pack(anchor="w")
 
     def create_to_ocr_settings(self, ocr_output_format_var):
@@ -548,7 +548,7 @@ class OperationSettingsUI:
                 "settings_to_ocr_bullet_best",
                 "• Best for scanned or image-only PDFs",
             ),
-            foreground="#666",
+            foreground=CommonElements.FG_SECONDARY,
         ).pack(anchor="w")
         ttk.Label(
             info_frame,
@@ -556,7 +556,7 @@ class OperationSettingsUI:
                 "settings_to_ocr_bullet_language",
                 "• Uses the app language when an OCR language pack is available",
             ),
-            foreground="#666",
+            foreground=CommonElements.FG_SECONDARY,
         ).pack(anchor="w")
         ttk.Label(
             info_frame,
@@ -564,7 +564,7 @@ class OperationSettingsUI:
                 "settings_to_ocr_bullet_output_hint",
                 "• TXT is best for quick copy/edit, DOCX is better for sharing",
             ),
-            foreground="#666",
+            foreground=CommonElements.FG_SECONDARY,
         ).pack(anchor="w")
         ttk.Label(
             info_frame,
@@ -572,7 +572,7 @@ class OperationSettingsUI:
                 "settings_to_ocr_bullet_future_pdf",
                 "• Searchable OCR PDF can be added later as a separate export option",
             ),
-            foreground="#666",
+            foreground=CommonElements.FG_SECONDARY,
         ).pack(anchor="w")
         ttk.Label(
             info_frame,
@@ -580,7 +580,7 @@ class OperationSettingsUI:
                 "settings_to_ocr_bullet_requires",
                 "• Requires Tesseract OCR and pypdfium2",
             ),
-            foreground="#666",
+            foreground=CommonElements.FG_SECONDARY,
         ).pack(anchor="w")
 
         format_frame = ttk.LabelFrame(
@@ -615,17 +615,17 @@ class OperationSettingsUI:
         ttk.Label(
             info_frame,
             text="• Extracts PDF metadata (title, author, etc.)",
-            foreground="#666",
+            foreground=CommonElements.FG_SECONDARY,
         ).pack(anchor="w")
         ttk.Label(
             info_frame,
             text="• Includes file properties and creation info",
-            foreground="#666",
+            foreground=CommonElements.FG_SECONDARY,
         ).pack(anchor="w")
         ttk.Label(
             info_frame,
             text="• Saves detailed information to text file",
-            foreground="#666",
+            foreground=CommonElements.FG_SECONDARY,
         ).pack(anchor="w")
 
     def create_output_path_selection(self, is_directory, use_default_output, output_path_var, browse_callback):
@@ -666,7 +666,7 @@ class OperationSettingsUI:
         path_label = ttk.Label(
             path_frame,
             text=output_path_var.get() or self.lang_manager.get("settings_no_path_selected", "No path selected"),
-            foreground="#666",
+            foreground=CommonElements.FG_SECONDARY,
         )
         path_label.pack(side="left", fill="x", expand=True)
 

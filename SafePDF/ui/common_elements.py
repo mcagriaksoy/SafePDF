@@ -1,38 +1,43 @@
 # define color, font, size, and layout for common UI elements
+# Values are sourced from SafePDF.ui.theme so the look stays consistent.
+# Attribute names are kept unchanged for backwards compatibility.
+
 from typing import ClassVar
+
+from .theme import FONT_SIZES, LIGHT, SPACING, resolve_font_family
 
 
 class CommonElements:
-    # Colors
-    BG_COLOR = "#f0f0f0"
-    FG_COLOR = "#333333"
-    RED_COLOR = "#b62020"
-    BG_MAIN = "#f4f6fb"
-    BG_CARD = "#ffffff"
-    BG_FRAME = "#ffffff"
-    FG_TEXT = "#000000"
-    FG_SECONDARY = "#DBDBDB"
-    TAB_BG = "#e9ecef"
-    TAB_SELECTED = "#ffffff"
-    HIGHLIGHT_COLOR = "#f8f9fa"
-    TEXT_BG = "#ffffff"
-    TEXT_FG = "#222"
-    BUTTON_BG = "#e9ecef"
-    BUTTON_FG = "#000000"
-    BUTTON_TEXT_DARK = "#1f2933"
-    ENTRY_BG = "#ffffff"
-    ENTRY_FG = "#000000"
+    # Colors (light-theme defaults; apply_theme overrides the active values)
+    BG_COLOR = LIGHT["bg_main"]
+    FG_COLOR = LIGHT["fg_text"]
+    RED_COLOR = LIGHT["accent"]
+    BG_MAIN = LIGHT["bg_main"]
+    BG_CARD = LIGHT["bg_card"]
+    BG_FRAME = LIGHT["bg_frame"]
+    FG_TEXT = LIGHT["fg_text"]
+    FG_SECONDARY = LIGHT["fg_secondary"]
+    TAB_BG = LIGHT["tab_bg"]
+    TAB_SELECTED = LIGHT["tab_selected"]
+    HIGHLIGHT_COLOR = LIGHT["highlight"]
+    TEXT_BG = LIGHT["text_bg"]
+    TEXT_FG = LIGHT["text_fg"]
+    BUTTON_BG = LIGHT["button_bg"]
+    BUTTON_FG = LIGHT["button_fg"]
+    BUTTON_TEXT_DARK = LIGHT["fg_text"]
+    ENTRY_BG = LIGHT["entry_bg"]
+    ENTRY_FG = LIGHT["entry_fg"]
 
-    URL_COLOR = "#27bf73"
+    URL_COLOR = LIGHT["success"]
 
-    # Font
-    FONT = "Century Gothic"
-    FONT_SIZE = 10
+    # Font (FONT is re-resolved at runtime once a Tk root exists)
+    FONT = resolve_font_family()
+    FONT_SIZE = FONT_SIZES["base"]
 
     # Sizes
     SIZE_STR = "1000x640"
     SIZE_LIST = (1000, 640)
-    PADDING = 10
+    PADDING = SPACING["md"]
 
     PRO_POPUP_SIZE = "550x550"
     PRO_POPUP_SIZE_LIST = (550, 550)

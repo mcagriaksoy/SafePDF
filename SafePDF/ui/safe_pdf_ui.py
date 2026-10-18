@@ -24,6 +24,7 @@ from SafePDF.logger.logging_config import get_logger, setup_logging
 
 from .common_elements import CommonElements  # Common UI elements
 from .help_ui import HelpUI  # Delegated Help UI module
+from .theme import apply_ttk_styles, palette as theme_palette, resolve_font_family  # Design tokens
 from .settings_ui import SettingsUI  # Delegated Settings UI module
 from .update_ui import UpdateUI  # Import the new UpdateUI class
 
@@ -150,6 +151,13 @@ class SafePDFUI:
         self.root = root
         self.controller = controller
 
+        # Resolve the best available UI font for this system now that a Tk root
+        # exists (falls back to a sensible platform default).
+        try:
+            CommonElements.FONT = resolve_font_family(root)
+        except Exception:
+            pass
+
         # Lazy loaded components
         self._pil_loaded = False
         self._dnd_loaded = False
@@ -271,7 +279,7 @@ class SafePDFUI:
         self.root.after(1500, self._auto_check_updates_if_due)
 
     def setup_main_window(self):
-        """Configure the main application window with modern design and custom title bar"""
+        """Configure the main application window (uses the native window frame)."""
         self.root.title("SafePDF - A tool for PDF Manipulation")
 
         # Set window size based on screen resolution
@@ -289,152 +297,18 @@ class SafePDFUI:
         # IMPORTANT: First update the window to ensure it's created properly
         self.root.update_idletasks()
 
-        # NOW remove the default title bar FIRST
-        self.root.overrideredirect(True)
-
-        # Force window update
-        self.root.update_idletasks()
-
-        # Ensure window appears in taskbar AFTER overrideredirect
+        # Native window frame: the OS now provides the title bar, taskbar
+        # entry, minimise/maximise/snap and close, so no custom chrome is
+        # needed here anymore.
         try:
-            # Force taskbar visibility on Windows
-            if platform_system() == "Windows":
-                # Use GWL_EXSTYLE to add WS_EX_APPWINDOW flag
-                import ctypes
-
-                GWL_EXSTYLE = -20
-                WS_EX_APPWINDOW = 0x00040000
-                WS_EX_TOOLWINDOW = 0x00000080
-
-                # Get the actual window handle
-                hwnd = ctypes.windll.user32.GetParent(self.root.winfo_id())
-                if hwnd == 0:
-                    hwnd = self.root.winfo_id()
-
-                # Get current style
-                style = ctypes.windll.user32.GetWindowLongW(hwnd, GWL_EXSTYLE)
-                # Add APPWINDOW, remove TOOLWINDOW
-                style = (style | WS_EX_APPWINDOW) & ~WS_EX_TOOLWINDOW
-                ctypes.windll.user32.SetWindowLongW(hwnd, GWL_EXSTYLE, style)
-
-                # Force window to show in taskbar
-                SWP_FRAMECHANGED = 0x0020
-                SWP_NOMOVE = 0x0002
-                SWP_NOSIZE = 0x0001
-                SWP_NOZORDER = 0x0004
-                ctypes.windll.user32.SetWindowPos(
-                    hwnd,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER,
-                )
-
+            apply_ttk_styles(
+                ttk.Style(),
+                self._resolve_theme_palette(),
+                CommonElements.FONT,
+                CommonElements.FONT_SIZE,
+            )
         except Exception as e:
-            logger.warning(f"Could not set taskbar visibility: {e}")  # Final update to apply changes
-        self.root.update_idletasks()
-
-        # Apply ttk theme for modern look
-        style = ttk.Style()
-        try:
-            style.theme_use("winnative")
-        except Exception as e:
-            logger.debug(f"Theme application failed: {e}, continuing with system theme")
-            pass
-
-        # Professional Windows-like theme
-        style.configure("TNotebook", background=CommonElements.BG_MAIN, borderwidth=0, relief="flat")
-        style.configure(
-            "TNotebook.Tab",
-            background=CommonElements.TAB_BG,
-            padding=[16, 10],
-            font=(CommonElements.FONT, CommonElements.FONT_SIZE),
-            borderwidth=0,
-            relief="flat",
-        )
-        style.map(
-            "TNotebook.Tab",
-            background=[("selected", CommonElements.TAB_SELECTED), ("active", "#f6e9e9")],
-            foreground=[
-                ("selected", CommonElements.RED_COLOR),
-                ("active", CommonElements.FG_TEXT),
-            ],
-            expand=[("selected", [1, 1, 1, 0])],
-        )
-        style.configure("TFrame", background=CommonElements.BG_CARD)
-        style.configure(
-            "TLabel",
-            background=CommonElements.BG_CARD,
-            foreground=CommonElements.FG_TEXT,
-            font=(CommonElements.FONT, CommonElements.FONT_SIZE),
-        )
-        style.configure(
-            "TButton",
-            font=(CommonElements.FONT, CommonElements.FONT_SIZE),
-            padding=9,
-            background=CommonElements.BUTTON_BG,
-            foreground=CommonElements.BUTTON_FG,
-            borderwidth=0,
-            relief="flat",
-        )
-        style.map(
-            "TButton",
-            background=[("active", "#d1d5db"), ("!active", CommonElements.BUTTON_BG)],
-            foreground=[("active", CommonElements.BUTTON_FG), ("!active", CommonElements.BUTTON_FG)],
-            relief=[("pressed", "flat"), ("!pressed", "flat")],
-        )
-        style.configure(
-            "Accent.TButton",
-            background=CommonElements.RED_COLOR,
-            foreground=CommonElements.BUTTON_TEXT_DARK,
-            font=(CommonElements.FONT, 10, "bold"),
-            padding=12,
-            borderwidth=0,
-            relief="flat",
-        )
-        style.map(
-            "Accent.TButton",
-            background=[("active", "#0b3a64"), ("!active", CommonElements.RED_COLOR)],
-            foreground=[
-                ("active", CommonElements.BUTTON_TEXT_DARK),
-                ("!active", CommonElements.BUTTON_TEXT_DARK),
-            ],
-            relief=[("pressed", "flat"), ("!pressed", "flat")],
-        )
-        style.configure(
-            "Secondary.TButton",
-            font=(CommonElements.FONT, CommonElements.FONT_SIZE, "bold"),
-            padding=10,
-            background="#eadede",
-            foreground=CommonElements.FG_TEXT,
-            borderwidth=0,
-            relief="flat",
-        )
-        style.map(
-            "Secondary.TButton",
-            background=[("active", "#d8c6c6"), ("!active", "#eadede")],
-            foreground=[("active", CommonElements.FG_TEXT), ("!active", CommonElements.FG_TEXT)],
-        )
-        style.configure(
-            "Danger.TButton",
-            font=(CommonElements.FONT, CommonElements.FONT_SIZE, "bold"),
-            padding=10,
-            background="#b42318",
-            foreground=CommonElements.BUTTON_TEXT_DARK,
-            borderwidth=0,
-            relief="flat",
-        )
-        style.map(
-            "Danger.TButton",
-            background=[("active", "#912018"), ("!active", "#b42318")],
-            foreground=[
-                ("active", CommonElements.BUTTON_TEXT_DARK),
-                ("!active", CommonElements.BUTTON_TEXT_DARK),
-            ],
-        )
-        style.configure("Gray.TLabel", foreground="#6b7280", background=CommonElements.BG_CARD)
+            logger.debug(f"Theme application failed: {e}, continuing with defaults")
 
         # Center the window
         self.center_window()
@@ -497,105 +371,80 @@ class SafePDFUI:
         # Bind events
         self.bind_events()
 
+        # Make the native window-close button shut down gracefully.
+        try:
+            self.root.protocol("WM_DELETE_WINDOW", self.close_window)
+        except Exception:
+            pass
+
         # Update UI to reflect loaded pro status
         self.update_pro_features()
 
     def create_header(self):
-        """Create the application header with a guaranteed gradient background."""
-        self._header_gradient_start = "#ffffff"
-        self._header_gradient_end = "#b35656"
-        self._header_control_bg = "#b35656"
-        self._header_height = 50
+        """Create a slim, flat application header (brand + plan badge).
 
-        self.header_frame = tk.Frame(self.root, height=self._header_height, bd=0, highlightthickness=0)
+        The native window frame provides minimise/maximise/close, so this bar
+        only carries branding and a clickable plan badge.
+        """
+        pal = self._resolve_theme_palette()
+        self._header_height = 54
+
+        self.header_frame = tk.Frame(self.root, bg=pal["bg_card"], bd=0, highlightthickness=0)
         self.header_frame.pack(fill="x", side="top")
         self.header_frame.pack_propagate(False)
-
-        self.header_canvas = tk.Canvas(self.header_frame, bd=0, highlightthickness=0, relief=tk.FLAT)
-        self.header_canvas.place(x=0, y=0, relwidth=1, relheight=1)
+        self.header_frame.configure(height=self._header_height)
 
         self.header_label = tk.Label(
             self.header_frame,
             text=self.lang_manager.get("app_title", "SafePDF™"),
             font=(CommonElements.FONT, 16, "bold"),
             fg=CommonElements.RED_COLOR,
+            bg=pal["bg_card"],
             bd=0,
             padx=0,
             pady=0,
         )
+        self.header_label.pack(side="left", padx=(18, 10), pady=14)
 
-        pro_badge_color = CommonElements.URL_COLOR if self.controller.is_pro_activated else "#888888"
-        pro_badge_text = (
-            self.lang_manager.get("pro_badge_pro", "PRO")
-            if self.controller.is_pro_activated
-            else self.lang_manager.get("pro_badge_free", "FREE")
-        )
         self.pro_badge_label = tk.Label(
             self.header_frame,
-            text=pro_badge_text,
+            text="",
             font=(CommonElements.FONT, 8, "bold"),
-            bg=pro_badge_color,
-            fg=CommonElements.BUTTON_TEXT_DARK,
+            bg=pal["badge_free_bg"],
+            fg="#ffffff",
             padx=8,
-            pady=3,
+            pady=2,
             cursor="hand2",
             relief=tk.FLAT,
             bd=0,
         )
+        self.pro_badge_label.pack(side="left", pady=18)
         self.pro_badge_label.bind("<Button-1>", lambda e: self.update_manager.show_pro_dialog(self))
 
-        self.minimize_btn = tk.Button(
-            self.header_frame,
-            text="−",
-            font=(CommonElements.FONT, 14),
-            bg=self._header_control_bg,
-            fg="#111827",
-            bd=0,
-            width=3,
-            height=1,
-            cursor="hand2",
-            activebackground="#e9d7d7",
-            activeforeground="#111827",
-            relief=tk.FLAT,
-            command=self.minimize_window,
-        )
-        self.maximize_btn = tk.Button(
-            self.header_frame,
-            text="□",
-            font=(CommonElements.FONT, 12),
-            bg=self._header_control_bg,
-            fg="#111827",
-            bd=0,
-            width=3,
-            height=1,
-            cursor="hand2",
-            activebackground="#e9d7d7",
-            activeforeground="#111827",
-            relief=tk.FLAT,
-            command=self.toggle_fullscreen,
-        )
-        self.close_btn = tk.Button(
-            self.header_frame,
-            text="×",
-            font=(CommonElements.FONT, 18),
-            bg=self._header_control_bg,
-            fg="#111827",
-            bd=0,
-            width=3,
-            height=1,
-            cursor="hand2",
-            activebackground="#c40e2f",
-            activeforeground=CommonElements.BUTTON_TEXT_DARK,
-            relief=tk.FLAT,
-            command=self.close_window,
-        )
+        # Kept as attributes for backwards-compatible references elsewhere.
+        self.header_canvas = None
+        self.minimize_btn = None
+        self.maximize_btn = None
+        self.close_btn = None
+        self._refresh_header_badge()
 
-        self.header_frame.bind("<Configure>", self._on_header_resize)
-        self.bind_drag_events(self.header_frame)
-        self.bind_drag_events(self.header_canvas)
-        self.bind_drag_events(self.header_label)
-        self.bind_drag_events(self.pro_badge_label)
-        self.setup_button_hover_effects()
+    def _refresh_header_badge(self):
+        """Update the brand badge text/colour to match the pro status + theme."""
+        try:
+            pal = self._resolve_theme_palette()
+            is_pro = bool(getattr(self.controller, "is_pro_activated", False))
+            if getattr(self, "pro_badge_label", None):
+                self.pro_badge_label.configure(
+                    text=(
+                        self.lang_manager.get("pro_badge_pro", "PRO")
+                        if is_pro
+                        else self.lang_manager.get("pro_badge_free", "FREE")
+                    ),
+                    bg=pal["success"] if is_pro else pal["badge_free_bg"],
+                    fg="#ffffff",
+                )
+        except Exception:
+            logger.debug("Error refreshing header badge", exc_info=True)
 
     def _interpolate_color(self, start_hex, end_hex, t):
         """Blend two hex colors by factor t in [0,1]."""
@@ -1097,40 +946,40 @@ class SafePDFUI:
         return "Welcome to SafePDF!\n\nThis application helps you perform various PDF operations."
 
     def format_welcome_text(self, text_widget):
-        """Apply formatting to the welcome text"""
-        # Configure text tags for formatting
+        """Apply lightweight, modern formatting to the welcome text."""
         text_widget.tag_configure(
             "title",
             foreground=CommonElements.RED_COLOR,
-            font=(CommonElements.FONT, 14, "bold"),
+            font=(CommonElements.FONT, 15, "bold"),
             justify="center",
+            spacing3=12,
         )
-        text_widget.tag_configure("step", foreground=CommonElements.URL_COLOR, font=(CommonElements.FONT, 10, "bold"))
-        text_widget.tag_configure(
-            "update_link",
-            foreground=CommonElements.URL_COLOR,
-            underline=True,
-            font=(CommonElements.FONT, 10, "bold"),
-        )
-        text_widget.tag_configure(
-            "contact_link",
-            foreground=CommonElements.URL_COLOR,
-            underline=True,
-            font=(CommonElements.FONT, 10, "bold"),
-        )
-        text_widget.tag_configure(
-            "info",
-            foreground=CommonElements.RED_COLOR,
-            font=(CommonElements.FONT, 11, "bold"),
-        )
-        text_widget.tag_configure(
-            "version", foreground=CommonElements.URL_COLOR, font=(CommonElements.FONT, 10, "bold")
-        )
+        for tag in ("update_link", "web_link"):
+            text_widget.tag_configure(
+                tag,
+                foreground=CommonElements.URL_COLOR,
+                underline=True,
+                font=(CommonElements.FONT, 10, "bold"),
+            )
 
-        # Apply formatting to specific parts
         content = text_widget.get("1.0", "end-1c")
 
-        # Title formatting (first line, language-agnostic)
+        def tag_line(marker, tag, handler=None):
+            if not marker:
+                return
+            idx = content.find(marker)
+            if idx == -1:
+                return
+            line_end = content.find("\n", idx)
+            if line_end == -1:
+                line_end = len(content)
+            text_widget.tag_add(tag, f"1.0+{idx}c", f"1.0+{line_end}c")
+            if handler:
+                text_widget.tag_bind(tag, "<Button-1>", handler)
+                text_widget.tag_bind(tag, "<Enter>", lambda e: text_widget.config(cursor="hand2"))
+                text_widget.tag_bind(tag, "<Leave>", lambda e: text_widget.config(cursor=""))
+
+        # Title = first line.
         try:
             first_line = content.splitlines()[0] if content else ""
             if first_line:
@@ -1138,86 +987,48 @@ class SafePDFUI:
         except Exception:
             pass
 
-        # Update link formatting (language-agnostic: the line starting with 🔗)
-        try:
-            update_line_start = content.find("🔗")
-            if update_line_start != -1:
-                line_end = content.find("\n", update_line_start)
-                if line_end == -1:
-                    line_end = len(content)
-                text_widget.tag_add(
-                    "update_link",
-                    f"1.0+{update_line_start}c",
-                    f"1.0+{line_end}c",
-                )
-                text_widget.tag_bind("update_link", "<Button-1>", self.update_manager.check_for_updates)
-                text_widget.tag_bind(
-                    "update_link",
-                    "<Enter>",
-                    lambda e: text_widget.config(cursor="hand2"),
-                )
-                text_widget.tag_bind("update_link", "<Leave>", lambda e: text_widget.config(cursor=""))
-        except Exception:
-            pass
-
-        # Contact us link formatting (best-effort; avoid overriding the update link)
-        try:
-            # Prefer i18n marker(s) from LanguageManager.
-            # This should match the phrase used in localized welcome_content.txt.
-            contact_markers = [
-                self.lang_manager.get("contact_us", "contact us"),
-            ]
-            lower_content = content.lower()
-            for marker in contact_markers:
-                if not marker:
-                    continue
-                idx = lower_content.find(str(marker).lower())
-                if idx != -1:
-                    # Adjust for Turkish formatting offset
-                    if CommonElements.SELECTED_LANGUAGE == "tr":
-                        adjusted_idx = idx - 3
-                    else:
-                        adjusted_idx = idx
-                    if adjusted_idx < 0:
-                        adjusted_idx = 0
-                    text_widget.tag_add(
-                        "contact_link",
-                        f"1.0+{adjusted_idx}c",
-                        f"1.0+{adjusted_idx + len(marker)}c",
-                    )
-                    text_widget.tag_bind("contact_link", "<Button-1>", lambda e: self.open_contact_us())
-                    text_widget.tag_bind(
-                        "contact_link",
-                        "<Enter>",
-                        lambda e: text_widget.config(cursor="hand2"),
-                    )
-                    text_widget.tag_bind(
-                        "contact_link",
-                        "<Leave>",
-                        lambda e: text_widget.config(cursor=""),
-                    )
-                    break
-        except Exception:
-            pass
-
-        # Info sections
-        info_sections = ["💻 Software Information", "📋 Process Steps:"]
-        for section in info_sections:
-            if section in content:
-                start = content.find(section)
-                if start != -1:
-                    text_widget.tag_add("info", f"1.0+{start}c", f"1.0+{start + len(section)}c")
+        # Links.
+        tag_line(
+            self.lang_manager.get("check_for_updates", "Check for Updates"),
+            "update_link",
+            self.update_manager.check_for_updates,
+        )
+        tag_line("safepdf.de", "web_link", lambda e: open_url("https://safepdf.de"))
 
     def create_file_tab(self):
-        """Create the file selection tab with modern design and PDF preview"""
+        """Create the file selection tab with a compact drop zone and a large preview."""
         main_frame = ttk.Frame(self.file_frame, style="TFrame")
-        main_frame.pack(fill="both", expand=True, padx=20, pady=20)
+        main_frame.pack(fill="both", expand=True, padx=20, pady=16)
 
         # Horizontal layout for drop zone and preview
         file_tab_container = tk.Frame(main_frame, bg=CommonElements.TEXT_BG)
         file_tab_container.pack(fill="both", expand=True)
 
-        # Left: Drop zone
+        # Right: PDF preview (reserved first so it keeps a generous size)
+        preview_frame = tk.Frame(file_tab_container, bg=CommonElements.TEXT_BG, relief=tk.FLAT, bd=0)
+        preview_frame.pack(side="right", fill="y", padx=(16, 0), pady=(0, 12))
+        self.preview_label = tk.Label(
+            preview_frame,
+            text=self.lang_manager.get("preview", "Preview:"),
+            font=(CommonElements.FONT, 11, "bold"),
+            bg=CommonElements.TEXT_BG,
+            fg=CommonElements.FG_TEXT,
+        )
+        self.preview_label.pack(anchor="nw", pady=(0, 6))
+        self.pdf_preview_canvas = tk.Canvas(
+            preview_frame,
+            width=340,
+            height=430,
+            bg=CommonElements.BG_FRAME,
+            bd=1,
+            relief=tk.SOLID,
+            highlightthickness=1,
+            highlightbackground="#acb2bb",
+        )
+        self.pdf_preview_canvas.pack(anchor="n", fill="both", expand=True)
+        self.pdf_preview_image = None
+
+        # Left: compact drop zone
         drop_frame = tk.Frame(file_tab_container, bg=CommonElements.TEXT_BG, relief=tk.FLAT, bd=0)
         drop_frame.pack(side="left", fill="both", expand=True, pady=(0, 12))
 
@@ -1230,8 +1041,8 @@ class SafePDFUI:
             relief=tk.FLAT,
             bd=0,
             bg=CommonElements.TEXT_BG,
-            font=(CommonElements.FONT, 12, "bold"),
-            height=10,
+            font=(CommonElements.FONT, 11, "bold"),
+            height=5,
             cursor="hand2",
             fg=CommonElements.RED_COLOR,
         )
@@ -1239,30 +1050,6 @@ class SafePDFUI:
         self._draw_dashed_border()
         drop_frame.bind("<Configure>", lambda e: self._draw_dashed_border())
         self.setup_drag_drop()
-
-        # Right: PDF preview area
-        preview_frame = tk.Frame(file_tab_container, bg=CommonElements.TEXT_BG, relief=tk.FLAT, bd=0)
-        preview_frame.pack(side="right", fill="y", padx=(16, 0), pady=(0, 12))
-        self.preview_label = tk.Label(
-            preview_frame,
-            text=self.lang_manager.get("preview", "Preview:"),
-            font=(CommonElements.FONT, 11, "bold"),
-            bg=CommonElements.TEXT_BG,
-            fg="#333",
-        )
-        self.preview_label.pack(anchor="nw", pady=(0, 4))
-        self.pdf_preview_canvas = tk.Canvas(
-            preview_frame,
-            width=180,
-            height=240,
-            bg=CommonElements.BG_FRAME,
-            bd=1,
-            relief=tk.SOLID,
-            highlightthickness=1,
-            highlightbackground="#acb2bb",
-        )
-        self.pdf_preview_canvas.pack(anchor="n", pady=(0, 8))
-        self.pdf_preview_image = None
 
         # Or label and browse button below
         self.or_label = ttk.Label(main_frame, text=self.lang_manager.get("or_label", "or"), style="TLabel")
@@ -1273,30 +1060,48 @@ class SafePDFUI:
             command=self.browse_file,
             style="Accent.TButton",
         )
-        self.browse_btn.pack(pady=(8, 0))
+        self.browse_btn.pack(pady=(6, 0))
 
         self.update_file_tab_ui()
 
     def show_pdf_preview(self, pdf_path):
-        """Render and show a preview for the selected PDF or JPG image on both file and settings tabs."""
-        canvas_w, canvas_h = 180, 240
+        """Render a preview for the selected PDF/JPG on the file and settings tabs.
 
-        # Delete previous images
-        if hasattr(self, "pdf_preview_canvas") and self.pdf_preview_canvas:
-            self.pdf_preview_canvas.delete("all")
-        if hasattr(self, "settings_preview_canvas") and self.settings_preview_canvas:
-            self.settings_preview_canvas.delete("all")
+        The image is scaled to fit whatever size each preview canvas currently
+        has, so it stays fully visible when the window is resized.
+        """
+        # (canvas, image attribute name, default width, default height)
+        targets = [
+            (getattr(self, "pdf_preview_canvas", None), "pdf_preview_image", 340, 430),
+            (getattr(self, "settings_preview_canvas", None), "settings_preview_image", 240, 320),
+        ]
+        targets = [t for t in targets if t[0] is not None]
+
+        for canvas, _, _, _ in targets:
+            canvas.delete("all")
+
+        def canvas_size(canvas, dw, dh):
+            w = canvas.winfo_width()
+            h = canvas.winfo_height()
+            if w <= 1 or h <= 1:
+                return dw, dh
+            return w, h
+
+        def draw_placeholder(text):
+            for canvas, _, dw, dh in targets:
+                w, h = canvas_size(canvas, dw, dh)
+                canvas.create_text(
+                    w // 2,
+                    h // 2,
+                    text=text,
+                    fill="#888",
+                    font=(CommonElements.FONT, 10),
+                    width=max(40, w - 24),
+                    justify="center",
+                )
 
         if not pdf_path:
-            no_file_text = self.lang_manager.get("preview_no_file_selected", "No file\nselected")
-            if hasattr(self, "pdf_preview_canvas") and self.pdf_preview_canvas:
-                self.pdf_preview_canvas.create_text(
-                    canvas_w // 2, canvas_h // 2, text=no_file_text, fill="#888", font=(CommonElements.FONT, 10)
-                )
-            if hasattr(self, "settings_preview_canvas") and self.settings_preview_canvas:
-                self.settings_preview_canvas.create_text(
-                    canvas_w // 2, canvas_h // 2, text=no_file_text, fill="#888", font=(CommonElements.FONT, 10)
-                )
+            draw_placeholder(self.lang_manager.get("preview_no_file_selected", "No file\nselected"))
             return
 
         try:
@@ -1308,57 +1113,43 @@ class SafePDFUI:
             if not Image or not ImageTk:
                 raise ImportError("Pillow is not available")
 
-            if Path(pdf_path).suffix.lower() in (".jpg", ".jpeg"):
-                img = Image.open(pdf_path)
-            else:
-                # Use pypdfium2 for rendering (no external dependencies)
-                import pypdfium2 as pdfium
+            is_image = Path(pdf_path).suffix.lower() in (".jpg", ".jpeg")
+            rotate = getattr(self.controller, "selected_operation", None) == "rotate"
 
-                # Open PDF and render first page
-                pdf = pdfium.PdfDocument(pdf_path)
-                if len(pdf) < 1:
+            for canvas, attr, dw, dh in targets:
+                w, h = canvas_size(canvas, dw, dh)
+
+                if is_image:
+                    img = Image.open(pdf_path)
+                else:
+                    # Use pypdfium2 for rendering (no external dependencies)
+                    import pypdfium2 as pdfium
+
+                    pdf = pdfium.PdfDocument(pdf_path)
+                    if len(pdf) < 1:
+                        pdf.close()
+                        raise ValueError("Empty PDF")
+                    page = pdf[0]
+                    scale = min(w / page.get_width(), h / page.get_height()) * 0.95
+                    img = page.render(scale=scale).to_pil()
                     pdf.close()
-                    raise ValueError("Empty PDF")
 
-                page = pdf[0]
-                # Calculate scale to fit canvas
-                scale = min(canvas_w / page.get_width(), canvas_h / page.get_height()) * 0.8
-                img = page.render(scale=scale).to_pil()
-                pdf.close()
+                # Rotate preview in real-time if active operation is 'rotate'
+                if rotate:
+                    try:
+                        angle_str = self.rotation_var.get()
+                        if angle_str:
+                            img = img.rotate(-int(angle_str), expand=True)
+                    except Exception:
+                        pass
 
-            # Rotate preview in real-time if active operation is 'rotate'
-            if getattr(self.controller, "selected_operation", None) == "rotate":
-                try:
-                    angle_str = self.rotation_var.get()
-                    if angle_str:
-                        angle = int(angle_str)
-                        # Pillow rotates counter-clockwise, so clockwise is negative angle
-                        img = img.rotate(-angle, expand=True)
-                except Exception:
-                    pass
-
-            img.thumbnail((canvas_w, canvas_h), Image.LANCZOS)
-
-            # Store image object reference to prevent garbage collection
-            preview_img = ImageTk.PhotoImage(img)
-
-            if hasattr(self, "pdf_preview_canvas") and self.pdf_preview_canvas:
-                self.pdf_preview_image = preview_img
-                self.pdf_preview_canvas.create_image(canvas_w // 2, canvas_h // 2, image=self.pdf_preview_image)
-            if hasattr(self, "settings_preview_canvas") and self.settings_preview_canvas:
-                self.settings_preview_image = preview_img
-                self.settings_preview_canvas.create_image(canvas_w // 2, canvas_h // 2, image=self.settings_preview_image)
+                img.thumbnail((max(1, w - 10), max(1, h - 10)), Image.LANCZOS)
+                preview_img = ImageTk.PhotoImage(img)
+                setattr(self, attr, preview_img)
+                canvas.create_image(w // 2, h // 2, image=preview_img)
 
         except Exception:
-            err_text = self.lang_manager.get("preview_unavailable", "Preview\nUnavailable")
-            if hasattr(self, "pdf_preview_canvas") and self.pdf_preview_canvas:
-                self.pdf_preview_canvas.create_text(
-                    canvas_w // 2, canvas_h // 2, text=err_text, fill="#888", font=(CommonElements.FONT, 10)
-                )
-            if hasattr(self, "settings_preview_canvas") and self.settings_preview_canvas:
-                self.settings_preview_canvas.create_text(
-                    canvas_w // 2, canvas_h // 2, text=err_text, fill="#888", font=(CommonElements.FONT, 10)
-                )
+            draw_placeholder(self.lang_manager.get("preview_unavailable", "Preview\nUnavailable"))
 
     def update_file_tab_ui(self):
         """Update file tab UI based on selected operation"""
@@ -1409,7 +1200,7 @@ class SafePDFUI:
                 # Optimize image loading
                 img = Image.open(str(abs_img_path))
                 # Reduce size for memory efficiency
-                max_size = 80  # Reduced from 100
+                max_size = 64  # Reduced from 100
                 img.thumbnail((max_size, max_size), Image.LANCZOS)
                 return ImageTk.PhotoImage(img)
         except Exception:
@@ -1519,12 +1310,11 @@ class SafePDFUI:
             logger.debug(f"Error updating canvas border color: {e}", exc_info=True)
 
     def create_operation_tab(self):
-        """Create operation cards with cleaner Windows-style visuals."""
-        group_frame = tk.Frame(self.operation_frame, bg=CommonElements.BG_MAIN, relief=tk.FLAT)
-        group_frame.pack(fill="both", expand=True, padx=10, pady=10)
+        """Create the operation selection grid with clean, uniform cards."""
+        pal = self._resolve_theme_palette()
 
-        operations_container = tk.Frame(group_frame, bg=CommonElements.BG_MAIN)
-        operations_container.pack(fill="both", expand=True)
+        group_frame = tk.Frame(self.operation_frame, bg=pal["bg_main"], relief=tk.FLAT)
+        group_frame.pack(fill="both", expand=True, padx=16, pady=10)
 
         operations = [
             (
@@ -1577,28 +1367,28 @@ class SafePDFUI:
                 True,
             ),
             (
-                self.lang_manager.get("op_to_word", "PDF to DOCX"),
-                self.lang_manager.get("op_to_word_desc", "Convert to document"),
+                self.lang_manager.get("op_to_word", "Convert to DOCX"),
+                self.lang_manager.get("op_to_word_desc", "Editable document"),
                 self.select_to_word,
                 "assets/pdf2word.png",
                 True,
             ),
             (
-                self.lang_manager.get("op_to_txt", "PDF to TXT"),
-                self.lang_manager.get("op_to_txt_desc", "Extract text"),
+                self.lang_manager.get("op_to_txt", "Extract Text"),
+                self.lang_manager.get("op_to_txt_desc", "For selectable text"),
                 self.select_to_txt,
                 "assets/pdf2txt.png",
                 True,
             ),
             (
                 self.lang_manager.get("op_to_ocr", "OCR Scan"),
-                self.lang_manager.get("op_to_ocr_desc", "Scanned PDF text"),
+                self.lang_manager.get("op_to_ocr_desc", "PRO only - Coming soon"),
                 self.select_to_ocr,
                 "assets/pdf2ocr.png",
                 False,
             ),
             (
-                self.lang_manager.get("op_extract", "Extract Hidden Info"),
+                self.lang_manager.get("op_extract", "Extract Info"),
                 self.lang_manager.get("op_extract_desc", "Hidden PDF data"),
                 self.select_extract_info,
                 "assets/extract.png",
@@ -1611,91 +1401,81 @@ class SafePDFUI:
         self.operation_images = []
         columns = 4 if len(operations) >= 8 else 3
 
+        for col in range(columns):
+            group_frame.grid_columnconfigure(col, weight=1, uniform="ops")
+
         for i, (text, description, command, img_path, is_enabled) in enumerate(operations):
             row = i // columns
             col = i % columns
+            group_frame.grid_rowconfigure(row, weight=1, uniform="ops", minsize=150)
+
             tk_img = self._load_operation_image(img_path)
             self.operation_images.append(tk_img)
 
-            shadow_frame = tk.Frame(operations_container, bg="#e4d4d4", relief=tk.FLAT)
-            shadow_frame.grid(row=row, column=col, padx=10, pady=10, sticky="nsew")
-
-            op_frame = tk.Frame(
-                shadow_frame,
-                relief=tk.FLAT,
+            card = tk.Frame(
+                group_frame,
+                bg=pal["bg_card"],
                 bd=0,
-                bg=CommonElements.BG_CARD,
-                cursor="hand2" if is_enabled else "arrow",
-                highlightbackground="#d9c2c2",
+                highlightbackground=pal["border"],
                 highlightthickness=1,
+                cursor="hand2" if is_enabled else "arrow",
             )
-            op_frame.place(x=2, y=2, relwidth=1, relheight=1, width=-4, height=-4)
-            operations_container.grid_columnconfigure(col, weight=1, uniform="ops")
-            operations_container.grid_rowconfigure(row, weight=1, uniform="ops")
+            card.grid(row=row, column=col, padx=8, pady=6, sticky="nsew")
+
+            inner = tk.Frame(card, bg=pal["bg_card"])
+            inner.pack(expand=True, fill="both", padx=14, pady=10)
+
+            widgets = [card, inner]
 
             if tk_img:
-                button_container = tk.Frame(op_frame, bg=CommonElements.BG_CARD)
-                button_container.pack(expand=True, fill="both", padx=6, pady=6)
-                img_button = tk.Button(
-                    button_container,
-                    image=tk_img,
-                    relief=tk.FLAT,
+                img_label = tk.Label(inner, image=tk_img, bg=pal["bg_card"], bd=0)
+                img_label.pack(pady=(0, 6))
+                widgets.append(img_label)
+
+            title_label = tk.Label(
+                inner,
+                text=text,
+                font=(CommonElements.FONT, 11, "bold"),
+                bg=pal["bg_card"],
+                fg=pal["fg_text"],
+                wraplength=170,
+                justify="center",
+            )
+            title_label.pack()
+            widgets.append(title_label)
+
+            desc_label = tk.Label(
+                inner,
+                text=description,
+                font=(CommonElements.FONT, 9),
+                bg=pal["bg_card"],
+                fg=pal["muted_text"],
+                wraplength=170,
+                justify="center",
+            )
+            desc_label.is_desc = True
+            desc_label.pack(pady=(3, 0))
+            widgets.append(desc_label)
+
+            if not is_enabled:
+                badge = tk.Label(
+                    card,
+                    text=self.lang_manager.get("pro_badge_pro", "PRO"),
+                    font=(CommonElements.FONT, 8, "bold"),
+                    bg=pal["accent"],
+                    fg="#ffffff",
+                    padx=7,
+                    pady=1,
                     bd=0,
-                    bg=CommonElements.BG_CARD,
-                    cursor="hand2" if is_enabled else "arrow",
-                    pady=3,
                 )
-                img_button.image = tk_img
-                img_button.pack()
+                badge.is_badge = True
+                badge.place(relx=1.0, y=8, x=-8, anchor="ne")
+                widgets.append(badge)
 
-                title_label = tk.Label(
-                    button_container,
-                    text=text,
-                    font=(CommonElements.FONT, 12, "bold"),
-                    bg=CommonElements.BG_CARD,
-                    fg=CommonElements.FG_TEXT,
-                    cursor="hand2" if is_enabled else "arrow",
-                    wraplength=130,
-                    justify="center",
-                )
-                title_label.pack(pady=(5, 2))
-
-                desc_label = tk.Label(
-                    button_container,
-                    text=description,
-                    font=(CommonElements.FONT, 9),
-                    bg=CommonElements.BG_CARD,
-                    fg=CommonElements.FG_SECONDARY,
-                    cursor="hand2" if is_enabled else "arrow",
-                    wraplength=130,
-                    justify="center",
-                )
-                desc_label.pack()
-                clickable_widgets = [button_container, img_button, title_label, desc_label]
-
-            else:
-                img_button = tk.Button(
-                    op_frame,
-                    text=f"{text}\n{description}",
-                    command=command,
-                    relief=tk.FLAT,
-                    bd=0,
-                    bg=CommonElements.BG_CARD,
-                    fg=CommonElements.FG_TEXT,
-                    font=(CommonElements.FONT, 11, "bold"),
-                    cursor="hand2" if is_enabled else "arrow",
-                    padx=15,
-                    pady=30,
-                    width=15,
-                    height=8,
-                )
-                img_button.pack(expand=True, fill="both")
-                clickable_widgets = [img_button]
-
-            self._bind_operation_card_events(op_frame, clickable_widgets, command, i, is_enabled)
-            self.operation_cards.append((op_frame, clickable_widgets))
-            self.operation_buttons.append(op_frame)
-            self._set_operation_card_state(op_frame, clickable_widgets, is_selected=False, is_disabled=not is_enabled)
+            self._bind_operation_card_events(card, widgets, command, i, is_enabled)
+            self.operation_cards.append((card, widgets))
+            self.operation_buttons.append(card)
+            self._set_operation_card_state(card, widgets, is_selected=False, is_disabled=not is_enabled)
 
     def _bind_operation_card_events(self, card_frame, widgets, command, index, is_enabled=True):
         """Attach click/hover behavior to operation cards and child widgets."""
@@ -1730,35 +1510,45 @@ class SafePDFUI:
 
     def _set_operation_card_state(self, card_frame, widgets, is_selected=False, is_hover=False, is_disabled=False):
         """Update operation card visuals for default/hover/selected states."""
+        pal = self._resolve_theme_palette()
         if is_disabled:
-            card_bg = "#f2eeee"
-            border = "#d8cfcf"
+            card_bg = pal["highlight"]
+            border = pal["border"]
             border_width = 1
-            text_color = "#9a8f8f"
+            text_color = pal["fg_text"]
         elif is_selected:
-            card_bg = "#fee2e2"
-            border = CommonElements.RED_COLOR
+            card_bg = pal["notebook_active"]
+            border = pal["accent"]
             border_width = 2
-            text_color = CommonElements.FG_TEXT
+            text_color = pal["fg_text"]
         elif is_hover:
-            card_bg = CommonElements.HIGHLIGHT_COLOR
-            border = "#c79696"
+            card_bg = pal["highlight"]
+            border = pal["accent"]
             border_width = 1
-            text_color = CommonElements.FG_TEXT
+            text_color = pal["fg_text"]
         else:
-            card_bg = CommonElements.BG_CARD
-            border = "#d9c2c2"
+            card_bg = pal["bg_card"]
+            border = pal["border"]
             border_width = 1
-            text_color = CommonElements.FG_TEXT
+            text_color = pal["fg_text"]
 
-        card_frame.config(bg=card_bg, highlightbackground=border, highlightthickness=border_width)
+        try:
+            card_frame.config(bg=card_bg, highlightbackground=border, highlightthickness=border_width)
+        except Exception:
+            pass
+
         for widget in widgets:
+            if getattr(widget, "is_badge", False):
+                continue
             try:
                 widget.config(bg=card_bg)
             except Exception:
                 pass
             try:
-                widget.config(fg=text_color)
+                if getattr(widget, "is_desc", False):
+                    widget.config(fg=pal["muted_text"])
+                else:
+                    widget.config(fg=text_color)
             except Exception:
                 pass
 
@@ -1803,21 +1593,21 @@ class SafePDFUI:
             text=self.lang_manager.get("preview", "Preview:"),
             font=(CommonElements.FONT, 11, "bold"),
             bg=CommonElements.BG_CARD,
-            fg="#333",
+            fg=CommonElements.FG_TEXT,
         )
         self.settings_preview_label.pack(anchor="nw", pady=(0, 4))
 
         self.settings_preview_canvas = tk.Canvas(
             self.settings_preview_frame,
-            width=180,
-            height=240,
+            width=260,
+            height=360,
             bg=CommonElements.BG_FRAME,
             bd=1,
             relief=tk.SOLID,
             highlightthickness=1,
             highlightbackground="#acb2bb",
         )
-        self.settings_preview_canvas.pack(anchor="n", pady=(0, 8))
+        self.settings_preview_canvas.pack(anchor="n", fill="both", expand=True)
         self.settings_preview_image = None
 
     def create_results_tab(self):
@@ -1927,56 +1717,7 @@ class SafePDFUI:
         if theme_name == "system":
             theme_name = "light"
 
-        if theme_name == "dark":
-            return {
-                "theme": "dark",
-                "bg_main": "#111827",
-                "bg_card": "#1f2937",
-                "bg_frame": "#1f2937",
-                "fg_text": "#f3f4f6",
-                "fg_secondary": "#9ca3af",
-                "tab_bg": "#243041",
-                "tab_selected": "#1f2937",
-                "highlight": "#2b3a50",
-                "text_bg": "#17212f",
-                "text_fg": "#f9fafb",
-                "button_bg": "#334155",
-                "button_fg": "#f9fafb",
-                "entry_bg": "#17212f",
-                "entry_fg": "#f9fafb",
-                "shadow_bg": "#0b1220",
-                "secondary_button_bg": "#3f4d61",
-                "secondary_button_active": "#52627b",
-                "notebook_active": "#314156",
-                "tooltip_bg": "#0f172a",
-                "tooltip_fg": "#f9fafb",
-                "muted_text": "#cbd5e1",
-            }
-
-        return {
-            "theme": "light",
-            "bg_main": "#f4f6fb",
-            "bg_card": "#ffffff",
-            "bg_frame": "#ffffff",
-            "fg_text": "#000000",
-            "fg_secondary": "#dbdbdb",
-            "tab_bg": "#e9ecef",
-            "tab_selected": "#ffffff",
-            "highlight": "#f8f9fa",
-            "text_bg": "#ffffff",
-            "text_fg": "#222222",
-            "button_bg": "#e9ecef",
-            "button_fg": "#000000",
-            "entry_bg": "#ffffff",
-            "entry_fg": "#000000",
-            "shadow_bg": "#f4f6fb",
-            "secondary_button_bg": "#eadede",
-            "secondary_button_active": "#d8c6c6",
-            "notebook_active": "#f6e9e9",
-            "tooltip_bg": CommonElements.BG_COLOR,
-            "tooltip_fg": CommonElements.FG_COLOR,
-            "muted_text": "#6b7280",
-        }
+        return theme_palette(theme_name)
 
     def apply_theme(self, initial=False):
         """Apply the selected theme palette to ttk styles and live widgets."""
@@ -2003,148 +1744,26 @@ class SafePDFUI:
             pass
 
         try:
-            style = ttk.Style()
-            style.configure("TNotebook", background=palette["bg_main"], borderwidth=0, relief="flat")
-            style.configure(
-                "TNotebook.Tab",
-                background=palette["tab_bg"],
-                foreground=palette["fg_text"],
-                padding=[16, 10],
-                font=(CommonElements.FONT, CommonElements.FONT_SIZE),
-                borderwidth=0,
-                relief="flat",
+            apply_ttk_styles(
+                ttk.Style(),
+                palette,
+                CommonElements.FONT,
+                CommonElements.FONT_SIZE,
             )
-            style.map(
-                "TNotebook.Tab",
-                background=[("selected", palette["tab_selected"]), ("active", palette["notebook_active"])],
-                foreground=[("selected", CommonElements.RED_COLOR), ("active", palette["fg_text"])],
-                expand=[("selected", [1, 1, 1, 0])],
-            )
-            style.configure("TFrame", background=palette["bg_card"])
-            style.configure(
-                "TLabel",
-                background=palette["bg_card"],
-                foreground=palette["fg_text"],
-                font=(CommonElements.FONT, CommonElements.FONT_SIZE),
-            )
-            style.configure(
-                "TButton",
-                font=(CommonElements.FONT, CommonElements.FONT_SIZE),
-                padding=9,
-                background=palette["button_bg"],
-                foreground=CommonElements.BUTTON_TEXT_DARK,
-                borderwidth=0,
-                relief="flat",
-            )
-            style.map(
-                "TButton",
-                background=[("active", palette["notebook_active"]), ("!active", palette["button_bg"])],
-                foreground=[
-                    ("active", CommonElements.BUTTON_TEXT_DARK),
-                    ("!active", CommonElements.BUTTON_TEXT_DARK),
-                ],
-                relief=[("pressed", "flat"), ("!pressed", "flat")],
-            )
-            style.configure(
-                "Accent.TButton",
-                background=CommonElements.RED_COLOR,
-                foreground=CommonElements.BUTTON_TEXT_DARK,
-                font=(CommonElements.FONT, 10, "bold"),
-                padding=12,
-                borderwidth=0,
-                relief="flat",
-            )
-            style.map(
-                "Accent.TButton",
-                background=[("active", "#0b3a64"), ("!active", CommonElements.RED_COLOR)],
-                foreground=[
-                    ("active", CommonElements.BUTTON_TEXT_DARK),
-                    ("!active", CommonElements.BUTTON_TEXT_DARK),
-                ],
-                relief=[("pressed", "flat"), ("!pressed", "flat")],
-            )
-            style.configure(
-                "Secondary.TButton",
-                font=(CommonElements.FONT, CommonElements.FONT_SIZE, "bold"),
-                padding=10,
-                background=palette["secondary_button_bg"],
-                foreground=CommonElements.BUTTON_TEXT_DARK,
-                borderwidth=0,
-                relief="flat",
-            )
-            style.map(
-                "Secondary.TButton",
-                background=[
-                    ("active", palette["secondary_button_active"]),
-                    ("!active", palette["secondary_button_bg"]),
-                ],
-                foreground=[
-                    ("active", CommonElements.BUTTON_TEXT_DARK),
-                    ("!active", CommonElements.BUTTON_TEXT_DARK),
-                ],
-            )
-            style.configure(
-                "Danger.TButton",
-                font=(CommonElements.FONT, CommonElements.FONT_SIZE, "bold"),
-                padding=10,
-                background="#b42318",
-                foreground=CommonElements.BUTTON_TEXT_DARK,
-                borderwidth=0,
-                relief="flat",
-            )
-            style.map(
-                "Danger.TButton",
-                background=[("active", "#912018"), ("!active", "#b42318")],
-                foreground=[
-                    ("active", CommonElements.BUTTON_TEXT_DARK),
-                    ("!active", CommonElements.BUTTON_TEXT_DARK),
-                ],
-            )
-            style.configure("Gray.TLabel", foreground=palette["muted_text"], background=palette["bg_card"])
-            style.configure(
-                "TCombobox",
-                fieldbackground=palette["entry_bg"],
-                background=palette["entry_bg"],
-                foreground=CommonElements.BUTTON_TEXT_DARK,
-                arrowcolor=CommonElements.BUTTON_TEXT_DARK,
-            )
-            style.map(
-                "TCombobox",
-                fieldbackground=[("readonly", palette["entry_bg"])],
-                foreground=[("readonly", CommonElements.BUTTON_TEXT_DARK)],
-                selectforeground=[("readonly", CommonElements.BUTTON_TEXT_DARK)],
-                selectbackground=[("readonly", palette["entry_bg"])],
-                arrowcolor=[("readonly", CommonElements.BUTTON_TEXT_DARK)],
-            )
-            style.map(
-                "TRadiobutton",
-                background=[("active", palette["bg_card"]), ("!active", palette["bg_card"])],
-                foreground=[("active", palette["fg_text"]), ("!active", palette["fg_text"])],
-            )
+        except Exception:
+            logger.debug("Error reconfiguring ttk styles for theme", exc_info=True)
         except Exception:
             logger.debug("Error reconfiguring ttk styles for theme", exc_info=True)
 
         shadow_color = palette["shadow_bg"]
         try:
             if getattr(self, "header_frame", None):
-                self._header_gradient_start = palette["bg_card"]
-                self._header_gradient_end = "#7f1d1d" if palette["theme"] == "dark" else "#b35656"
-                self._header_control_bg = "#7f1d1d" if palette["theme"] == "dark" else "#b35656"
                 self.header_frame.configure(bg=palette["bg_card"])
-                self.header_canvas.configure(bg=palette["bg_card"])
-                self.header_label.configure(fg=CommonElements.RED_COLOR)
-                self.setup_button_hover_effects()
-                self._on_header_resize(
-                    type(
-                        "HeaderEvent",
-                        (),
-                        {
-                            "width": self.header_frame.winfo_width() or self.root.winfo_width(),
-                            "height": self.header_frame.winfo_height() or self._header_height,
-                        },
-                    )()
-                )
+                if getattr(self, "header_label", None):
+                    self.header_label.configure(bg=palette["bg_card"], fg=CommonElements.RED_COLOR)
+                self._refresh_header_badge()
         except Exception:
+            logger.debug("Error updating header colors for theme", exc_info=True)
             logger.debug("Error updating header colors for theme", exc_info=True)
 
         try:
@@ -3827,7 +3446,8 @@ class SafePDFUI:
 
             # Maximize window to fill work area (excludes taskbar)
             self.root.geometry(f"{screen_width}x{screen_height}+{x_pos}+{y_pos}")
-            self.maximize_btn.config(text="❐")  # Change to restore icon
+            if getattr(self, "maximize_btn", None):
+                self.maximize_btn.config(text="❐")  # Change to restore icon
             self.is_fullscreen = True
         else:
             # Restore to previous geometry
@@ -3837,7 +3457,8 @@ class SafePDFUI:
                 self.root.geometry("780x600")
                 self.center_window()
 
-            self.maximize_btn.config(text="□")  # Change back to maximize icon
+            if getattr(self, "maximize_btn", None):
+                self.maximize_btn.config(text="□")  # Change back to maximize icon
             self.is_fullscreen = False
 
     def open_donation_link(self):

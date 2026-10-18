@@ -1,6 +1,6 @@
 """
 SafePDF Controller - Core Logic
-by mcagriaksoy - 2025
+by mcagriaksoy - 2026
 
 This module handles the core application logic, state management,
 and coordination of PDF operations.

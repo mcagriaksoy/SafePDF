@@ -1,6 +1,6 @@
 """
 SafePDF Updates Module - GitHub Releases and Signed Keys
-by mcagriaksoy - 2025
+by mcagriaksoy - 2026
 
 This module handles checking for updates from GitHub Releases,
 downloading and verifying releases using GPG signatures.
