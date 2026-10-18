@@ -147,6 +147,12 @@ Pushing a `v*` tag triggers two GitHub Actions workflows:
 - **[`release.yml`](.github/workflows/release.yml)** — verifies the tag matches `__version__`, builds the Windows portable executable with PyInstaller, packages the per-user installer with Inno Setup ([`SafePDF/installer/safepdf.iss`](SafePDF/installer/safepdf.iss)), and publishes a GitHub Release with `SafePdf_v<version>_iwin64.exe` and `SafePdf_v<version>_portable_win64.exe`.
 - **[`publish-pypi.yml`](.github/workflows/publish-pypi.yml)** — publishes the sdist and wheel to PyPI (Trusted Publishing), which is how Linux and macOS users get SafePDF via `pip install SafePDF`.
 
+Each released executable is also given a signed **build-provenance attestation** (via `actions/attest-build-provenance`). Anyone can verify that a downloaded file was produced by this repository's release workflow:
+
+```bash
+gh attestation verify SafePdf_v1.2.0_iwin64.exe --repo mcagriaksoy/SafePDF
+```
+
 Build the Windows artifacts locally with:
 
 ```bash
