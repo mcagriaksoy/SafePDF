@@ -112,6 +112,8 @@ SafePDF/
 │   ├── ops/            # PDF operations
 │   ├── logger/         # Logging
 │   └── text/           # Localization files
+├── installer/          # Inno Setup script (Windows installer)
+├── scripts/            # CI/release build helpers
 ├── docs/               # Marketing website (safepdf.de)
 ├── run_safe_pdf.py     # Main launcher
 └── requirements.txt    # Dependencies
@@ -128,6 +130,32 @@ python3 -m http.server 8000
 ```
 
 The homepage and the converter pages are also available in German ([`docs/de/`](docs/de/)) and Turkish ([`docs/tr/`](docs/tr/)). Language switching uses real, static URLs so search engines index each language separately — no client-side machine translation.
+
+### Releasing
+
+Releases are driven by version tags. The version in [`SafePDF/__init__.py`](SafePDF/__init__.py) (`__version__`) is the single source of truth and **must match the tag**.
+
+```bash
+# 1. Bump __version__ in SafePDF/__init__.py (and SafePDF/version.txt)
+# 2. Commit, then create and push a matching tag
+git tag v1.2.0
+git push origin v1.2.0
+```
+
+Pushing a `v*` tag triggers two GitHub Actions workflows:
+
+- **[`release.yml`](.github/workflows/release.yml)** — verifies the tag matches `__version__`, builds the Windows portable executable with PyInstaller, packages the per-user installer with Inno Setup ([`SafePDF/installer/safepdf.iss`](SafePDF/installer/safepdf.iss)), and publishes a GitHub Release with `SafePdf_v<version>_iwin64.exe` and `SafePdf_v<version>_portable_win64.exe`.
+- **[`publish-pypi.yml`](.github/workflows/publish-pypi.yml)** — publishes the sdist and wheel to PyPI (Trusted Publishing), which is how Linux and macOS users get SafePDF via `pip install SafePDF`.
+
+Build the Windows artifacts locally with:
+
+```bash
+pip install -r requirements.txt pyinstaller
+python scripts/build_windows.py           # -> SafePDF/dist/SafePdf_v<version>_portable_win64.exe
+# then compile the installer with Inno Setup's ISCC.exe and SafePDF/installer/safepdf.iss
+```
+
+The legacy InstallForge flow (`python SafePDF/build_installer.py`) still works for local Windows builds that use InstallForge.
 
 ### Contributing
 

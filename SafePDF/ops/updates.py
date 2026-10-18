@@ -66,13 +66,11 @@ class SafePDFUpdates:
             return None
 
     def _get_current_version(self):
-        """Get current application version"""
+        """Get the current application version from the SafePDF package."""
         try:
-            version_file = Path(__file__).parent.parent / "version.txt"
-            if version_file.exists():
-                with open(version_file, "r") as f:
-                    return f.read().strip()
-            return "0.0.0"
+            from SafePDF import __version__
+
+            return str(__version__)
         except Exception as e:
             self.logger.error(f"Error reading version: {e}")
             return "0.0.0"

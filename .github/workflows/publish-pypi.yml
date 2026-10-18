@@ -2,8 +2,8 @@ name: Publish to PyPI
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - "v[0-9]*"
 
 permissions:
   contents: read
@@ -16,6 +16,27 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Verify tag matches __version__
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME#v}"
+          version=$(python3 - <<'PY'
+          import re
+          from pathlib import Path
+
+          text = Path("SafePDF/__init__.py").read_text(encoding="utf-8")
+          match = re.search(r'__version__\s*=\s*["\']([^"\']+)["\']', text)
+          if not match:
+              raise SystemExit("Could not determine version from SafePDF/__init__.py")
+          print(match.group(1))
+          PY
+          )
+          if [ "$tag" != "$version" ]; then
+            echo "::error::Tag 'v$tag' does not match SafePDF/__init__.py __version__ '$version'."
+            exit 1
+          fi
 
       - name: Set up Python
         uses: actions/setup-python@v5
