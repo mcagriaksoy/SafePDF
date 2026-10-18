@@ -8,7 +8,7 @@
 [![License](https://img.shields.io/badge/License-GPL--3.0-red)](#license)
 [![stars - SafePDF](https://img.shields.io/github/stars/mcagriaksoy/SafePDF?style=social)](https://github.com/mcagriaksoy/SafePDF)
 
-**SafePDF** is a privacy-focused, offline PDF manipulation tool. All operations are performed locally on your device—your sensitive documents never leave your computer.
+**SafePDF** is a free, open-source desktop app for Windows, macOS and Linux. It merges, splits, compresses, converts, rotates and repairs PDFs entirely on your own device — your sensitive documents never leave your computer.
 
 <a href="https://github.com/mcagriaksoy/SafePDF/releases/" download>
   <img src="https://img.shields.io/badge/Download-Windows_Installer-blue?style=for-the-badge" alt="Download SafePDF">
@@ -112,9 +112,22 @@ SafePDF/
 │   ├── ops/            # PDF operations
 │   ├── logger/         # Logging
 │   └── text/           # Localization files
+├── docs/               # Marketing website (safepdf.de)
 ├── run_safe_pdf.py     # Main launcher
 └── requirements.txt    # Dependencies
 ```
+
+### Website
+
+The marketing site lives in [`docs/`](docs/) and is published at [safepdf.de](https://safepdf.de). It is plain HTML, CSS and JavaScript with no build step:
+
+```bash
+cd docs
+python3 -m http.server 8000
+# open http://localhost:8000
+```
+
+The homepage and the converter pages are also available in German ([`docs/de/`](docs/de/)) and Turkish ([`docs/tr/`](docs/tr/)). Language switching uses real, static URLs so search engines index each language separately — no client-side machine translation.
 
 ### Contributing
 
@@ -125,11 +138,10 @@ Contributions are welcome! Please:
 
 ## Support
 
-- Website: [safepdf.com](https://safepdf.com)
-- More information is available at [safepdf.com](https://safepdf.com)
-- Email: [info@safepdf.com](mailto:info@safepdf.com)
-- Report Issues: [GitHub Issues](https://github.com/mcagriaksoy/SafePDF/issues)
-- Documentation: [safepdf.com](https://safepdf.com)
+- **Website:** [safepdf.de](https://safepdf.de) · [Deutsch](https://safepdf.de/de/) · [Türkçe](https://safepdf.de/tr/)
+- **Guides:** [Offline PDF tools](https://safepdf.de/offline-pdf-tools.html) · [Secure PDF processing](https://safepdf.de/secure-pdf-processing.html)
+- **Email:** [info@safepdf.de](mailto:info@safepdf.de)
+- **Bug reports & feature requests:** [GitHub Issues](https://github.com/mcagriaksoy/SafePDF/issues)
 
 ## License
 

@@ -1,32 +1,77 @@
 // Common navigation for SafePDF website
+// The link set is defined in one place so every page stays consistent.
+// Language switching uses real, static URLs (/de/, /tr/) so search engines
+// see correctly localised pages instead of client-side machine translation.
 const flagMap = {
     en: "assets/flag-en.svg",
     tr: "assets/flag-tr.svg",
     de: "assets/flag-de.svg"
 };
 
-function createNavigation(navConfig) {
-    const isHomePage = window.location.pathname.endsWith('/') || window.location.pathname.endsWith('/index.html') || window.location.pathname.endsWith('index.html');
-    const sharedLinks = isHomePage ? [
-        { href: "#features", text: "Features" },
-        { href: "#converters", text: "Converters" },
-        { href: "#why-offline", text: "Why Offline" },
-        { href: "#buy-pro", text: "Compare Plans" },
-        { href: "downloads.html", text: "Downloads" },
-        { href: "offline-pdf-tools.html", text: "Guides" },
-        { href: "sustainability.html", text: "Sustainability" },
-        { href: "contact.html", text: "Contact" }
-    ] : [
-        { href: "index.html#features", text: "Features" },
-        { href: "index.html#converters", text: "Converters" },
-        { href: "index.html#why-offline", text: "Why Offline" },
-        { href: "index.html#buy-pro", text: "Compare Plans" },
-        { href: "downloads.html", text: "Downloads" },
-        { href: "offline-pdf-tools.html", text: "Guides" },
-        { href: "sustainability.html", text: "Sustainability" },
-        { href: "contact.html", text: "Contact" }
+const flagMapLangFolder = {
+    en: "../assets/flag-en.svg",
+    tr: "../assets/flag-tr.svg",
+    de: "../assets/flag-de.svg"
+};
+
+const navLabels = {
+    en: { features: "Features", converters: "Converters", pricing: "Pricing", downloads: "Downloads", guides: "Guides" },
+    de: { features: "Funktionen", converters: "Konverter", pricing: "Preise", downloads: "Downloads", guides: "Anleitungen" },
+    tr: { features: "Özellikler", converters: "Dönüştürücüler", pricing: "Fiyatlar", downloads: "İndir", guides: "Rehberler" }
+};
+
+function getCurrentLang() {
+    if (/^\/de(\/|$)/.test(window.location.pathname)) return "de";
+    if (/^\/tr(\/|$)/.test(window.location.pathname)) return "tr";
+    return "en";
+}
+
+// Pages that have a static de/tr translation. When the current page has one,
+// switching language keeps the user on the same page; otherwise it falls back
+// to the localised homepage.
+const TRANSLATED_PAGES = new Set([
+    "pdf-to-word.html", "pdf-to-excel.html", "pdf-to-powerpoint.html",
+    "pdf-to-jpg.html", "pdf-to-png.html", "pdf-to-text.html",
+    "word-to-pdf.html", "excel-to-pdf.html", "powerpoint-to-pdf.html",
+    "jpg-to-pdf.html", "png-to-pdf.html"
+]);
+
+function buildLangUrl(lang) {
+    const path = window.location.pathname.replace(/^\/(de|tr)(\/|$)/, "/");
+    const rel = path.replace(/index\.html$/, "");
+    const isHome = rel === "/" || rel === "";
+    const slug = isHome ? "" : rel.replace(/^\//, "");
+    if (lang === "en") {
+        return isHome ? "/" : "/" + slug;
+    }
+    if (isHome || TRANSLATED_PAGES.has(slug)) {
+        return "/" + lang + "/" + slug;
+    }
+    // No localized version of this page yet: go to the localized homepage.
+    return "/" + lang + "/";
+}
+
+function createNavigation() {
+    const path = window.location.pathname;
+    const inLangFolder = /^\/(de|tr)\//.test(path);
+    const isIndex = path.endsWith('/') || path.endsWith('/index.html') || path.endsWith('index.html');
+
+    const lang = getCurrentLang();
+    const labels = navLabels[lang] || navLabels.en;
+    const base = inLangFolder ? '../' : '';
+    const anchorPrefix = isIndex ? '' : 'index.html';
+    // index.html always lives in the same folder as the current page.
+    const brandLink = 'index.html';
+    const flags = inLangFolder ? flagMapLangFolder : flagMap;
+
+    const links = [
+        { href: `${anchorPrefix}#features`, text: labels.features },
+        { href: `${anchorPrefix}#converters`, text: labels.converters },
+        { href: `${anchorPrefix}#buy-pro`, text: labels.pricing },
+        { href: `${base}downloads.html`, text: labels.downloads },
+        { href: `${base}offline-pdf-tools.html`, text: labels.guides }
     ];
-    const brandLink = isHomePage ? "" : "index.html";
+
     const navContent = `
     <nav class="navbar">
         <div class="container">
@@ -44,73 +89,44 @@ function createNavigation(navConfig) {
                 <span>SafePDF<span class="brand-tm">™</span></span>
             </a>
             <ul class="nav-links">
-                ${sharedLinks.map(link => `<li><a href="${link.href}">${link.text}</a></li>`).join('')}
+                ${links.map(link => `<li><a href="${link.href}">${link.text}</a></li>`).join('')}
             </ul>
             <div class="lang-selector">
-                <img id="lang-flag" src="${flagMap.en}" alt="Selected language flag" width="22" height="15" class="lang-flag-img">
+                <img id="lang-flag" src="${flags[lang] || flags.en}" alt="Selected language flag" width="22" height="15" class="lang-flag-img">
                 <label for="language-select" style="display:none">Language</label>
                 <select class="language-select" id="language-select" aria-label="Language">
-                    <option value="en">English</option>
-                    <option value="tr">Türkçe</option>
-                    <option value="de">Deutsch</option>
+                    <option value="en"${lang === 'en' ? ' selected' : ''}>English</option>
+                    <option value="tr"${lang === 'tr' ? ' selected' : ''}>Türkçe</option>
+                    <option value="de"${lang === 'de' ? ' selected' : ''}>Deutsch</option>
                 </select>
             </div>
         </div>
     </nav>
     `;
 
-    // Insert at the beginning of body
     document.body.insertAdjacentHTML('afterbegin', navContent);
 
-    // Initialize navigation functionality
-    initializeNavigation();
+    initializeNavigation(flags, lang);
 }
 
-function initializeNavigation() {
-    // Language switcher functionality
+function initializeNavigation(flags, currentLang) {
     const langSelect = document.getElementById('language-select');
     const langFlag = document.getElementById('lang-flag');
 
     if (langSelect && langFlag) {
         function updateFlag() {
-            const lang = langSelect.value;
-            langFlag.src = flagMap[lang] || flagMap.en;
+            const selected = langSelect.value;
+            langFlag.src = flags[selected] || flags.en;
             langFlag.alt = `${langSelect.options[langSelect.selectedIndex].text} flag`;
         }
 
-        langSelect.addEventListener('change', function() {
+        langSelect.addEventListener('change', function () {
+            const selected = langSelect.value;
             updateFlag();
-            const lang = langSelect.value;
-            
-            // Set cookie so other pages know the language choice
-            var d = new Date(); d.setTime(d.getTime() + (365*24*60*60*1000));
-            document.cookie = "site_lang=" + lang + ";path=/;expires=" + d.toUTCString() + ";SameSite=Lax";
-            
-            const url = new URL(window.location.href);
-            url.searchParams.set('lang', lang);
-            window.location.href = url.toString();
+            if (selected === currentLang) return;
+            window.location.href = buildLangUrl(selected);
         });
 
-        // Set initial flag based on URL parameter or cookie
-        const urlLang = new URL(window.location.href).searchParams.get('lang');
-        const cookieLang = getCookie('site_lang');
-        const activeLang = urlLang || cookieLang;
-        if (activeLang) {
-            for (let i = 0; i < langSelect.options.length; i++) {
-                if (langSelect.options[i].value === activeLang) {
-                    langSelect.selectedIndex = i;
-                    break;
-                }
-            }
-        }
         updateFlag();
     }
-
-}
-
-function getCookie(name) {
-    var value = "; " + document.cookie;
-    var parts = value.split("; " + name + "=");
-    if (parts.length === 2) return parts.pop().split(";").shift();
-    return null;
 }

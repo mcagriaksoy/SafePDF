@@ -4,6 +4,7 @@ function createCommonHead(pageConfig = {}) {
   const canonicalUrl = pageConfig.canonicalUrl || `${window.location.origin}${window.location.pathname}`;
   const analyticsId = pageConfig.analyticsId || 'G-FRC3NLZG1V';
   const includeAnalytics = pageConfig.analytics !== false;
+  const includeJsonLd = pageConfig.jsonLd !== false;
   const headContent = `
     <!-- Theme and UI Meta Tags -->
     <meta name="theme-color" content="#0f1720">
@@ -21,15 +22,7 @@ function createCommonHead(pageConfig = {}) {
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SafePDF">
-    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-touch-icon-152x152.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-touch-icon-120x120.png">
-    <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-touch-icon-76x76.png">
     <meta name="msapplication-TileColor" content="#0f1720">
-    <meta name="msapplication-TileImage" content="/icons/mstile-150x150.png">
-
-    <!-- Web Manifest -->
-    <link rel="manifest" href="/site.webmanifest">
 
     <!-- Performance / fonts -->
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -40,48 +33,26 @@ function createCommonHead(pageConfig = {}) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer">
     
     <!-- Preload hero image to improve LCP -->
-    <link rel="preload" as="image" href="https://github.com/mcagriaksoy/SafePDF/raw/main/img/SafePDF_Ad.avif">
-
-    <!-- Hreflang tags and HTML language attribute -->
+    <!-- Hreflang: English + x-default, unless the page already defines its own -->
     <script>
-        // Dynamically set hreflang and HTML lang attribute
         (function() {
             var base = '${canonicalUrl}';
-            var url = new URL(window.location.href);
-            var lang = url.searchParams.get('lang') || 'en';
-            
-            // Validate language is ISO standard (en, tr, de)
-            if (!['en', 'tr', 'de'].includes(lang)) {
-                lang = 'en';
-            }
-            
-            // Update HTML lang attribute to match
-            document.documentElement.lang = lang;
-            
-            // Avoid duplicate alternates when static tags already exist.
             if (!document.querySelector('link[rel="alternate"][hreflang="en"]')) {
-                var langs = [
-                    {code:'en', url: base},
-                    {code:'tr', url: base+'?lang=tr'},
-                    {code:'de', url: base+'?lang=de'}
-                ];
-                langs.forEach(function(l) {
+                [
+                    { code: 'en', url: base },
+                    { code: 'x-default', url: base }
+                ].forEach(function(l) {
                     var link = document.createElement('link');
                     link.rel = 'alternate';
                     link.hreflang = l.code;
                     link.href = l.url;
                     document.head.appendChild(link);
                 });
-                // x-default
-                var linkDef = document.createElement('link');
-                linkDef.rel = 'alternate';
-                linkDef.hreflang = 'x-default';
-                linkDef.href = base;
-                document.head.appendChild(linkDef);
             }
         })();
     </script>
 
+    ${includeJsonLd ? `
     <!-- JSON-LD structured data -->
     <script type="application/ld+json">
     {
@@ -122,7 +93,7 @@ function createCommonHead(pageConfig = {}) {
         "Edit PDF metadata"
       ]
     }
-    </script>
+    </script>` : ''}
     ${includeAnalytics ? `
     <!-- Consent-gated analytics -->
     <script type="text/plain" data-cookiecategory="analytics" src="https://www.googletagmanager.com/gtag/js?id=${analyticsId}" async></script>

@@ -1,45 +1,51 @@
 // Footer component for SafePDF website
+// Links use root-absolute paths so the footer works on the homepage, on
+// subpages and on the /de/ and /tr/ localised pages alike.
 function createFooter() {
+    // Converter pages exist in /de/ and /tr/ too, so link to the localised
+    // version when the visitor is on a localised page.
+    const langPrefix = /^\/(de|tr)\//.test(window.location.pathname)
+        ? window.location.pathname.match(/^\/(de|tr)\//)[1] + '/'
+        : '';
     const footerHTML = `
     <div class="container footer-grid">
         <div class="footer-col footer-brand-col">
-            <h4>SafePDF</h4>
+            <h3>SafePDF</h3>
             <p class="muted">Offline PDF toolkit for secure local processing. Merge, split, compress, convert, and repair without uploading files.</p>
             <p class="small">Released under <a href="https://github.com/mcagriaksoy/SafePDF/blob/main/LICENSE">GPL-3.0</a></p>
         </div>
 
         <div class="footer-col">
-            <h4>Popular Tools</h4>
+            <h3>Popular Tools</h3>
             <ul class="footer-links">
-                <li><a href="pdf-to-word.html">PDF to Word</a></li>
-                <li><a href="pdf-to-excel.html">PDF to Excel</a></li>
-                <li><a href="pdf-to-powerpoint.html">PDF to PPTX</a></li>
-                <li><a href="pdf-to-jpg.html">PDF to JPG</a></li>
-                <li><a href="word-to-pdf.html">Word to PDF</a></li>
-                <li><a href="jpg-to-pdf.html">JPG to PDF</a></li>
-                <a href="https://krepza.lt/">Krepza.lt</a>
+                <li><a href="/${langPrefix}pdf-to-word.html">PDF to Word</a></li>
+                <li><a href="/${langPrefix}pdf-to-excel.html">PDF to Excel</a></li>
+                <li><a href="/${langPrefix}pdf-to-powerpoint.html">PDF to PPTX</a></li>
+                <li><a href="/${langPrefix}pdf-to-jpg.html">PDF to JPG</a></li>
+                <li><a href="/${langPrefix}word-to-pdf.html">Word to PDF</a></li>
+                <li><a href="/${langPrefix}jpg-to-pdf.html">JPG to PDF</a></li>
             </ul>
         </div>
 
         <div class="footer-col">
-            <h4>Resources</h4>
+            <h3>Resources</h3>
             <ul class="footer-links">
-                <li><a href="downloads.html">Downloads</a></li>
-                <li><a href="offline-pdf-tools.html">Offline PDF Guide</a></li>
-                <li><a href="secure-pdf-processing.html">Secure PDF Processing</a></li>
-                <li><a href="sustainability.html">Sustainability</a></li>
-                <li><a href="terms.html">Terms of Use</a></li>
-                <li><a href="privacy.html">Privacy</a></li>
-                <li><a href="cookie-policy.html">Cookie Policy</a></li>
-                <li><a href="sitemap.xml">Sitemap</a></li>
+                <li><a href="/downloads.html">Downloads</a></li>
+                <li><a href="/offline-pdf-tools.html">Offline PDF Guide</a></li>
+                <li><a href="/secure-pdf-processing.html">Secure PDF Processing</a></li>
+                <li><a href="/sustainability.html">Sustainability</a></li>
+                <li><a href="/terms.html">Terms of Use</a></li>
+                <li><a href="/privacy.html">Privacy</a></li>
+                <li><a href="/cookie-policy.html">Cookie Policy</a></li>
+                <li><a href="/sitemap.xml">Sitemap</a></li>
             </ul>
         </div>
 
         <div class="footer-col">
-            <h4>Contact</h4>
+            <h3>Contact</h3>
             <p class="small"><a href="mailto:info@safepdf.de">info@safepdf.de</a></p>
-            <p class="small"><a href="https://safepdf.de/contact.html">Contact Form</a></p>
-            <p class="small"><a href="https://safepdf.de/cookie-policy.html" id="cookie-settings-footer">Cookie Settings</a></p>
+            <p class="small"><a href="/contact.html">Contact Form</a></p>
+            <p class="small"><a href="/cookie-policy.html" id="cookie-settings-footer">Cookie Settings</a></p>
             <div class="footer-social-buttons">
                 <a href="https://github.com/mcagriaksoy/SafePDF" class="footer-social-btn" title="GitHub" aria-label="GitHub">
                     <i class="fab fa-github"></i>
@@ -62,8 +68,8 @@ function createFooter() {
                 <img src="https://www.checkdomain.de/assets/bundles/web/app/widget/seal/img/ssl_certificate/de/150x150.png" alt="SSL-Zertifikat" class="ssl-seal-img" />
             </a>
             <div class="footer-payment-logos" aria-label="Accepted payment methods">
-                <img src="assets/mc.avif" alt="Mastercard" />
-                <img src="assets/vc.avif" alt="Visa" />
+                <img src="/assets/mc.avif" alt="Mastercard" />
+                <img src="/assets/vc.avif" alt="Visa" />
             </div>
         </div>
     </div>
