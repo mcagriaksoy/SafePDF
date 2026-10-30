@@ -280,7 +280,7 @@ class SafePDFUI:
 
     def setup_main_window(self):
         """Configure the main application window (uses the native window frame)."""
-        self.root.title("SafePDF - A tool for PDF Manipulation")
+        self.root.title("SafePDF™ - A tool for PDF Manipulation")
 
         # Set window size based on screen resolution
         screen_width = self.root.winfo_screenwidth()
@@ -353,9 +353,6 @@ class SafePDFUI:
 
     def create_ui_components(self):
         """Create all UI components"""
-        # Add modern header
-        self.create_header()
-
         # Create main card area
         self.create_main_card()
 
@@ -379,138 +376,6 @@ class SafePDFUI:
 
         # Update UI to reflect loaded pro status
         self.update_pro_features()
-
-    def create_header(self):
-        """Create a slim, flat application header (brand + plan badge).
-
-        The native window frame provides minimise/maximise/close, so this bar
-        only carries branding and a clickable plan badge.
-        """
-        pal = self._resolve_theme_palette()
-        self._header_height = 54
-
-        self.header_frame = tk.Frame(self.root, bg=pal["bg_card"], bd=0, highlightthickness=0)
-        self.header_frame.pack(fill="x", side="top")
-        self.header_frame.pack_propagate(False)
-        self.header_frame.configure(height=self._header_height)
-
-        self.header_label = tk.Label(
-            self.header_frame,
-            text=self.lang_manager.get("app_title", "SafePDF™"),
-            font=(CommonElements.FONT, 16, "bold"),
-            fg=CommonElements.RED_COLOR,
-            bg=pal["bg_card"],
-            bd=0,
-            padx=0,
-            pady=0,
-        )
-        self.header_label.pack(side="left", padx=(18, 10), pady=14)
-
-        self.pro_badge_label = tk.Label(
-            self.header_frame,
-            text="",
-            font=(CommonElements.FONT, 8, "bold"),
-            bg=pal["badge_free_bg"],
-            fg="#ffffff",
-            padx=8,
-            pady=2,
-            cursor="hand2",
-            relief=tk.FLAT,
-            bd=0,
-        )
-        self.pro_badge_label.pack(side="left", pady=18)
-        self.pro_badge_label.bind("<Button-1>", lambda e: self.update_manager.show_pro_dialog(self))
-
-        # Kept as attributes for backwards-compatible references elsewhere.
-        self.header_canvas = None
-        self.minimize_btn = None
-        self.maximize_btn = None
-        self.close_btn = None
-        self._refresh_header_badge()
-
-    def _refresh_header_badge(self):
-        """Update the brand badge text/colour to match the pro status + theme."""
-        try:
-            pal = self._resolve_theme_palette()
-            is_pro = bool(getattr(self.controller, "is_pro_activated", False))
-            if getattr(self, "pro_badge_label", None):
-                self.pro_badge_label.configure(
-                    text=(
-                        self.lang_manager.get("pro_badge_pro", "PRO")
-                        if is_pro
-                        else self.lang_manager.get("pro_badge_free", "FREE")
-                    ),
-                    bg=pal["success"] if is_pro else pal["badge_free_bg"],
-                    fg="#ffffff",
-                )
-        except Exception:
-            logger.debug("Error refreshing header badge", exc_info=True)
-
-    def _interpolate_color(self, start_hex, end_hex, t):
-        """Blend two hex colors by factor t in [0,1]."""
-        t = max(0.0, min(1.0, t))
-        s = start_hex.lstrip("#")
-        e = end_hex.lstrip("#")
-        sr, sg, sb = int(s[0:2], 16), int(s[2:4], 16), int(s[4:6], 16)
-        er, eg, eb = int(e[0:2], 16), int(e[2:4], 16), int(e[4:6], 16)
-        r = int(sr + (er - sr) * t)
-        g = int(sg + (eg - sg) * t)
-        b = int(sb + (eb - sb) * t)
-        return f"#{r:02x}{g:02x}{b:02x}"
-
-    def _on_header_resize(self, event):
-        """Redraw header gradient and position header widgets."""
-        width = max(1, int(event.width))
-        height = max(1, int(event.height))
-
-        self.header_canvas.config(width=width, height=height)
-        self.header_canvas.delete("header_gradient")
-        button_w = 34
-        gap = 2
-        right_pad = 2
-        btn_h = max(1, height - 2)
-        close_x = width - right_pad - button_w
-        max_x = close_x - gap - button_w
-        min_x = max_x - gap - button_w
-
-        left_x = 20
-        self.header_label.update_idletasks()
-        title_w = self.header_label.winfo_reqwidth()
-
-        # Gradient starts after title and ends before window control buttons.
-        gradient_start_x = left_x + title_w + 8
-        gradient_end_x = max(gradient_start_x + 1, min_x - 4)
-
-        left_flat_color = self._header_gradient_start
-        right_flat_color = self._header_control_bg
-
-        # Left solid zone
-        self.header_canvas.create_rectangle(
-            0, 0, gradient_start_x, height, fill=left_flat_color, outline="", tags="header_gradient"
-        )
-
-        # Middle gradient zone
-        grad_width = max(1, gradient_end_x - gradient_start_x)
-        for x in range(gradient_start_x, gradient_end_x):
-            t = (x - gradient_start_x) / max(1, grad_width - 1)
-            color = self._interpolate_color(self._header_gradient_start, self._header_gradient_end, t)
-            self.header_canvas.create_line(x, 0, x, height, fill=color, tags="header_gradient")
-
-        # Right solid zone (control button area)
-        self.header_canvas.create_rectangle(
-            gradient_end_x, 0, width, height, fill=right_flat_color, outline="", tags="header_gradient"
-        )
-        self.header_canvas.tag_lower("header_gradient")
-
-        self.header_label.config(bg=left_flat_color)
-        self.header_label.place(x=left_x, y=0, height=height)
-
-        badge_x = left_x + title_w + 12
-        self.pro_badge_label.place(x=badge_x, y=max(2, (height - 22) // 2))
-
-        self.minimize_btn.place(x=min_x, y=1, width=button_w, height=btn_h)
-        self.maximize_btn.place(x=max_x, y=1, width=button_w, height=btn_h)
-        self.close_btn.place(x=close_x, y=1, width=button_w, height=btn_h)
 
     def bind_drag_events(self, widget):
         """Bind drag events to a widget for window dragging"""
@@ -537,34 +402,6 @@ class SafePDFUI:
         """Stop window dragging"""
         self.drag_data["x"] = 0
         self.drag_data["y"] = 0
-
-    def setup_button_hover_effects(self):
-        """Setup hover effects for window control buttons"""
-
-        def on_minimize_enter(event):
-            self.minimize_btn.config(bg="#e9d7d7")
-
-        def on_minimize_leave(event):
-            self.minimize_btn.config(bg=self._header_control_bg)
-
-        def on_maximize_enter(event):
-            self.maximize_btn.config(bg="#e9d7d7")
-
-        def on_maximize_leave(event):
-            self.maximize_btn.config(bg=self._header_control_bg)
-
-        def on_close_enter(event):
-            self.close_btn.config(bg="#c40e2f", fg=CommonElements.BUTTON_TEXT_DARK)
-
-        def on_close_leave(event):
-            self.close_btn.config(bg=self._header_control_bg, fg="#111827")
-
-        self.minimize_btn.bind("<Enter>", on_minimize_enter)
-        self.minimize_btn.bind("<Leave>", on_minimize_leave)
-        self.maximize_btn.bind("<Enter>", on_maximize_enter)
-        self.maximize_btn.bind("<Leave>", on_maximize_leave)
-        self.close_btn.bind("<Enter>", on_close_enter)
-        self.close_btn.bind("<Leave>", on_close_leave)
 
     def minimize_window(self):
         """Minimize the window by hiding it and creating a taskbar entry"""
@@ -674,7 +511,7 @@ class SafePDFUI:
         """Create the main card-like container with rounded appearance"""
         # Create outer frame for shadow effect
         shadow_frame = tk.Frame(self.root, bg="#F4F6FB")
-        shadow_frame.pack(fill="both", expand=True, padx=12, pady=(8, 10))
+        shadow_frame.pack(fill="both", expand=True, padx=6, pady=(4, 6))
 
         # Create inner card frame with offset for shadow
         self.card_frame = tk.Frame(
@@ -1756,15 +1593,6 @@ class SafePDFUI:
             logger.debug("Error reconfiguring ttk styles for theme", exc_info=True)
 
         shadow_color = palette["shadow_bg"]
-        try:
-            if getattr(self, "header_frame", None):
-                self.header_frame.configure(bg=palette["bg_card"])
-                if getattr(self, "header_label", None):
-                    self.header_label.configure(bg=palette["bg_card"], fg=CommonElements.RED_COLOR)
-                self._refresh_header_badge()
-        except Exception:
-            logger.debug("Error updating header colors for theme", exc_info=True)
-            logger.debug("Error updating header colors for theme", exc_info=True)
 
         try:
             if getattr(self, "card_frame", None):
@@ -1829,16 +1657,6 @@ class SafePDFUI:
         try:
             if getattr(self, "notebook", None):
                 self.notebook.update_idletasks()
-        except Exception:
-            pass
-
-        try:
-            if getattr(self, "minimize_btn", None):
-                self.minimize_btn.configure(bg=self._header_control_bg, fg="#111827")
-            if getattr(self, "maximize_btn", None):
-                self.maximize_btn.configure(bg=self._header_control_bg, fg="#111827")
-            if getattr(self, "close_btn", None):
-                self.close_btn.configure(bg=self._header_control_bg, fg="#111827")
         except Exception:
             pass
 
@@ -2167,7 +1985,7 @@ class SafePDFUI:
     def create_bottom_controls(self):
         """Create bottom navigation and control buttons"""
         control_frame = ttk.Frame(self.root, style="TFrame")
-        control_frame.pack(fill="x", padx=12, pady=(0, 12))
+        control_frame.pack(fill="x", padx=8, pady=(0, 8))
 
         # Center spacer
         center_frame = ttk.Frame(control_frame)
