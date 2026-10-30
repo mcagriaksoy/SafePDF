@@ -40,10 +40,11 @@
 **Interface Features:**
 - Drag & drop file selection
 - Real-time progress tracking
-- Multi-language UI
-- Modern, intuitive design
+- Multi-language UI (English, German, Turkish)
+- Light and dark themes
+- Native window frame with a compact, modern layout
 
-![Screenshot](img/UI_v1.avif)
+![SafePDF interface](img/UI_v1.avif)
 
 ![How to Use](img/HowToUse.gif)
 
@@ -51,8 +52,10 @@
 
 ### Option 1: Download Executable (Recommended)
 1. Download the latest release from [Releases](https://github.com/mcagriaksoy/SafePDF/releases/)
-2. Extract the ZIP file
-3. Run `SafePDF.exe`
+2. Run `SafePdf_v<version>_iwin64.exe` to install, or `SafePdf_v<version>_portable_win64.exe` for the portable build
+3. Start **SafePDF** from the Start menu or the portable executable
+
+> Linux and macOS users can install the package from PyPI or run the app from source (see below).
 
 ### Option 2: Install from PyPI
 
@@ -75,12 +78,22 @@ safepdf
 
 ### Option 3: Run from Source
 
+**Requirements:**
+- Python 3.8+ with `venv`
+- pip
+- On Linux, Tk is also required (for Debian/Ubuntu: `sudo apt install python3-tk`)
+
 ```bash
 # Clone the repository
 git clone https://github.com/mcagriaksoy/SafePDF.git
 cd SafePDF
 
+# Create and activate a virtual environment
+python3 -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
+
 # Install core dependencies
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 
 # Optional extras
@@ -90,6 +103,8 @@ pip install -r requirements.txt
 # Run the application
 python run_safe_pdf.py
 ```
+
+> **Troubleshooting:** If you get `ModuleNotFoundError` (for example `No module named 'pypdfium2'`), the system Python is being used instead of the project virtual environment. Activate the venv first (`source .venv/bin/activate`) or run `.venv/bin/python run_safe_pdf.py`. The `safepdf` command installed by `pip`/`pipx` may point to a separate installation, so run the source checkout explicitly when testing local changes.
 
 **OCR note:** OCR uses Tesseract. Install the Python extra with `SafePDF[ocr]` and make sure the Tesseract OCR application is installed on your system as well.
 
@@ -107,14 +122,17 @@ python run_safe_pdf.py
 ```
 SafePDF/
 ├── SafePDF/
+│   ├── assets/         # Icons and operation graphics
 │   ├── ctrl/           # Controllers
-│   ├── ui/             # User interface
-│   ├── ops/            # PDF operations
+│   ├── installer/      # Inno Setup / InstallForge scripts (Windows)
 │   ├── logger/         # Logging
-│   └── text/           # Localization files
-├── installer/          # Inno Setup script (Windows installer)
-├── scripts/            # CI/release build helpers
+│   ├── ops/            # PDF operations
+│   ├── test/           # Test suite
+│   ├── text/           # Localized UI content
+│   └── ui/             # User interface
 ├── docs/               # Marketing website (safepdf.de)
+├── img/                # README screenshots
+├── scripts/            # CI/release build helpers
 ├── run_safe_pdf.py     # Main launcher
 └── requirements.txt    # Dependencies
 ```
@@ -146,6 +164,12 @@ Pushing a `v*` tag triggers two GitHub Actions workflows:
 
 - **[`release.yml`](.github/workflows/release.yml)** — verifies the tag matches `__version__`, builds the Windows portable executable with PyInstaller, packages the per-user installer with Inno Setup ([`SafePDF/installer/safepdf.iss`](SafePDF/installer/safepdf.iss)), and publishes a GitHub Release with `SafePdf_v<version>_iwin64.exe` and `SafePdf_v<version>_portable_win64.exe`.
 - **[`publish-pypi.yml`](.github/workflows/publish-pypi.yml)** — publishes the sdist and wheel to PyPI (Trusted Publishing), which is how Linux and macOS users get SafePDF via `pip install SafePDF`.
+
+Each released executable is also given a signed **build-provenance attestation** (via `actions/attest-build-provenance`). Anyone can verify that a downloaded file was produced by this repository's release workflow:
+
+```bash
+gh attestation verify SafePdf_v1.2.0_iwin64.exe --repo mcagriaksoy/SafePDF
+```
 
 Build the Windows artifacts locally with:
 

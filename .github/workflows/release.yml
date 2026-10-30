@@ -5,13 +5,12 @@ on:
     tags:
       - "v[0-9]*"
 
-permissions:
-  contents: write
-
 jobs:
   verify:
     name: Verify version
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
@@ -47,6 +46,8 @@ jobs:
     name: Windows installer
     needs: verify
     runs-on: windows-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -96,6 +97,10 @@ jobs:
     name: Publish GitHub Release
     needs: [verify, windows]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write       # create the release and upload assets
+      id-token: write       # OIDC token for build provenance
+      attestations: write   # store the build provenance attestation
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -105,6 +110,11 @@ jobs:
         with:
           name: windows-installer
           path: release-artifacts
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: release-artifacts/*.exe
 
       - name: Publish release
         uses: softprops/action-gh-release@v2

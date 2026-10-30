@@ -115,6 +115,70 @@ def palette(theme_name: str) -> dict:
     return DARK if str(theme_name).strip().lower() == "dark" else LIGHT
 
 
+# Keeps the generated underline images alive for the lifetime of the process.
+_TAB_UNDERLINE_IMAGES = None
+
+
+def _install_tab_underline(style, pal: dict) -> None:
+    """Mark the selected tab with a thin accent underline.
+
+    The stock ``clam`` theme makes the selected tab narrower/shorter than the
+    others. Instead of relying on that, we keep every tab the same size and
+    draw a small accent-coloured strip along the bottom edge of the selected
+    one using a ttk image element (there is no native underline option).
+    """
+    global _TAB_UNDERLINE_IMAGES
+
+    element = "SafePDF.Underline.TNotebook.Tab"
+    try:
+        if _TAB_UNDERLINE_IMAGES is None:
+            master = getattr(style, "master", None)
+            import tkinter as tk
+
+            blank = tk.PhotoImage(master=master, width=1, height=3)
+            accent = tk.PhotoImage(master=master, width=1, height=3)
+            _TAB_UNDERLINE_IMAGES = (blank, accent)
+
+        blank, accent = _TAB_UNDERLINE_IMAGES
+        blank.put(pal["bg_main"], to=(0, 0, 1, 3))
+        accent.put(pal["accent"], to=(0, 0, 1, 3))
+
+        if element not in style.element_names():
+            style.element_create(
+                element,
+                "image",
+                blank,
+                ("selected", accent),
+                ("!selected", blank),
+            )
+
+        style.layout(
+            "TNotebook.Tab",
+            [
+                (
+                    "Notebook.tab",
+                    {
+                        "sticky": "nswe",
+                        "children": [
+                            (
+                                "Notebook.padding",
+                                {
+                                    "side": "top",
+                                    "sticky": "nswe",
+                                    "children": [("Notebook.label", {"side": "top", "sticky": "nswe"})],
+                                },
+                            ),
+                            (element, {"side": "bottom", "sticky": "ew"}),
+                        ],
+                    },
+                )
+            ],
+        )
+    except Exception:
+        # A custom layout is cosmetic only; never break theming because of it.
+        pass
+
+
 def apply_ttk_styles(style, pal=None, font_family=None, base_size=None) -> None:
     """Configure all ttk widget styles from a palette.
 
@@ -158,7 +222,11 @@ def apply_ttk_styles(style, pal=None, font_family=None, base_size=None) -> None:
         background=[("selected", pal["tab_selected"]), ("active", pal["highlight"])],
         foreground=[("selected", accent), ("active", fg_text), ("disabled", muted)],
         expand=[("selected", (0, 0, 0, 0))],
+        # Keep the selected tab the same size as the others (clam shrinks it
+        # by default); selection is shown with the accent underline instead.
+        padding=[("selected", (16, 9)), ("active", (16, 9))],
     )
+    _install_tab_underline(style, pal)
 
     # Containers / text
     style.configure("TFrame", background=bg_card)
