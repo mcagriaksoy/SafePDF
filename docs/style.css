@@ -13,8 +13,9 @@
   --text-main: #0f172a;
   --text-muted: #475569;
   --text-light: #64748b;
+  --muted: #475569;
   --surface: #ffffff;
-  --max-width: 1200px;
+  --max-width: 1120px;
   --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
   --shadow-md: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
   --shadow-lg: 0 20px 40px -15px rgba(15, 23, 42, 0.08);
@@ -29,12 +30,17 @@
   box-sizing: border-box;
 }
 
+html, body {
+  overflow-x: hidden;
+}
+
 body {
   margin: 0;
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 0.95rem;
   background: var(--bg);
   color: var(--text-main);
-  line-height: 1.6;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -1166,38 +1172,7 @@ a:not([class]):hover {
   margin-top: 8px;
 }
 
-.converters .op-card {
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  gap: 8px; /* reduce vertical spacing inside cards */
-  padding: 12px; /* trim padding to lower overall height */
-}
-
-.converters .op-card h2,
-.converters .op-card h3 {
-  font-size: 1.05rem;
-  margin: 0 0 6px 0;
-  font-weight: 700;
-  color: #0f1724;
-}
-
-.converters .op-card .op-title {
-  font-size: 1.05rem;
-  margin: 0 0 6px 0;
-  font-weight: 700;
-  color: #0f1724;
-}
-
-.converters .op-card p {
-  flex: 0 1 auto; /* prevent the paragraph from stretching the card */
-  color: var(--muted);
-  margin-bottom: 12px;
-}
-
-.converters .op-card .btn {
-  margin-top: auto;
-}
+/* Legacy .converters .op-card rules consolidated and moved to bottom directory section */
 
 .info-section,
 .resource-section {
@@ -1303,20 +1278,7 @@ a:not([class]):hover {
   padding-bottom: 12px;
 }
 
-.converters .op-card .op-icon {
-  width: 140px; /* smaller image height to reduce card height */
-  height: 100px;
-  object-fit: contain;
-  display: block;
-  margin: 0 auto 6px;
-}
-
-@media (max-width: 560px) {
-  .converters .op-card .op-icon {
-    width: 48px;
-    height: 48px;
-  }
-}
+/* Legacy .converters .op-card .op-icon consolidated */
 
 /* Mobile Operation Cards */
 @media (max-width: 768px) {
@@ -3070,6 +3032,208 @@ a.proof-item:hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.25);
   color: #ffffff;
+}
+
+/* Product-led homepage direction */
+.hero {
+  width: 100%;
+  margin: 0;
+  padding: 64px 24px;
+  background: #171b20;
+  border-bottom: 1px solid #2b323a;
+  box-sizing: border-box;
+}
+
+.hero-inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+
+.hero h1 {
+  max-width: 13ch;
+  color: #f7f5f0;
+  font-size: clamp(2.6rem, 5vw, 4.7rem);
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+}
+
+.hero .lead {
+  max-width: 58ch;
+  color: #b7c0c9;
+}
+
+.hero-pill {
+  background: transparent;
+  border: 0;
+  border-left: 3px solid #e11d48;
+  border-radius: 0;
+  padding: 2px 0 2px 12px;
+  color: #fda4af;
+  box-shadow: none;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+}
+
+.hero-shot {
+  border-color: #3a434d;
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.38);
+}
+
+.hero .btn:not(.primary) {
+  background: transparent;
+  border-color: #4a535d;
+  color: #f7f5f0;
+}
+
+.hero .btn:not(.primary):hover {
+  border-color: #fda4af;
+  color: #ffffff;
+}
+
+.hero .btn-subtext,
+.hero .proof-item {
+  color: #9da8b3;
+}
+
+.hero .proof-item svg {
+  stroke: #fda4af;
+}
+
+@media (max-width: 900px) {
+  .hero {
+    padding: 56px 28px 64px;
+  }
+
+  .hero h1 {
+    max-width: 16ch;
+  }
+}
+
+@media (max-width: 560px) {
+  .hero {
+    padding: 44px 16px 48px;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.3rem, 12vw, 3.2rem);
+  }
+}
+
+.hero .proof-item strong {
+  color: #ffffff;
+}
+
+/* Converter directory: Scooter Software / Beyond Compare style quiet rows */
+.converters {
+  padding: 48px 0;
+}
+
+.converters .section-heading {
+  margin-bottom: 24px;
+}
+
+.converters .section-heading h2 {
+  font-size: 1.85rem;
+  letter-spacing: -0.02em;
+  color: var(--brand-navy);
+}
+
+/* Converter directory: Scooter Software 3-column / 2-column clean card grid */
+.converters .op-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  max-width: 100%;
+  margin: 0 auto;
+  border-top: none;
+}
+
+.converters .op-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 22px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  transition: all 0.15s ease;
+}
+
+.converters .op-card:hover {
+  transform: translateY(-2px);
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+  background: #ffffff;
+}
+
+.converters .op-icon {
+  width: 32px;
+  height: 32px;
+  margin: 0 0 14px 0;
+  flex-shrink: 0;
+  display: block;
+  object-fit: contain;
+}
+
+.converters .op-title {
+  margin: 0 0 6px 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--brand-navy);
+  letter-spacing: -0.01em;
+  white-space: normal;
+  min-width: auto;
+}
+
+.converters .op-card p {
+  margin: 0 0 16px 0;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  flex: 1;
+}
+
+.converters .op-card .btn {
+  margin-top: auto;
+  margin-left: 0;
+  flex-shrink: 0;
+  width: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--accent);
+  box-shadow: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.converters .op-card .btn::after {
+  content: " \2192";
+}
+
+.converters .op-card .btn:hover {
+  transform: none;
+  color: var(--accent-strong);
+  text-decoration: underline;
+  box-shadow: none;
+}
+
+@media (max-width: 900px) {
+  .converters .op-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  .converters .op-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
 }
 
 .cta-section .btn:not(.primary):hover {

@@ -13,7 +13,6 @@ Hoş geldiniz
 Endişelenmeyin, dosyalarınız bilgisayarınızdan asla ayrılmaz.
 
 
-
 💻 Yazılım Bilgileri
 
 Sürüm: {VERSION}
