@@ -13,7 +13,6 @@ Klicken Sie auf „Weiter“, um den Vorgang zu starten und Ihre gewünschte Akt
 Keine Sorge, Ihre Dateien verlassen Ihren Computer nicht.
 
 
-
 💻 Softwareinformationen
 
 Version: {VERSION}

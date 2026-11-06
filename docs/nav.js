@@ -26,6 +26,16 @@ function getCurrentLang() {
     return "en";
 }
 
+function shouldSuggestGerman() {
+    const isEnglishHomepage = window.location.pathname === "/" ||
+        window.location.pathname.endsWith("/index.html");
+    const hasLanguageChoice = window.localStorage.getItem("safepdf-language-choice");
+    const browserLanguages = navigator.languages || [navigator.language || ""];
+
+    return isEnglishHomepage && !hasLanguageChoice &&
+        browserLanguages.some(language => language.toLowerCase().startsWith("de"));
+}
+
 // Pages that have a static de/tr translation. When the current page has one,
 // switching language keeps the user on the same page; otherwise it falls back
 // to the localised homepage.
@@ -52,6 +62,12 @@ function buildLangUrl(lang) {
 }
 
 function createNavigation() {
+    if (shouldSuggestGerman()) {
+        window.localStorage.setItem("safepdf-language-choice", "de");
+        window.location.replace("/de/");
+        return;
+    }
+
     const path = window.location.pathname;
     const inLangFolder = /^\/(de|tr)\//.test(path);
     const isIndex = path.endsWith('/') || path.endsWith('/index.html') || path.endsWith('index.html');
@@ -123,6 +139,7 @@ function initializeNavigation(flags, currentLang) {
         langSelect.addEventListener('change', function () {
             const selected = langSelect.value;
             updateFlag();
+            window.localStorage.setItem("safepdf-language-choice", selected);
             if (selected === currentLang) return;
             window.location.href = buildLangUrl(selected);
         });
