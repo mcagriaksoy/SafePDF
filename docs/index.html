@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
 
 <head>
@@ -486,40 +486,7 @@
     <!-- Footer -->
     <script src="footer.js"></script>
 
-    <!-- Cookie Settings Modal -->
-    <div id="cookie-modal" class="modal">
-        <div class="modal-content">
-            <span class="cookie-close close">&times;</span>
-            <h2>Cookie Preferences</h2>
-            <p class="muted">Manage which categories of cookies you allow. You can change these at any time.</p>
-            <form id="cookie-form">
-                <label><input type="checkbox" name="necessary" checked disabled> Necessary (required)</label>
-                <label><input type="checkbox" name="preferences"> Preferences (UI/customization)</label>
-                <label><input type="checkbox" name="analytics"> Analytics (improves product)</label>
-                <label><input type="checkbox" name="marketing"> Marketing (third-party)</label>
-                <div style="margin-top:16px;text-align:right;">
-                    <button type="button" class="contact-btn secondary" onclick="rejectAllCookies()">Reject All</button>
-                    <button type="button" class="contact-btn primary" onclick="saveCookiePreferences()">Save
-                        Preferences</button>
-                </div>
-            </form>
-        </div>
-    </div>
 
-    <!-- Cookie Banner -->
-    <div id="cookie-banner" aria-live="polite">
-        <div class="container cookie-inner">
-            <div>
-                <p class="muted">We use essential cookies to make the site work, and optional cookies to improve the
-                    experience. You can manage preferences.</p>
-            </div>
-            <div class="cookie-actions">
-                <button class="btn" onclick="openCookieModal()">Cookie Settings</button>
-                <button class="btn" onclick="rejectAllCookies()">Reject All</button>
-                <button class="btn primary" onclick="acceptAllCookies()">Accept All</button>
-            </div>
-        </div>
-    </div>
 
     <script>
         // smooth scroll for nav links (only for anchor links, not external pages)
@@ -578,8 +545,6 @@
                 .catch(function () { });
         })();
     </script>
-
-    <script src="cookie-consent.js"></script>
 </body>
 
 </html>

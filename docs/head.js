@@ -2,8 +2,6 @@
 // Note: Critical SEO meta tags are now in static HTML for better SEO
 function createCommonHead(pageConfig = {}) {
   const canonicalUrl = pageConfig.canonicalUrl || `${window.location.origin}${window.location.pathname}`;
-  const analyticsId = pageConfig.analyticsId || 'G-FRC3NLZG1V';
-  const includeAnalytics = pageConfig.analytics !== false;
   const includeJsonLd = pageConfig.jsonLd !== false;
   const headContent = `
     <!-- Theme and UI Meta Tags -->
@@ -94,15 +92,13 @@ function createCommonHead(pageConfig = {}) {
       ]
     }
     </script>` : ''}
-    ${includeAnalytics ? `
-    <!-- Consent-gated analytics -->
-    <script type="text/plain" data-cookiecategory="analytics" src="https://www.googletagmanager.com/gtag/js?id=${analyticsId}" async></script>
-    <script type="text/plain" data-cookiecategory="analytics">
+    <!-- Google Tag Manager -->
+    <script async src="https://www.googletagmanager.com/gtm.js?id=GTM-W5DQWW2S"></script>
+    <script>
       window.dataLayer = window.dataLayer || [];
-      function gtag(){ dataLayer.push(arguments); }
+      function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', '${analyticsId}');
-    </script>` : ''}
+    </script>
     `;
 
   // Insert into head
